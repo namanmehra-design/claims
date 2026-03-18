@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ClaimsIQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Epilogue:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F0F0F;--surface:#181818;--surface2:#222222;--surface3:#2A2A2A;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#F0EDE8;--text2:#9A9590;--text3:#5A5550;
+  --accent:#C8F060;--accent-dim:rgba(200,240,96,0.12);
+  --red:#FF6B6B;--red-dim:rgba(255,107,107,0.12);
+  --amber:#F0A830;--amber-dim:rgba(240,168,48,0.12);
+  --blue:#60B8F0;--blue-dim:rgba(96,184,240,0.12);
+  --purple:#B87EF5;--purple-dim:rgba(184,126,245,0.12);
+  --r:10px;--rl:16px;
+  --sidebar-w:220px;--mobile-nav-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
+
+/* ── AUTH ── */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden;padding:16px}
+.auth-glow{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(200,240,96,0.07) 0%,transparent 70%);pointer-events:none;top:50%;left:50%;transform:translate(-50%,-50%)}
+.auth-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;width:100%;max-width:400px;position:relative;z-index:1}
+.auth-logo{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--accent);margin-bottom:3px;letter-spacing:-1px}
+.auth-tagline{font-size:12px;color:var(--text3);margin-bottom:28px}
+.auth-tabs{display:flex;border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:20px}
+.auth-tab{flex:1;padding:7px;text-align:center;font-size:13px;cursor:pointer;border-radius:6px;transition:all 0.2s;color:var(--text2)}
+.auth-tab.active{background:var(--surface3);color:var(--text);font-weight:500}
+.auth-form{display:flex;flex-direction:column;gap:13px}
+.auth-error{background:var(--red-dim);border:1px solid rgba(255,107,107,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);display:none;margin-bottom:4px}
+
+/* ── APP SHELL ── */
+.app{display:none;min-height:100vh}
+
+/* ── SIDEBAR (desktop) ── */
+.sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:120;transition:transform 0.3s cubic-bezier(0.4,0,0.2,1)}
+.sidebar-top{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:var(--accent);letter-spacing:-0.5px}
+.sidebar-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;margin-top:1px}
+.user-pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin:10px 14px 0;display:flex;align-items:center;gap:9px}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-dim);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);font-family:'Syne',sans-serif;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.user-role{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px}
+.sidebar-nav{flex:1;padding:8px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);margin-bottom:1px;transition:all 0.15s;position:relative;user-select:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent)}
+.nav-icon{width:16px;font-size:14px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--border)}
+.logout-btn{width:100%;padding:8px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Epilogue',sans-serif;transition:all 0.15s}
+.logout-btn:hover,.logout-btn:active{background:var(--red-dim);border-color:rgba(255,107,107,0.3);color:var(--red)}
+
+/* ── SIDEBAR OVERLAY (mobile) ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:110;backdrop-filter:blur(2px)}
+.sidebar-overlay.open{display:block}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.hamburger{display:none;width:36px;height:36px;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);flex-shrink:0}
+.hamburger span{display:block;width:16px;height:1.5px;background:var(--text2);margin:3px 0;transition:all 0.2s;border-radius:2px}
+
+/* ── MAIN CONTENT ── */
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;background:var(--bg)}
+
+/* ── PAGES ── */
+.page{padding:22px;display:none;padding-bottom:32px}
+.page.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.page-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text)}
+.page-sub{font-size:12px;color:var(--text3);margin-top:3px}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 15px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:'Epilogue',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;-webkit-appearance:none}
+.btn-accent{background:var(--accent);color:#111;font-weight:600}
+.btn-accent:hover,.btn-accent:active{background:#d4f470}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover,.btn-ghost:active{background:var(--surface2);color:var(--text)}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,107,107,0.2)}
+.btn-danger:active{background:rgba(255,107,107,0.2)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+.btn-ai{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(184,126,245,0.2)}
+.btn-ai:active{background:rgba(184,126,245,0.2)}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl)}
+.card-header{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.card-body{padding:16px 18px}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px}
+.stat-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.stat-accent{border-top:2px solid var(--accent)}
+.stat-red{border-top:2px solid var(--red)}
+.stat-amber{border-top:2px solid var(--amber)}
+.stat-blue{border-top:2px solid var(--blue)}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+th{text-align:left;padding:9px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px}
+input,select,textarea{font-family:'Epilogue',sans-serif;font-size:14px;padding:11px 13px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);outline:none;transition:border-color 0.15s;width:100%;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input[type="date"]{color-scheme:dark}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:80px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;font-family:'Syne',sans-serif}
+.b-pending{background:var(--amber-dim);color:var(--amber)}
+.b-approved{background:var(--accent-dim);color:var(--accent)}
+.b-rejected{background:var(--red-dim);color:var(--red)}
+.b-review{background:var(--blue-dim);color:var(--blue)}
+.b-draft{background:var(--surface3);color:var(--text2)}
+.b-ai{background:var(--purple-dim);color:var(--purple)}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px 20px 0 0;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;animation:slideUp 0.28s cubic-bezier(0.34,1.2,0.64,1)}
+.modal-sm{max-width:460px}
+.modal-lg{max-width:760px}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:2}
+.modal-handle{width:36px;height:4px;background:var(--surface3);border-radius:99px;margin:0 auto 14px}
+.modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:2px 6px;transition:color 0.15s;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:18px 20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;position:sticky;bottom:0;background:var(--surface)}
+
+/* ── AI PANEL ── */
+.ai-panel{background:var(--purple-dim);border:1px solid rgba(184,126,245,0.2);border-radius:12px;padding:13px 15px;margin-bottom:16px}
+.ai-panel-header{display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap}
+.ai-label{font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;font-family:'Syne',sans-serif}
+.ai-input-row{display:flex;gap:8px}
+.ai-result{font-size:13px;color:var(--text2);margin-top:8px;padding:8px 12px;background:rgba(0,0,0,0.3);border-radius:8px;display:none;line-height:1.6}
+.ai-thinking{display:none;align-items:center;gap:6px;color:var(--purple);font-size:12px;padding:8px}
+.dot-pulse{display:flex;gap:3px}
+.dot-pulse span{width:5px;height:5px;border-radius:50%;background:var(--purple);animation:pulse 1.2s infinite}
+.dot-pulse span:nth-child(2){animation-delay:0.2s}
+.dot-pulse span:nth-child(3){animation-delay:0.4s}
+@keyframes pulse{0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+
+/* ── UPLOAD ── */
+.upload-zone{border:2px dashed var(--border2);border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.2s}
+.upload-zone:hover,.upload-zone:active{border-color:var(--accent);background:var(--accent-dim)}
+.upload-icon{font-size:22px;margin-bottom:6px;opacity:0.6}
+.upload-text{font-size:13px;color:var(--text2)}
+.upload-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── VALIDATION ── */
+.val-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.val-item:last-child{border-bottom:none}
+.v-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.v-pass{background:var(--accent-dim);color:var(--accent)}
+.v-fail{background:var(--red-dim);color:var(--red)}
+.v-warn{background:var(--amber-dim);color:var(--amber)}
+
+/* ── MATRIX ── */
+.mx-head,.mx-row{display:grid;grid-template-columns:80px 100px 1fr 1fr 1fr 90px;gap:8px;align-items:center;padding:10px 0;font-size:12px}
+.mx-head{border-bottom:1px solid var(--border2);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.mx-row{border-bottom:1px solid var(--border)}
+
+/* ── PROGRESS ── */
+.prog{background:var(--surface3);border-radius:99px;height:4px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:99px;background:var(--accent);transition:width 0.5s}
+
+/* ── TIMELINE ── */
+.tl{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:10px;padding-bottom:16px;position:relative}
+.tl-item::before{content:'';position:absolute;left:12px;top:24px;bottom:0;width:1px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;z-index:1}
+.tl-done{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.tl-active{border-color:var(--amber);background:var(--amber-dim);color:var(--amber)}
+.tl-content{flex:1;padding-top:2px}
+.tl-title{font-size:13px;font-weight:500;color:var(--text)}
+.tl-meta{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* ── ALERTS ── */
+.alert{padding:10px 13px;border-radius:8px;font-size:12px;border-left:3px solid;margin-bottom:13px;line-height:1.5}
+.alert-info{background:var(--blue-dim);color:var(--blue);border-color:var(--blue)}
+.alert-warn{background:var(--amber-dim);color:var(--amber);border-color:var(--amber)}
+.alert-success{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+
+/* ── CHIP ── */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;background:var(--surface3);border:1px solid var(--border);color:var(--text2)}
+
+/* ── GRIDS ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px 16px;color:var(--text3)}
+.empty-icon{font-size:28px;margin-bottom:8px;opacity:0.4}
+.empty-title{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:3px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;right:16px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;z-index:999;display:none;min-width:260px;max-width:calc(100vw - 32px);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.toast.show{display:flex;align-items:center;gap:10px}
+.toast-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.toast-title{font-weight:600;color:var(--text);font-size:13px;margin-bottom:2px}
+.toast-text{font-size:12px;color:var(--text2)}
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mobile-nav-h);background:var(--surface);border-top:1px solid var(--border);z-index:100;align-items:stretch;padding:0 4px;padding-bottom:env(safe-area-inset-bottom)}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border-radius:10px;transition:all 0.15s;padding:6px 4px;position:relative;min-width:0;font-size:10px;color:var(--text3);font-family:'Epilogue',sans-serif}
+.mob-nav-item.active{color:var(--accent)}
+.mob-nav-item .mob-icon{font-size:20px;line-height:1}
+.mob-nav-badge{position:absolute;top:5px;right:calc(50% - 14px);background:var(--red);color:white;font-size:9px;font-weight:700;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+/* ── FAB (mobile new claim) ── */
+.fab{display:none;position:fixed;bottom:calc(var(--mobile-nav-h) + 12px);right:16px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#111;font-size:22px;font-weight:700;border:none;cursor:pointer;z-index:100;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(200,240,96,0.35);transition:transform 0.15s}
+.fab:active{transform:scale(0.92)}
+
+/* ── CLAIM MOBILE CARD (alternative to table on small screens) ── */
+.claim-card-list{display:none;flex-direction:column;gap:10px}
+.claim-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:background 0.15s;active:background:var(--surface2)}
+.claim-card:active{background:var(--surface2)}
+.claim-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.claim-card-id{font-size:11px;color:var(--text3);font-family:monospace}
+.claim-card-mid{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.claim-card-amount{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
+.claim-card-desc{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+.claim-card-bottom{display:flex;align-items:center;justify-content:space-between}
+
+/* ── ADMIN TABS ── */
+.admin-tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.admin-tab-bar::-webkit-scrollbar{display:none}
+.admin-tab{padding:10px 16px;cursor:pointer;font-size:13px;border-bottom:2px solid transparent;color:var(--text2);white-space:nowrap;transition:all 0.15s}
+.admin-tab.active{border-bottom-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-bar input{min-width:160px;flex:1}
+.filter-bar select{width:140px;flex-shrink:0}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:99px}
+
+/* ════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ════════════════════════════════ */
+
+/* Tablet: 768–1024px */
+@media(max-width:1024px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+  .three-col{grid-template-columns:1fr 1fr}
+  .mx-head,.mx-row{grid-template-columns:70px 90px 1fr 1fr 80px;font-size:12px}
+  .mx-head span:nth-child(5),.mx-row span:nth-child(5){display:none}
+}
+
+/* Mobile: ≤767px */
+@media(max-width:767px){
+  /* Show hamburger, hide sidebar by default */
+  .hamburger{display:flex}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+
+  /* Mobile bottom nav + FAB */
+  .mobile-nav{display:flex}
+  .fab{display:flex}
+
+  /* Hide desktop new claim btn in topbar */
+  #newClaimBtn{display:none}
+
+  /* Page padding accounts for bottom nav */
+  .page{padding:14px;padding-bottom:calc(var(--mobile-nav-h) + 20px)}
+
+  /* Auth */
+  .auth-box{padding:28px 20px;border-radius:16px}
+
+  /* Stats: 2×2 on mobile */
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  .stat{padding:14px}
+  .stat-val{font-size:20px}
+
+  /* Hide table, show cards on claims page */
+  .claims-desktop{display:none}
+  .claim-card-list{display:flex}
+
+  /* Form grid: single column */
+  .form-grid{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+
+  /* Modal: sheet style */
+  .modal{border-radius:20px 20px 0 0;max-height:95vh}
+  .modal-overlay{align-items:flex-end}
+
+  /* AI input: stack on small */
+  .ai-input-row{flex-direction:column}
+
+  /* Toast above mobile nav */
+  .toast{bottom:calc(var(--mobile-nav-h) + 10px);right:12px;left:12px;min-width:0}
+
+  /* Two-col → single */
+  .two-col,.three-col{grid-template-columns:1fr}
+
+  /* Matrix: compact */
+  .mx-head,.mx-row{grid-template-columns:60px 1fr 1fr 70px;font-size:11px}
+  .mx-head span:nth-child(2),.mx-row span:nth-child(2),
+  .mx-head span:nth-child(4),.mx-row span:nth-child(4){display:none}
+
+  /* Page header */
+  .page-header{flex-direction:row;align-items:center}
+  .page-title{font-size:18px}
+
+  /* Approval table: wrap actions */
+  .approval-actions{display:flex;flex-direction:column;gap:4px}
+
+  /* Filter bar: full width inputs */
+  .filter-bar input,.filter-bar select{width:100%;flex:1 1 100%}
+}
+
+/* Very small: ≤380px */
+@media(max-width:380px){
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-val{font-size:18px}
+  .page{padding:10px;padding-bottom:calc(var(--mobile-nav-h) + 16px)}
+}
+</style>
+</head>
+<body>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<!-- ═══════ AUTH ═══════ -->
+<div id="authScreen" class="auth-wrap">
+  <div class="auth-glow"></div>
+  <div class="auth-box">
+    <div class="auth-logo">ClaimsIQ</div>
+    <div class="auth-tagline">Intelligent claims processing platform</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</div>
+      <div class="auth-tab" onclick="switchAuthTab('register',this)">Register</div>
+    </div>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-form" id="loginForm">
+      <div class="fg"><label>Email</label><input type="email" id="l-email" placeholder="you@company.com" autocomplete="email"></div>
+      <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-accent" style="width:100%;padding:13px;" onclick="doLogin()">Sign In</button>
+      <button class="btn btn-ghost" style="width:100%;font-size:12px;" onclick="demoLogin()">🚀 Try Demo — Admin Login</button>
+    </div>
+    <div class="auth-form" id="registerForm" style="display:none">
+      <div class="form-grid">
+        <div class="fg"><label>First Name</label><input type="text" id="r-fname" placeholder="Naman" autocomplete="given-name"></div>
+        <div class="fg"><label>Last Name</label><input type="text" id="r-lname" placeholder="Sharma" autocomplete="family-name"></div>
+      </div>
+      <div class="fg"><label>Email</label><input type="email" id="r-email" placeholder="you@company.com" autocomplete="email"></div>
+      <div class="fg"><label>Password</label><input type="password" id="r-pass" placeholder="Min 6 characters" autocomplete="new-password"></div>
+      <div class="fg"><label>Grade</label>
+        <select id="r-grade"><option value="L1">L1 — Junior</option><option value="L2">L2 — Analyst</option><option value="L3" selected>L3 — Senior</option><option value="L4">L4 — Lead</option><option value="L5">L5 — Manager</option><option value="L6">L6 — Director</option></select>
+      </div>
+      <div class="fg"><label>Department</label><input type="text" id="r-dept" placeholder="Finance, Operations..."></div>
+      <button class="btn btn-accent" style="width:100%;padding:13px;" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="appShell" class="app" style="flex-direction:column">
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="sidebar-logo">ClaimsIQ</div><div class="sidebar-sub">Claims Platform</div></div>
+        <button onclick="closeSidebar()" style="display:none;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px" id="sidebarCloseBtn">✕</button>
+      </div>
+    </div>
+    <div class="user-pill">
+      <div class="user-avatar" id="sidebarAvatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Loading...</div>
+        <div class="user-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main" id="mainContent">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="hamburger" id="hamburger" onclick="openSidebar()">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <span style="font-size:11px;color:var(--text3);display:none" id="fbStatusLabel">● Live</span>
+        <button class="btn btn-accent btn-sm" onclick="openNewClaim()" id="newClaimBtn">+ New Claim</button>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat stat-accent"><div class="stat-label">Total Claims</div><div class="stat-val" id="st-total">0</div><div class="stat-sub">All time</div></div>
+        <div class="stat stat-amber"><div class="stat-label">Pending</div><div class="stat-val" id="st-pending">0</div><div class="stat-sub">Awaiting action</div></div>
+        <div class="stat stat-blue"><div class="stat-label">Approved</div><div class="stat-val" id="st-approved">0</div><div class="stat-sub">This month</div></div>
+        <div class="stat stat-red"><div class="stat-label">Total Value</div><div class="stat-val" id="st-value">₹0</div><div class="stat-sub">Submitted</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recent Claims</span><button class="btn btn-ghost btn-sm" onclick="navigate('claims')">View all</button></div>
+          <div id="dashRecent"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No claims yet</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Approval Flow</span></div>
+          <div class="card-body">
+            <div class="tl">
+              <div class="tl-item"><div class="tl-dot tl-done">✓</div><div class="tl-content"><div class="tl-title">Submission</div><div class="tl-meta">AI-assisted claim intake</div></div></div>
+              <div class="tl-item"><div class="tl-dot tl-active">⚙</div><div class="tl-content"><div class="tl-title">Validation</div><div class="tl-meta">Policy + duplicate checks</div></div></div>
+              <div class="tl-item"><div class="tl-dot">👤</div><div class="tl-content"><div class="tl-title">Manager Review</div><div class="tl-meta">Email notification sent</div></div></div>
+              <div class="tl-item"><div class="tl-dot">💼</div><div class="tl-content"><div class="tl-title">Finance Approval</div><div class="tl-meta">High-value claims</div></div></div>
+              <div class="tl-item"><div class="tl-dot">✅</div><div class="tl-content"><div class="tl-title">ERP Posting</div><div class="tl-meta">Pushed to accounting</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLAIMS ── -->
+    <div class="page" id="page-claims">
+      <div class="page-header">
+        <div><div class="page-title">Claims</div><div class="page-sub" id="claimsSubtitle">All expense claims</div></div>
+        <button class="btn btn-accent btn-sm" onclick="openNewClaim()" style="display:none" id="claimsNewBtn">+ New</button>
+      </div>
+      <div class="filter-bar">
+        <input type="text" placeholder="Search..." oninput="filterClaims(this.value)">
+        <select onchange="filterByStatus(this.value)"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="review">Review</option><option value="draft">Draft</option></select>
+        <select onchange="filterByType(this.value)"><option value="">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Hotel</option><option value="other">Other</option></select>
+      </div>
+      <!-- Desktop table -->
+      <div class="card claims-desktop">
+        <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th>Valid.</th><th></th></tr></thead><tbody id="claimsTbody"></tbody></table></div>
+      </div>
+      <!-- Mobile cards -->
+      <div class="claim-card-list" id="claimsCardList"></div>
+    </div>
+
+    <!-- ── APPROVALS ── -->
+    <div class="page" id="page-approvals">
+      <div class="page-header"><div><div class="page-title">Approvals</div><div class="page-sub">Claims awaiting your review</div></div></div>
+      <div class="alert alert-info">Reviewing as: <strong id="approvalRoleLabel">—</strong></div>
+      <!-- Desktop -->
+      <div class="card claims-desktop">
+        <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Policy</th><th>Valid.</th><th>Actions</th></tr></thead><tbody id="approvalsTbody"></tbody></table></div>
+      </div>
+      <!-- Mobile cards -->
+      <div class="claim-card-list" id="approvalsCardList"></div>
+    </div>
+
+    <!-- ── ADMIN ── -->
+    <div class="page" id="page-admin">
+      <div class="page-header"><div><div class="page-title">Admin Panel</div><div class="page-sub">Employees, matrix &amp; policies</div></div></div>
+      <div class="admin-tab-bar">
+        <div class="admin-tab active" onclick="switchAdminTab('employees',this)">👥 Employees</div>
+        <div class="admin-tab" onclick="switchAdminTab('matrix',this)">🔧 Approval Matrix</div>
+        <div class="admin-tab" onclick="switchAdminTab('policies',this)">📋 Policies</div>
+      </div>
+
+      <div id="tab-employees">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:var(--text2)" id="empCountLabel">—</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="openImportEmployees()">↑ CSV Import</button>
+            <button class="btn btn-accent btn-sm" onclick="openAddEmployee()">+ Add</button>
+          </div>
+        </div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Grade</th><th>Dept</th><th>Manager</th><th>Role</th><th></th></tr></thead><tbody id="empTbody"></tbody></table></div></div>
+      </div>
+
+      <div id="tab-matrix" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:var(--text2)">Approval limits by grade</div>
+          <button class="btn btn-accent btn-sm" onclick="openAddMatrix()">+ Add Rule</button>
+        </div>
+        <div class="alert alert-warn">Changes apply immediately to all future claims.</div>
+        <div class="card"><div class="card-body" style="padding:12px 16px">
+          <div class="mx-head"><span>Grade</span><span>Type</span><span>Self (₹)</span><span>Mgr (₹)</span><span>Finance (₹)</span><span>Del</span></div>
+          <div id="matrixRulesList"></div>
+        </div></div>
+      </div>
+
+      <div id="tab-policies" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:var(--text2)">Monthly limits per category</div>
+          <button class="btn btn-accent btn-sm" onclick="openAddPolicy()">+ Add</button>
+        </div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Max/Month (₹)</th><th>Receipt</th><th>Notes</th><th></th></tr></thead><tbody id="policyTbody"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS ── -->
+    <div class="page" id="page-analytics">
+      <div class="page-header"><div><div class="page-title">Analytics</div><div class="page-sub">Claims intelligence</div></div></div>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">Avg Claim</div><div class="stat-val" id="an-avg">₹0</div></div>
+        <div class="stat"><div class="stat-label">Approval Rate</div><div class="stat-val" id="an-rate">0%</div></div>
+        <div class="stat"><div class="stat-label">Highest Claim</div><div class="stat-val" id="an-high">₹0</div></div>
+        <div class="stat"><div class="stat-label">Flagged</div><div class="stat-val" id="an-flag">0</div></div>
+      </div>
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="card"><div class="card-header"><span class="card-title">By Type</span></div><div class="card-body" id="an-type"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">By Status</span></div><div class="card-body" id="an-status"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Employee Summary</span></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Grade</th><th>Claims</th><th>Value</th><th>Approved</th><th>Rejected</th><th>Risk</th></tr></thead><tbody id="an-emp"></tbody></table></div>
+      </div>
+    </div>
+  </div><!-- /main -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <div class="mobile-nav" id="mobileNav"></div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openNewClaim()" title="New Claim">+</button>
+
+</div><!-- /appShell -->
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- NEW CLAIM -->
+<div class="modal-overlay" id="newClaimModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">New Claim</div>
+      <button class="modal-close" onclick="closeModal('newClaimModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <span style="font-size:15px">✦</span>
+          <span class="ai-label">AI Assistant</span>
+          <span class="badge b-ai" style="font-size:10px">Gemini</span>
+        </div>
+        <!-- Doc scan row -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <div id="aiDocZone" onclick="document.getElementById('ai-doc-input').click()" style="flex:1;min-width:180px;border:1.5px dashed rgba(184,126,245,0.35);border-radius:8px;padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;background:rgba(184,126,245,0.05)">
+            <span style="font-size:18px;opacity:0.7">📄</span>
+            <span style="font-size:12px;color:var(--text2)" id="aiDocLabel">Upload receipt, ticket or invoice to auto-fill</span>
+          </div>
+          <button class="btn btn-ai btn-sm" onclick="runDocScan()" id="scanBtn" style="display:none">✦ Scan Doc</button>
+          <input type="file" id="ai-doc-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.webp" onchange="onAIDocSelected(this)">
+        </div>
+        <!-- Text prompt row -->
+        <div class="ai-input-row">
+          <input type="text" id="ai-prompt" placeholder="Or describe your expense in plain English..." style="flex:1">
+          <button class="btn btn-ai btn-sm" onclick="runAIFill()"><span id="ai-btn-text">✦ Fill</span></button>
+        </div>
+        <div class="ai-thinking" id="aiThinking" style="display:none"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="aiThinkingLabel">Reading document with Gemini...</span></div>
+        <div class="ai-result" id="aiResult"></div>
+        <!-- Doc preview thumbnail -->
+        <div id="aiDocPreview" style="display:none;margin-top:8px"></div>
+      </div>
+      <div class="form-grid">
+        <div class="fg"><label>Claim Type *</label>
+          <select id="nc-type" onchange="toggleTravelFields();runLiveValidation()">
+            <option value="">Select type</option>
+            <option value="travel">✈️ Travel</option>
+            <option value="fuel">⛽ Fuel</option>
+            <option value="mobile">📱 Mobile / Internet</option>
+            <option value="food">🍽️ Food & Meal</option>
+            <option value="accommodation">🏨 Accommodation</option>
+            <option value="other">📦 Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Amount (₹) *</label><input type="number" id="nc-amount" placeholder="0.00" inputmode="decimal" oninput="runLiveValidation()"></div>
+        <div class="fg"><label>Expense Date *</label><input type="date" id="nc-date"></div>
+        <div class="fg"><label>Project / Cost Centre</label><input type="text" id="nc-project" placeholder="e.g. Q1 Client Visit"></div>
+        <div class="fg full"><label>Business Purpose *</label><textarea id="nc-desc" placeholder="Describe the business reason..."></textarea></div>
+        <div id="travelBlock" style="display:none;grid-column:1/-1">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-top:4px">Travel Details</div>
+          <div class="form-grid">
+            <div class="fg"><label>Origin City</label><input type="text" id="nc-origin" placeholder="Mumbai"></div>
+            <div class="fg"><label>Destination City</label><input type="text" id="nc-dest" placeholder="Delhi"></div>
+            <div class="fg"><label>Travel From</label><input type="date" id="nc-tfrom"></div>
+            <div class="fg"><label>Travel To</label><input type="date" id="nc-tto"></div>
+            <div class="fg"><label>Mode of Travel</label>
+              <select id="nc-mode"><option>Flight</option><option>Train</option><option>Bus</option><option>Cab / Taxi</option><option>Own Vehicle</option></select>
+            </div>
+            <div class="fg"><label>Approval Ref.</label><input type="text" id="nc-tref" placeholder="TA-2024-001"></div>
+          </div>
+        </div>
+        <div class="fg full">
+          <label>Supporting Documents</label>
+          <div class="upload-zone" onclick="document.getElementById('nc-files').click()">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text">Tap to attach receipts or invoices</div>
+            <div class="upload-sub">PDF, JPG, PNG up to 5MB — AI will auto-scan if form is empty</div>
+          </div>
+          <input type="file" id="nc-files" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleFiles(this)">
+          <div id="nc-file-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
+      </div>
+      <div id="liveVal" style="display:none;margin-top:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Validation Checks</div>
+        <div id="valItems"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('newClaimModal')">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="saveDraft()">Save Draft</button>
+      <button class="btn btn-accent btn-sm" onclick="submitClaim()">Submit & Notify</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIM DETAIL -->
+<div class="modal-overlay" id="claimDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="cdTitle">Claim Details</div>
+      <button class="modal-close" onclick="closeModal('claimDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="cdBody"></div>
+    <div class="modal-footer" id="cdFooter"></div>
+  </div>
+</div>
+
+<!-- ADD EMPLOYEE -->
+<div class="modal-overlay" id="addEmpModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title" id="addEmpTitle">Add Employee</div><button class="modal-close" onclick="closeModal('addEmpModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>First Name</label><input type="text" id="ae-fname" placeholder="Rahul" autocomplete="given-name"></div>
+        <div class="fg"><label>Last Name</label><input type="text" id="ae-lname" placeholder="Sharma" autocomplete="family-name"></div>
+        <div class="fg"><label>Email</label><input type="email" id="ae-email" placeholder="rahul@co.com" autocomplete="email"></div>
+        <div class="fg"><label>Employee ID</label><input type="text" id="ae-empid" placeholder="EMP001"></div>
+        <div class="fg"><label>Grade</label>
+          <select id="ae-grade"><option value="L1">L1 — Junior</option><option value="L2">L2 — Analyst</option><option value="L3" selected>L3 — Senior</option><option value="L4">L4 — Lead</option><option value="L5">L5 — Manager</option><option value="L6">L6 — Director</option></select>
+        </div>
+        <div class="fg"><label>Department</label><input type="text" id="ae-dept" placeholder="Finance, Ops..."></div>
+        <div class="fg full"><label>Manager Email</label><input type="email" id="ae-mgr" placeholder="manager@co.com"></div>
+        <div class="fg"><label>Role</label>
+          <select id="ae-role"><option value="employee">Employee</option><option value="manager">Manager</option><option value="finance">Finance</option><option value="admin">Admin</option></select>
+        </div>
+        <div class="fg"><label>Location</label><input type="text" id="ae-loc" placeholder="Mumbai"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('addEmpModal')">Cancel</button>
+      <button class="btn btn-accent btn-sm" onclick="saveEmployee()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MATRIX RULE -->
+<div class="modal-overlay" id="addMatrixModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Add Approval Rule</div><button class="modal-close" onclick="closeModal('addMatrixModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label>Grade</label><select id="mx-grade"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="ALL">All Grades</option></select></div>
+        <div class="fg"><label>Claim Type</label><select id="mx-type"><option value="all">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Accommodation</option></select></div>
+        <div class="form-grid">
+          <div class="fg"><label>Self Approve (₹)</label><input type="number" id="mx-self" placeholder="1000" inputmode="numeric"></div>
+          <div class="fg"><label>Manager Limit (₹)</label><input type="number" id="mx-mgr" placeholder="10000" inputmode="numeric"></div>
+        </div>
+        <div class="fg"><label>Finance Above (₹)</label><input type="number" id="mx-fin" placeholder="25000" inputmode="numeric"></div>
+        <div class="fg"><label>Notes</label><textarea id="mx-notes" style="min-height:60px" placeholder="Optional context..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('addMatrixModal')">Cancel</button>
+      <button class="btn btn-accent btn-sm" onclick="saveMatrixRule()">Save Rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD POLICY -->
+<div class="modal-overlay" id="addPolicyModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Add Claim Policy</div><button class="modal-close" onclick="closeModal('addPolicyModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label>Claim Type</label><select id="po-type"><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Accommodation</option><option value="other">Other</option></select></div>
+        <div class="fg"><label>Monthly Max (₹)</label><input type="number" id="po-max" placeholder="5000" inputmode="numeric"></div>
+        <div class="fg"><label>Receipt Required</label><select id="po-receipt"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="fg"><label>Notes</label><textarea id="po-notes" style="min-height:60px"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('addPolicyModal')">Cancel</button>
+      <button class="btn btn-accent btn-sm" onclick="savePolicy()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Import Employees</div><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert alert-info">CSV columns: firstName, lastName, email, empId, grade, department, managerEmail, role, location</div>
+      <div class="upload-zone" onclick="document.getElementById('csvFile').click()">
+        <div class="upload-icon">📊</div>
+        <div class="upload-text">Upload CSV file</div>
+      </div>
+      <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="parseCSV(this)">
+      <div id="csvPreview" style="font-size:12px;color:var(--text2);margin-top:10px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn btn-accent btn-sm" onclick="importEmployees()" id="importBtn" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toastIcon"></div>
+  <div><div class="toast-title" id="toastTitle"></div><div class="toast-text" id="toastText"></div></div>
+</div>
+
+<script>
+// ════════════════════════════════
+//  FIREBASE
+// ════════════════════════════════
+firebase.initializeApp({
+  apiKey:"AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
+  authDomain:"claimsiq-fced7.firebaseapp.com",
+  databaseURL:"https://claimsiq-fced7-default-rtdb.firebaseio.com",
+  projectId:"claimsiq-fced7",
+  storageBucket:"claimsiq-fced7.firebasestorage.app",
+  messagingSenderId:"592596475191",
+  appId:"1:592596475191:web:3e6d165e79aa983e06ceb2"
+});
+const auth = firebase.auth();
+const db = firebase.database();
+
+// ════════════════════════════════
+//  STATE
+// ════════════════════════════════
+let currentUser=null, currentProfile=null;
+let allClaims=[], allEmployees=[], matrixRules=[], policies=[];
+let uploadedFiles=[], csvEmployees=[], editingEmpKey=null;
+const ROLE_LABELS={employee:'Employee',manager:'Manager',finance:'Finance',admin:'Admin'};
+
+// ════════════════════════════════
+//  AUTH
+// ════════════════════════════════
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    currentUser=user;
+    const snap=await db.ref('employees').orderByChild('email').equalTo(user.email).once('value');
+    const data=snap.val();
+    if(data){const k=Object.keys(data)[0];currentProfile={key:k,...data[k]};}
+    else{currentProfile={email:user.email,firstName:user.displayName||'User',lastName:'',grade:'L3',role:'employee',department:''};}
+    showApp();
+  } else { showAuth(); }
+});
+
+function showAuth(){document.getElementById('authScreen').style.display='flex';document.getElementById('appShell').style.display='none';}
+function showApp(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('appShell').style.display='flex';
+  const name=`${currentProfile.firstName||''} ${currentProfile.lastName||''}`.trim()||currentUser.email;
+  const initials=name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('sidebarAvatar').textContent=initials;
+  document.getElementById('sidebarName').textContent=name;
+  document.getElementById('sidebarRole').textContent=ROLE_LABELS[currentProfile.role]||'Employee';
+  document.getElementById('approvalRoleLabel').textContent=ROLE_LABELS[currentProfile.role]||'Employee';
+  document.getElementById('claimsSubtitle').textContent=currentProfile.role==='employee'?'Your expense claims':'All employee claims';
+  buildNav();buildMobileNav();loadData();navigate('dashboard');
+  // Show new claim btn on claims page for employee
+  if(currentProfile.role==='employee') document.getElementById('claimsNewBtn').style.display='inline-flex';
+}
+
+function switchAuthTab(tab,el){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginForm').style.display=tab==='login'?'flex':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'flex':'none';
+  document.getElementById('authError').style.display='none';
+}
+async function doLogin(){
+  const e=document.getElementById('l-email').value.trim();
+  const p=document.getElementById('l-pass').value;
+  if(!e||!p){showAuthError('Please enter email and password.');return;}
+  try{await auth.signInWithEmailAndPassword(e,p);}
+  catch(err){showAuthError(err.message);}
+}
+async function doRegister(){
+  const fn=document.getElementById('r-fname').value.trim();
+  const ln=document.getElementById('r-lname').value.trim();
+  const e=document.getElementById('r-email').value.trim();
+  const p=document.getElementById('r-pass').value;
+  const g=document.getElementById('r-grade').value;
+  const d=document.getElementById('r-dept').value.trim();
+  if(!fn||!e||!p){showAuthError('Please fill all required fields.');return;}
+  try{
+    const c=await auth.createUserWithEmailAndPassword(e,p);
+    await c.user.updateProfile({displayName:fn+' '+ln});
+    await db.ref('employees').push({firstName:fn,lastName:ln,email:e,grade:g,department:d,role:'employee',location:'',managerEmail:'',empId:'EMP-'+Date.now().toString().slice(-4),createdAt:new Date().toISOString()});
+  }catch(err){showAuthError(err.message);}
+}
+async function demoLogin(){
+  try{await auth.signInWithEmailAndPassword('admin@claimsiq.demo','demo123456');}
+  catch{
+    try{
+      const c=await auth.createUserWithEmailAndPassword('admin@claimsiq.demo','demo123456');
+      await c.user.updateProfile({displayName:'Admin User'});
+      await db.ref('employees').push({firstName:'Admin',lastName:'User',email:'admin@claimsiq.demo',grade:'L6',department:'Administration',role:'admin',location:'Mumbai',managerEmail:'',empId:'ADM001',createdAt:new Date().toISOString()});
+      await loadDemoData();
+    }catch(e2){showAuthError('Demo failed: '+e2.message);}
+  }
+}
+function showAuthError(msg){const e=document.getElementById('authError');e.textContent=msg;e.style.display='block';}
+async function doLogout(){await auth.signOut();allClaims=[];allEmployees=[];matrixRules=[];policies=[];}
+
+// ════════════════════════════════
+//  DATA
+// ════════════════════════════════
+function loadData(){
+  db.ref('claims').on('value',snap=>{
+    allClaims=[];const d=snap.val()||{};
+    Object.entries(d).forEach(([k,v])=>allClaims.push({key:k,...v}));
+    allClaims.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    renderDashboard();buildNav();buildMobileNav();
+    if(document.getElementById('page-claims').classList.contains('active'))renderClaims();
+    if(document.getElementById('page-approvals').classList.contains('active'))renderApprovals();
+    if(document.getElementById('page-analytics').classList.contains('active'))renderAnalytics();
+  });
+  db.ref('employees').on('value',snap=>{allEmployees=[];const d=snap.val()||{};Object.entries(d).forEach(([k,v])=>allEmployees.push({key:k,...v}));renderEmployees();});
+  db.ref('approvalMatrix').on('value',snap=>{matrixRules=[];const d=snap.val()||{};Object.entries(d).forEach(([k,v])=>matrixRules.push({key:k,...v}));renderMatrixRules();});
+  db.ref('policies').on('value',snap=>{policies=[];const d=snap.val()||{};Object.entries(d).forEach(([k,v])=>policies.push({key:k,...v}));renderPolicies();});
+}
+
+// ════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════
+let currentPage='dashboard';
+const NAV={
+  employee:[{id:'dashboard',icon:'⬡',label:'Dashboard'},{id:'claims',icon:'◫',label:'My Claims'},{id:'analytics',icon:'◈',label:'Analytics'}],
+  manager: [{id:'dashboard',icon:'⬡',label:'Dashboard'},{id:'approvals',icon:'◉',label:'Approvals',badge:true},{id:'claims',icon:'◫',label:'All Claims'},{id:'analytics',icon:'◈',label:'Analytics'}],
+  finance: [{id:'dashboard',icon:'⬡',label:'Dashboard'},{id:'approvals',icon:'◉',label:'Finance Review',badge:true},{id:'claims',icon:'◫',label:'All Claims'},{id:'analytics',icon:'◈',label:'Analytics'}],
+  admin:   [{id:'dashboard',icon:'⬡',label:'Dashboard'},{id:'claims',icon:'◫',label:'Claims'},{id:'approvals',icon:'◉',label:'Approvals',badge:true},{id:'admin',icon:'⚙',label:'Admin'},{id:'analytics',icon:'◈',label:'Analytics'}],
+};
+function buildNav(){
+  const role=currentProfile?.role||'employee';
+  const items=NAV[role]||NAV.employee;
+  const pc=allClaims.filter(c=>c.status==='pending'||c.status==='review').length;
+  document.getElementById('sidebarNav').innerHTML=items.map(item=>`
+    <div class="nav-item ${currentPage===item.id?'active':''}" onclick="navigate('${item.id}');closeSidebar()">
+      <span class="nav-icon">${item.icon}</span><span>${item.label}</span>
+      ${item.badge&&pc>0?`<span class="nav-badge">${pc}</span>`:''}
+    </div>`).join('');
+}
+function buildMobileNav(){
+  const role=currentProfile?.role||'employee';
+  const items=(NAV[role]||NAV.employee).slice(0,5);
+  const pc=allClaims.filter(c=>c.status==='pending'||c.status==='review').length;
+  const mobIcons={dashboard:'🏠',claims:'📋',approvals:'✅',admin:'⚙️',analytics:'📊'};
+  document.getElementById('mobileNav').innerHTML=items.map(item=>`
+    <div class="mob-nav-item ${currentPage===item.id?'active':''}" onclick="navigate('${item.id}')">
+      ${item.badge&&pc>0?`<span class="mob-nav-badge">${pc}</span>`:''}
+      <span class="mob-icon">${mobIcons[item.id]||item.icon}</span>
+      <span>${item.label}</span>
+    </div>`).join('');
+}
+function navigate(page){
+  currentPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page)?.classList.add('active');
+  const titles={dashboard:'Dashboard',claims:'Claims',approvals:'Approvals',admin:'Admin',analytics:'Analytics'};
+  document.getElementById('topbarTitle').textContent=titles[page]||page;
+  buildNav();buildMobileNav();
+  if(page==='claims')renderClaims();
+  if(page==='approvals')renderApprovals();
+  if(page==='admin'){renderAdminTabs();}
+  if(page==='analytics')renderAnalytics();
+}
+
+// Sidebar mobile open/close
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.getElementById('sidebarCloseBtn').style.display='block';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ════════════════════════════════
+//  AI ASSISTANT — Google Gemini
+// ════════════════════════════════
+// Gemini API key — set yours here or pull from Firebase remoteConfig
+const GEMINI_API_KEY = 'AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM'; // Replace with your Gemini API key from https://aistudio.google.com
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+let aiDocFile = null; // currently selected doc for AI scanning
+
+const AI_SYSTEM_PROMPT = `You are an expense claim data extractor for an Indian company. Extract ALL relevant information from the input (text description or document image/PDF) and return ONLY a single valid JSON object — no markdown, no explanation, no extra text.
+
+JSON fields (use null for any unknown field):
+{
+  "type": "travel|fuel|mobile|food|accommodation|other",
+  "amount": <total amount as number, in INR — look for ₹, Rs., INR, or the largest monetary value>,
+  "date": "YYYY-MM-DD",
+  "desc": "<clear one-line business purpose>",
+  "project": "<project or client name if visible>",
+  "origin": "<departure city if travel>",
+  "dest": "<destination city if travel>",
+  "travelFrom": "YYYY-MM-DD",
+  "travelTo": "YYYY-MM-DD",
+  "mode": "Flight|Train|Bus|Cab / Taxi|Own Vehicle",
+  "tref": "<any booking reference, PNR, approval code>",
+  "vendorName": "<vendor/merchant name from receipt>",
+  "gstNumber": "<GST number if present>",
+  "summary": "<one sentence: what you found and filled>"
+}
+
+Rules:
+- For receipts/invoices: extract the TOTAL amount, date, vendor name, and infer the expense type
+- For flight/train tickets: extract PNR, route, travel dates, mode
+- For fuel receipts: look for litres, rate per litre, vehicle number
+- For hotel bills: look for check-in/check-out dates, room rate, hotel name
+- Today is ${new Date().toISOString().slice(0,10)}
+- If a document has multiple amounts, use the GRAND TOTAL / net payable
+- Amount must be a plain number (e.g. 4500, not "₹4,500")`;
+
+// ── Doc selected in AI panel ──
+function onAIDocSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  aiDocFile = file;
+  document.getElementById('aiDocLabel').textContent = '📄 ' + file.name;
+  document.getElementById('scanBtn').style.display = 'inline-flex';
+  document.getElementById('aiDocZone').style.borderColor = 'var(--purple)';
+  document.getElementById('aiDocZone').style.background = 'rgba(184,126,245,0.08)';
+  // Show thumbnail for images
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('aiDocPreview').style.display = 'block';
+      document.getElementById('aiDocPreview').innerHTML = `<img src="${e.target.result}" style="max-height:120px;max-width:100%;border-radius:6px;border:1px solid var(--border2);object-fit:contain">`;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    document.getElementById('aiDocPreview').style.display = 'block';
+    document.getElementById('aiDocPreview').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface3);border-radius:8px;font-size:12px;color:var(--text2)">📄 ${file.name} <span style="color:var(--text3)">(${(file.size/1024).toFixed(1)} KB)</span></div>`;
+  }
+  // Auto-scan
+  runDocScan();
+}
+
+// ── Scan uploaded document ──
+async function runDocScan() {
+  if (!aiDocFile) { showAIResult('Please upload a document first.'); return; }
+  setAILoading(true, 'Reading document with Gemini...');
+  try {
+    const base64 = await fileToBase64(aiDocFile);
+    const mimeType = aiDocFile.type === 'application/pdf' ? 'application/pdf' : aiDocFile.type || 'image/jpeg';
+    const body = {
+      contents: [{
+        parts: [
+          { text: AI_SYSTEM_PROMPT + '\n\nExtract claim data from this document:' },
+          { inline_data: { mime_type: mimeType, data: base64 } }
+        ]
+      }],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+    };
+    const parsed = await callGemini(body);
+    fillFormFromParsed(parsed);
+    // Also add the doc to the supporting files list
+    addFileChip(aiDocFile.name);
+    uploadedFiles.push(aiDocFile.name);
+    runLiveValidation();
+  } catch(e) {
+    showAIResult('⚠ Could not read document: ' + (e.message || 'Unknown error. Check your Gemini API key.'));
+  }
+  setAILoading(false);
+}
+
+// ── Fill from plain text description ──
+async function runAIFill() {
+  const prompt = document.getElementById('ai-prompt').value.trim();
+  if (!prompt) { showAIResult('Please describe your expense or upload a document.'); return; }
+  setAILoading(true, 'Filling form with Gemini...');
+  try {
+    const body = {
+      contents: [{ parts: [{ text: AI_SYSTEM_PROMPT + '\n\nExtract from this description:\n' + prompt }] }],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+    };
+    const parsed = await callGemini(body);
+    fillFormFromParsed(parsed);
+    runLiveValidation();
+  } catch(e) {
+    showAIResult('⚠ Could not parse. Try: "Flew to Delhi for client meeting on 15 March, ₹12,500". Error: ' + (e.message||''));
+  }
+  setAILoading(false);
+}
+
+// ── Core Gemini call ──
+async function callGemini(body) {
+  const resp = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+  }
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  if (!text) throw new Error('Empty response from Gemini');
+  // Strip any markdown fences
+  const clean = text.replace(/```json[\s\S]*?```/g, m => m.slice(7,-3)).replace(/```[\s\S]*?```/g, m => m.slice(3,-3)).trim();
+  // Find JSON object
+  const jsonMatch = clean.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in response: ' + clean.slice(0,120));
+  return JSON.parse(jsonMatch[0]);
+}
+
+// ── Fill all form fields from parsed JSON ──
+function fillFormFromParsed(p) {
+  if (!p) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val != null && val !== '') el.value = val; };
+  set('nc-type', p.type);
+  set('nc-amount', p.amount);
+  set('nc-date', p.date);
+  set('nc-desc', p.desc || (p.vendorName ? `${p.vendorName} — ${p.type} expense` : ''));
+  set('nc-project', p.project);
+  if (p.type === 'travel') {
+    toggleTravelFields();
+    set('nc-origin', p.origin);
+    set('nc-dest', p.dest);
+    set('nc-tfrom', p.travelFrom);
+    set('nc-tto', p.travelTo);
+    if (p.mode) { const el = document.getElementById('nc-mode'); if (el) { const opt = Array.from(el.options).find(o => o.value.toLowerCase().includes(p.mode.toLowerCase())); if (opt) el.value = opt.value; } }
+    set('nc-tref', p.tref);
+  } else {
+    document.getElementById('travelBlock').style.display = 'none';
+  }
+  const extras = [];
+  if (p.vendorName) extras.push('Vendor: ' + p.vendorName);
+  if (p.gstNumber) extras.push('GST: ' + p.gstNumber);
+  showAIResult('✦ ' + (p.summary || 'Form filled from document.') + (extras.length ? ' · ' + extras.join(' · ') : ''));
+}
+
+// ── Helpers ──
+function setAILoading(on, label) {
+  document.getElementById('aiThinking').style.display = on ? 'flex' : 'none';
+  if (label) document.getElementById('aiThinkingLabel').textContent = label;
+  document.getElementById('ai-btn-text').textContent = on ? '...' : '✦ Fill';
+  document.getElementById('scanBtn').textContent = on ? '...' : '✦ Scan Doc';
+  if (on) document.getElementById('aiResult').style.display = 'none';
+}
+
+function showAIResult(msg) {
+  const e = document.getElementById('aiResult');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result.split(',')[1]);
+    reader.onerror = () => rej(new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function addFileChip(name) {
+  const list = document.getElementById('nc-file-list');
+  // Avoid duplicates
+  if (Array.from(list.children).some(c => c.textContent.includes(name))) return;
+  const c = document.createElement('div'); c.className = 'chip'; c.textContent = '📄 ' + name; list.appendChild(c);
+}
+
+// ════════════════════════════════
+//  CLAIMS
+// ════════════════════════════════
+function genId(){return 'CLM-'+Date.now().toString().slice(-6);}
+function openNewClaim(){
+  ['nc-type','nc-amount','nc-desc','nc-project','nc-origin','nc-dest','nc-tref'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['nc-tfrom','nc-tto'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('nc-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('travelBlock').style.display='none';
+  document.getElementById('liveVal').style.display='none';
+  document.getElementById('nc-file-list').innerHTML='';
+  document.getElementById('aiResult').style.display='none';
+  document.getElementById('ai-prompt').value='';
+  document.getElementById('aiThinking').style.display='none';
+  document.getElementById('aiDocLabel').textContent='Upload receipt, ticket or invoice to auto-fill';
+  document.getElementById('aiDocZone').style.borderColor='';
+  document.getElementById('aiDocZone').style.background='';
+  document.getElementById('scanBtn').style.display='none';
+  document.getElementById('aiDocPreview').style.display='none';
+  document.getElementById('aiDocPreview').innerHTML='';
+  document.getElementById('ai-doc-input').value='';
+  aiDocFile=null;
+  uploadedFiles=[];
+  document.getElementById('newClaimModal').classList.add('open');
+}
+function toggleTravelFields(){
+  document.getElementById('travelBlock').style.display=document.getElementById('nc-type').value==='travel'?'block':'none';
+}
+function handleFiles(input) {
+  const files = Array.from(input.files);
+  files.forEach(f => {
+    if (!uploadedFiles.includes(f.name)) {
+      uploadedFiles.push(f.name);
+      addFileChip(f.name);
+    }
+  });
+  runLiveValidation();
+  // Auto-scan with AI if form looks empty and there's an image/PDF
+  const formEmpty = !document.getElementById('nc-type').value && !document.getElementById('nc-amount').value;
+  const scannable = files.find(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+  if (formEmpty && scannable) {
+    aiDocFile = scannable;
+    document.getElementById('aiDocLabel').textContent = '📄 ' + scannable.name + ' (auto-detected)';
+    document.getElementById('scanBtn').style.display = 'inline-flex';
+    if (scannable.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('aiDocPreview').style.display = 'block';
+        document.getElementById('aiDocPreview').innerHTML = `<img src="${e.target.result}" style="max-height:100px;max-width:100%;border-radius:6px;border:1px solid var(--border2);object-fit:contain">`;
+      };
+      reader.readAsDataURL(scannable);
+    }
+    runDocScan();
+  }
+}
+function getPolicy(type){return policies.find(p=>p.type===type)||{max:99999,receipt:false};}
+function runValidation(claim){
+  const checks=[];
+  const amt=parseFloat(claim.amount)||0;
+  const pol=getPolicy(claim.type);
+  checks.push({pass:amt>0,label:'Valid amount entered',warn:false});
+  checks.push({pass:!!claim.date,label:'Expense date provided',warn:false});
+  checks.push({pass:!!claim.desc&&claim.desc.length>5,label:'Business purpose described',warn:false});
+  checks.push({pass:amt<=(pol.max||99999),label:`Within policy limit ₹${(pol.max||99999).toLocaleString()}`,warn:false});
+  if(pol.receipt===true||pol.receipt==='true')checks.push({pass:(claim.files||[]).length>0,label:'Receipt attached',warn:false});
+  if(claim.type==='travel'){
+    checks.push({pass:!!claim.origin&&!!claim.dest,label:'Origin and destination provided',warn:false});
+    checks.push({pass:!!claim.travelFrom&&!!claim.travelTo,label:'Travel dates specified',warn:false});
+    checks.push({pass:!!claim.tref,label:'Travel approval reference',warn:true});
+  }
+  const dup=allClaims.find(c=>c.type===claim.type&&Math.abs(parseFloat(c.amount)-amt)<1&&c.date===claim.date&&c.key!==claim.key);
+  checks.push({pass:!dup,label:'No duplicate claim detected',warn:false});
+  return checks;
+}
+function runLiveValidation(){
+  const type=document.getElementById('nc-type').value;
+  const amount=document.getElementById('nc-amount').value;
+  if(!type||!amount){document.getElementById('liveVal').style.display='none';return;}
+  const claim=buildClaimObj('draft');
+  const checks=runValidation(claim);
+  document.getElementById('valItems').innerHTML=checks.map(c=>`<div class="val-item"><div class="v-dot ${c.pass?'v-pass':(c.warn?'v-warn':'v-fail')}">${c.pass?'✓':(c.warn?'!':'✗')}</div><span style="font-size:13px;color:${c.pass?'var(--accent)':(c.warn?'var(--amber)':'var(--red)')}">${c.label}</span></div>`).join('');
+  document.getElementById('liveVal').style.display='block';
+}
+function buildClaimObj(status){
+  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim()||currentUser.email;
+  return{id:genId(),type:document.getElementById('nc-type').value,amount:document.getElementById('nc-amount').value,date:document.getElementById('nc-date').value,desc:document.getElementById('nc-desc').value,project:document.getElementById('nc-project').value,files:[...uploadedFiles],status,submittedBy:name,submittedEmail:currentUser.email,grade:currentProfile?.grade||'L3',managerEmail:currentProfile?.managerEmail||'',createdAt:new Date().toISOString(),validationPassed:true,origin:document.getElementById('nc-origin')?.value||'',dest:document.getElementById('nc-dest')?.value||'',travelFrom:document.getElementById('nc-tfrom')?.value||'',travelTo:document.getElementById('nc-tto')?.value||'',tref:document.getElementById('nc-tref')?.value||'',mode:document.getElementById('nc-mode')?.value||'',history:[{action:status==='draft'?'Saved as Draft':'Submitted',by:name,at:new Date().toLocaleString()}]};
+}
+async function submitClaim(){
+  const type=document.getElementById('nc-type').value;
+  const amount=document.getElementById('nc-amount').value;
+  const desc=document.getElementById('nc-desc').value;
+  if(!type||!amount||!desc){alert('Please fill in all required fields.');return;}
+  const claim=buildClaimObj('pending');
+  const checks=runValidation(claim);
+  const hardFails=checks.filter(c=>!c.pass&&!c.warn);
+  claim.validationPassed=hardFails.length===0;
+  claim.validationIssues=checks.filter(c=>!c.pass).map(c=>c.label);
+  if(hardFails.length>0){if(!confirm(`${hardFails.length} validation issue(s):\n${hardFails.map(f=>'• '+f.label).join('\n')}\n\nSubmit anyway for manual review?`))return;claim.status='review';}
+  await db.ref('claims').push(claim);
+  await sendManagerEmail(claim);
+  closeModal('newClaimModal');
+  showToast('✉','Manager Notified',`Email queued for ${claim.managerEmail||'your manager'}`,'accent');
+}
+async function saveDraft(){
+  const claim=buildClaimObj('draft');
+  await db.ref('claims').push(claim);
+  closeModal('newClaimModal');
+  showToast('💾','Draft Saved',claim.id,'blue');
+}
+
+// ════════════════════════════════
+//  EMAIL
+// ════════════════════════════════
+async function sendManagerEmail(claim){
+  await db.ref('emailLogs').push({to:claim.managerEmail||'manager@company.com',subject:`[ClaimsIQ] New Claim: ${claim.id}`,body:`${claim.submittedBy} submitted a ${claim.type} claim for ₹${parseFloat(claim.amount).toLocaleString()}. Purpose: ${claim.desc}`,claimId:claim.id,sentAt:new Date().toISOString(),status:'queued'});
+}
+async function sendApprovalEmail(claim,approved){
+  await db.ref('emailLogs').push({to:claim.submittedEmail||'',subject:`[ClaimsIQ] Claim ${approved?'Approved':'Rejected'}: ${claim.id}`,body:`Your claim ${claim.id} (₹${parseFloat(claim.amount).toLocaleString()}) was ${approved?'approved':'rejected'}.`,claimId:claim.id,sentAt:new Date().toISOString(),status:'queued'});
+}
+
+// ════════════════════════════════
+//  RENDER CLAIMS
+// ════════════════════════════════
+let cf={search:'',status:'',type:''};
+function filterClaims(q){cf.search=q;renderClaims();}
+function filterByStatus(s){cf.status=s;renderClaims();}
+function filterByType(t){cf.type=t;renderClaims();}
+
+function renderClaims(){
+  const role=currentProfile?.role;
+  let list=role==='employee'?allClaims.filter(c=>c.submittedEmail===currentUser.email):allClaims;
+  if(cf.search)list=list.filter(c=>(c.id||'').includes(cf.search)||(c.desc||'').toLowerCase().includes(cf.search.toLowerCase()));
+  if(cf.status)list=list.filter(c=>c.status===cf.status);
+  if(cf.type)list=list.filter(c=>c.type===cf.type);
+  // Desktop table
+  const tbody=document.getElementById('claimsTbody');
+  if(!list.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No claims found</div></div></td></tr>`;document.getElementById('claimsCardList').innerHTML='';return;}
+  tbody.innerHTML=list.map(c=>`<tr>
+    <td style="font-family:monospace;font-size:11px;color:var(--text3)">${c.id}</td>
+    <td style="font-size:12px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.submittedBy||'—'}</td>
+    <td>${typeChip(c.type)}</td>
+    <td><strong>₹${parseFloat(c.amount||0).toLocaleString()}</strong></td>
+    <td style="color:var(--text3);font-size:12px;white-space:nowrap">${c.date||'—'}</td>
+    <td><span class="badge b-${c.status}">${c.status}</span></td>
+    <td style="font-size:11px;color:${c.validationPassed!==false?'var(--accent)':'var(--red)'}">${c.validationPassed!==false?'✓':'✗'}</td>
+    <td><button class="btn btn-ghost btn-xs" onclick="viewClaim('${c.key}')">View</button></td>
+  </tr>`).join('');
+  // Mobile cards
+  document.getElementById('claimsCardList').innerHTML=list.map(c=>`
+    <div class="claim-card" onclick="viewClaim('${c.key}')">
+      <div class="claim-card-top"><span class="claim-card-id">${c.id}</span><span class="badge b-${c.status}">${c.status}</span></div>
+      <div class="claim-card-desc">${c.desc||'No description'}</div>
+      <div class="claim-card-bottom">
+        <div style="display:flex;align-items:center;gap:8px">${typeChip(c.type)}<strong style="font-family:'Syne',sans-serif;font-size:16px">₹${parseFloat(c.amount||0).toLocaleString()}</strong></div>
+        <span style="font-size:11px;color:var(--text3)">${c.date||'—'}</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderApprovals(){
+  const role=currentProfile?.role;
+  let list=allClaims.filter(c=>c.status==='pending'||c.status==='review');
+  if(role==='manager')list=list.filter(c=>c.managerEmail===currentUser.email);
+  const tbody=document.getElementById('approvalsTbody');
+  const cardList=document.getElementById('approvalsCardList');
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><div class="empty-title">No pending approvals</div></div></td></tr>`;
+    cardList.innerHTML='';return;
+  }
+  tbody.innerHTML=list.map(c=>{
+    const amt=parseFloat(c.amount||0);
+    const mx=getMatrixRule(c.grade||'L3',c.type);
+    const pol=getPolicy(c.type);
+    const canAct=role==='admin'||(role==='manager'&&amt<=mx.mgrLimit)||(role==='finance'&&amt>mx.mgrLimit);
+    const polOk=amt<=(pol.max||99999);
+    return`<tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--text3)">${c.id}</td>
+      <td style="font-size:12px">${c.submittedBy||'—'}</td>
+      <td>${typeChip(c.type)}</td>
+      <td><strong>₹${amt.toLocaleString()}</strong></td>
+      <td style="font-size:11px;color:${polOk?'var(--accent)':'var(--amber)'}">${polOk?'✓':'⚠'}</td>
+      <td style="font-size:11px;color:${c.validationPassed!==false?'var(--accent)':'var(--red)'}">${c.validationPassed!==false?'✓':'✗'}</td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-xs" onclick="viewClaim('${c.key}')">View</button>
+        ${canAct?`<button class="btn btn-accent btn-xs" onclick="approveClaim('${c.key}')">✓</button><button class="btn btn-danger btn-xs" onclick="rejectClaim('${c.key}')">✕</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+  // Mobile approval cards
+  cardList.innerHTML=list.map(c=>{
+    const amt=parseFloat(c.amount||0);
+    const mx=getMatrixRule(c.grade||'L3',c.type);
+    const canAct=role==='admin'||(role==='manager'&&amt<=mx.mgrLimit)||(role==='finance');
+    return`<div class="claim-card">
+      <div class="claim-card-top"><span class="claim-card-id">${c.id}</span><span class="badge b-${c.status}">${c.status}</span></div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">${c.submittedBy||'—'}</div>
+      <div class="claim-card-desc">${c.desc||'—'}</div>
+      <div class="claim-card-bottom">
+        <strong style="font-family:'Syne',sans-serif;font-size:16px">₹${amt.toLocaleString()}</strong>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-xs" onclick="viewClaim('${c.key}')">View</button>
+          ${canAct?`<button class="btn btn-accent btn-xs" onclick="approveClaim('${c.key}')">Approve</button><button class="btn btn-danger btn-xs" onclick="rejectClaim('${c.key}')">Reject</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashboard(){
+  const role=currentProfile?.role;
+  const my=role==='employee'?allClaims.filter(c=>c.submittedEmail===currentUser?.email):allClaims;
+  document.getElementById('st-total').textContent=my.length;
+  document.getElementById('st-pending').textContent=my.filter(c=>c.status==='pending'||c.status==='review').length;
+  document.getElementById('st-approved').textContent=my.filter(c=>c.status==='approved').length;
+  document.getElementById('st-value').textContent='₹'+my.reduce((s,c)=>s+(parseFloat(c.amount)||0),0).toLocaleString();
+  const recent=my.slice(0,5);
+  const el=document.getElementById('dashRecent');
+  if(!recent.length){el.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No claims yet</div></div>`;return;}
+  el.innerHTML=`<div style="overflow-x:auto"><table style="min-width:320px"><thead><tr><th>ID</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>${recent.map(c=>`<tr onclick="viewClaim('${c.key}')" style="cursor:pointer"><td style="font-size:11px;font-family:monospace;color:var(--text3)">${c.id}</td><td>${typeChip(c.type)}</td><td>₹${parseFloat(c.amount||0).toLocaleString()}</td><td><span class="badge b-${c.status}">${c.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function viewClaim(key){
+  const c=allClaims.find(x=>x.key===key);if(!c)return;
+  const checks=runValidation(c);
+  document.getElementById('cdTitle').textContent=c.id;
+  document.getElementById('cdBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Type</label>${typeChip(c.type)}</div>
+      <div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Amount</label><strong style="font-size:20px;font-family:'Syne',sans-serif">₹${parseFloat(c.amount||0).toLocaleString()}</strong></div>
+      <div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Status</label><span class="badge b-${c.status}">${c.status}</span></div>
+      <div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Date</label>${c.date||'—'}</div>
+      <div style="grid-column:1/-1"><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Purpose</label><p style="font-size:13px;color:var(--text2)">${c.desc||'—'}</p></div>
+      ${c.project?`<div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Project</label>${c.project}</div>`:''}
+      ${c.type==='travel'?`<div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Route</label>${c.origin||'?'} → ${c.dest||'?'}</div><div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Dates</label>${c.travelFrom||'?'} → ${c.travelTo||'?'}</div><div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Mode</label>${c.mode||'—'}</div><div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">Approval Ref</label>${c.tref||'—'}</div>`:''}
+    </div>
+    <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Validation</div>${checks.map(x=>`<div class="val-item"><div class="v-dot ${x.pass?'v-pass':(x.warn?'v-warn':'v-fail')}">${x.pass?'✓':(x.warn?'!':'✗')}</div><span style="font-size:13px;color:${x.pass?'var(--accent)':(x.warn?'var(--amber)':'var(--red)')}">${x.label}</span></div>`).join('')}</div>
+    ${(c.history||[]).length?`<div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">History</div>${(c.history||[]).map(h=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px"><span>${h.action}</span><span style="color:var(--text3);white-space:nowrap">${h.at}</span></div>`).join('')}</div>`:''}
+    ${(c.files||[]).length?`<div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Attachments</div><div style="display:flex;flex-wrap:wrap;gap:6px">${c.files.map(f=>`<div class="chip">📄 ${f}</div>`).join('')}</div></div>`:''}
+  `;
+  const role=currentProfile?.role;
+  const canAct=(role==='manager'||role==='finance'||role==='admin')&&(c.status==='pending'||c.status==='review');
+  document.getElementById('cdFooter').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="closeModal('claimDetailModal')">Close</button>${canAct?`<button class="btn btn-danger btn-sm" onclick="rejectClaim('${key}');closeModal('claimDetailModal')">Reject</button><button class="btn btn-accent btn-sm" onclick="approveClaim('${key}');closeModal('claimDetailModal')">Approve</button>`:''}`;
+  document.getElementById('claimDetailModal').classList.add('open');
+}
+
+async function approveClaim(key){
+  const c=allClaims.find(x=>x.key===key);if(!c)return;
+  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim();
+  await db.ref('claims/'+key).update({status:'approved',approvedBy:name,approvedAt:new Date().toISOString(),history:[...(c.history||[]),{action:'Approved',by:name,at:new Date().toLocaleString()}]});
+  await sendApprovalEmail(c,true);
+  showToast('✅','Approved',c.id,'accent');renderApprovals();buildNav();buildMobileNav();
+}
+async function rejectClaim(key){
+  const reason=prompt('Reason for rejection:')||'Rejected';
+  const c=allClaims.find(x=>x.key===key);if(!c)return;
+  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim();
+  await db.ref('claims/'+key).update({status:'rejected',rejectionReason:reason,history:[...(c.history||[]),{action:'Rejected: '+reason,by:name,at:new Date().toLocaleString()}]});
+  await sendApprovalEmail(c,false);
+  showToast('✕','Rejected',c.id,'red');renderApprovals();buildNav();buildMobileNav();
+}
+
+// ════════════════════════════════
+//  ADMIN
+// ════════════════════════════════
+function renderEmployees(){
+  const tbody=document.getElementById('empTbody');if(!tbody)return;
+  document.getElementById('empCountLabel').textContent=allEmployees.length+' employees';
+  if(!allEmployees.length){tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No employees</div></div></td></tr>`;return;}
+  tbody.innerHTML=allEmployees.map(e=>`<tr>
+    <td><strong>${e.firstName||''} ${e.lastName||''}</strong></td>
+    <td style="font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.email||'—'}</td>
+    <td><span class="badge b-ai">${e.grade||'—'}</span></td>
+    <td style="font-size:12px">${e.department||'—'}</td>
+    <td style="font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.managerEmail||'—'}</td>
+    <td><span class="badge ${e.role==='admin'?'b-review':e.role==='manager'?'b-pending':'b-draft'}">${e.role||'emp'}</span></td>
+    <td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-xs" onclick="editEmployee('${e.key}')">Edit</button><button class="btn btn-danger btn-xs" onclick="deleteEmployee('${e.key}')">Del</button></div></td>
+  </tr>`).join('');
+}
+function openAddEmployee(){editingEmpKey=null;document.getElementById('addEmpTitle').textContent='Add Employee';['ae-fname','ae-lname','ae-email','ae-empid','ae-dept','ae-mgr','ae-loc'].forEach(id=>document.getElementById(id).value='');document.getElementById('ae-grade').value='L3';document.getElementById('ae-role').value='employee';document.getElementById('addEmpModal').classList.add('open');}
+function editEmployee(key){
+  const e=allEmployees.find(x=>x.key===key);if(!e)return;
+  editingEmpKey=key;document.getElementById('addEmpTitle').textContent='Edit Employee';
+  document.getElementById('ae-fname').value=e.firstName||'';document.getElementById('ae-lname').value=e.lastName||'';document.getElementById('ae-email').value=e.email||'';document.getElementById('ae-empid').value=e.empId||'';document.getElementById('ae-grade').value=e.grade||'L3';document.getElementById('ae-dept').value=e.department||'';document.getElementById('ae-mgr').value=e.managerEmail||'';document.getElementById('ae-role').value=e.role||'employee';document.getElementById('ae-loc').value=e.location||'';
+  document.getElementById('addEmpModal').classList.add('open');
+}
+async function saveEmployee(){
+  const d={firstName:document.getElementById('ae-fname').value.trim(),lastName:document.getElementById('ae-lname').value.trim(),email:document.getElementById('ae-email').value.trim(),empId:document.getElementById('ae-empid').value.trim(),grade:document.getElementById('ae-grade').value,department:document.getElementById('ae-dept').value.trim(),managerEmail:document.getElementById('ae-mgr').value.trim(),role:document.getElementById('ae-role').value,location:document.getElementById('ae-loc').value.trim(),updatedAt:new Date().toISOString()};
+  if(!d.firstName||!d.email){alert('Name and email required.');return;}
+  if(editingEmpKey)await db.ref('employees/'+editingEmpKey).update(d);
+  else{d.createdAt=new Date().toISOString();await db.ref('employees').push(d);}
+  closeModal('addEmpModal');showToast('✓',editingEmpKey?'Employee Updated':'Employee Added',d.firstName+' '+d.lastName,'accent');
+}
+async function deleteEmployee(key){
+  const e=allEmployees.find(x=>x.key===key);
+  if(!confirm(`Delete ${e?.firstName} ${e?.lastName}?`))return;
+  await db.ref('employees/'+key).remove();
+}
+function openImportEmployees(){document.getElementById('importModal').classList.add('open');}
+function parseCSV(input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    const headers=lines[0].split(',').map(h=>h.trim().toLowerCase());
+    csvEmployees=lines.slice(1).map(line=>{const vals=line.split(',').map(v=>v.trim().replace(/"/g,''));const o={};headers.forEach((h,i)=>o[h]=vals[i]||'');return{firstName:o.firstname||o['first name']||'',lastName:o.lastname||o['last name']||'',email:o.email||'',empId:o.empid||'',grade:o.grade||'L3',department:o.department||o.dept||'',managerEmail:o.manageremail||'',role:o.role||'employee',location:o.location||''};}).filter(e=>e.email);
+    document.getElementById('csvPreview').textContent=`Found ${csvEmployees.length} valid employee(s)`;
+    document.getElementById('importBtn').disabled=csvEmployees.length===0;
+  };r.readAsText(file);
+}
+async function importEmployees(){for(const e of csvEmployees){e.createdAt=new Date().toISOString();await db.ref('employees').push(e);}closeModal('importModal');showToast('✓','Import Complete',csvEmployees.length+' employees','accent');csvEmployees=[];}
+
+function getMatrixRule(grade,type){return matrixRules.find(r=>(r.grade===grade||r.grade==='ALL')&&(r.type===type||r.type==='all'))||{selfLimit:1000,mgrLimit:10000,financeAbove:25000};}
+function renderMatrixRules(){
+  const el=document.getElementById('matrixRulesList');if(!el)return;
+  if(!matrixRules.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🔧</div><div class="empty-title">No rules yet</div></div>`;return;}
+  el.innerHTML=matrixRules.map(r=>`<div class="mx-row"><span><strong>${r.grade}</strong></span><span style="text-transform:capitalize;font-size:11px">${r.type||'All'}</span><span>₹${(r.selfLimit||0).toLocaleString()}</span><span>₹${(r.mgrLimit||0).toLocaleString()}</span><span style="color:${r.financeAbove>0?'var(--accent)':'var(--text3)'}">₹${r.financeAbove>0?r.financeAbove.toLocaleString():'—'}</span><button class="btn btn-danger btn-xs" onclick="deleteMatrixRule('${r.key}')">Del</button></div>`).join('');
+}
+function openAddMatrix(){document.getElementById('addMatrixModal').classList.add('open');}
+async function saveMatrixRule(){
+  const r={grade:document.getElementById('mx-grade').value,type:document.getElementById('mx-type').value,selfLimit:parseFloat(document.getElementById('mx-self').value)||0,mgrLimit:parseFloat(document.getElementById('mx-mgr').value)||0,financeAbove:parseFloat(document.getElementById('mx-fin').value)||0,notes:document.getElementById('mx-notes').value,createdAt:new Date().toISOString()};
+  await db.ref('approvalMatrix').push(r);closeModal('addMatrixModal');showToast('✓','Rule Saved',r.grade+' — '+r.type,'accent');
+}
+async function deleteMatrixRule(key){if(!confirm('Delete rule?'))return;await db.ref('approvalMatrix/'+key).remove();}
+
+function renderPolicies(){
+  const tbody=document.getElementById('policyTbody');if(!tbody)return;
+  if(!policies.length){tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No policies</div></div></td></tr>`;return;}
+  tbody.innerHTML=policies.map(p=>`<tr><td style="text-transform:capitalize">${p.type}</td><td>₹${parseFloat(p.max||0).toLocaleString()}</td><td>${p.receipt==='true'||p.receipt===true?'Yes':'No'}</td><td style="font-size:12px;color:var(--text2)">${p.notes||'—'}</td><td><button class="btn btn-danger btn-xs" onclick="deletePolicy('${p.key}')">Del</button></td></tr>`).join('');
+}
+function openAddPolicy(){document.getElementById('addPolicyModal').classList.add('open');}
+async function savePolicy(){
+  const p={type:document.getElementById('po-type').value,max:parseFloat(document.getElementById('po-max').value)||0,receipt:document.getElementById('po-receipt').value,notes:document.getElementById('po-notes').value,createdAt:new Date().toISOString()};
+  await db.ref('policies').push(p);closeModal('addPolicyModal');showToast('✓','Policy Saved',p.type,'accent');
+}
+async function deletePolicy(key){if(!confirm('Delete policy?'))return;await db.ref('policies/'+key).remove();}
+
+function switchAdminTab(tab,el){
+  document.querySelectorAll('.admin-tab').forEach(t=>{t.classList.remove('active');});
+  el.classList.add('active');
+  ['employees','matrix','policies'].forEach(id=>{const e=document.getElementById('tab-'+id);if(e)e.style.display='none';});
+  const t=document.getElementById('tab-'+tab);if(t)t.style.display='block';
+}
+function renderAdminTabs(){renderEmployees();renderMatrixRules();renderPolicies();}
+
+// ════════════════════════════════
+//  ANALYTICS
+// ════════════════════════════════
+function renderAnalytics(){
+  const role=currentProfile?.role;
+  const list=role==='employee'?allClaims.filter(c=>c.submittedEmail===currentUser?.email):allClaims;
+  const total=list.length;
+  const approved=list.filter(c=>c.status==='approved').length;
+  const avg=total>0?list.reduce((s,c)=>s+(parseFloat(c.amount)||0),0)/total:0;
+  const high=total>0?Math.max(...list.map(c=>parseFloat(c.amount)||0)):0;
+  const flagged=list.filter(c=>c.validationPassed===false).length;
+  document.getElementById('an-avg').textContent='₹'+Math.round(avg).toLocaleString();
+  document.getElementById('an-rate').textContent=total>0?Math.round(approved/total*100)+'%':'0%';
+  document.getElementById('an-high').textContent='₹'+high.toLocaleString();
+  document.getElementById('an-flag').textContent=flagged;
+  const tc={};list.forEach(c=>{tc[c.type]=(tc[c.type]||0)+1;});
+  const maxT=Math.max(...Object.values(tc),1);
+  document.getElementById('an-type').innerHTML=Object.entries(tc).map(([t,n])=>`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">${typeChip(t)}<span style="color:var(--text2)">${n}</span></div><div class="prog"><div class="prog-fill" style="width:${Math.round(n/maxT*100)}%"></div></div></div>`).join('')||'<div class="empty">No data</div>';
+  const sc={pending:0,approved:0,rejected:0,draft:0,review:0};list.forEach(c=>{sc[c.status]=(sc[c.status]||0)+1;});
+  const maxS=Math.max(...Object.values(sc),1);
+  const sC={pending:'var(--amber)',approved:'var(--accent)',rejected:'var(--red)',draft:'var(--text3)',review:'var(--blue)'};
+  document.getElementById('an-status').innerHTML=Object.entries(sc).filter(([,n])=>n>0).map(([s,n])=>`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="text-transform:capitalize;color:${sC[s]}">${s}</span><span style="color:var(--text2)">${n}</span></div><div class="prog"><div class="prog-fill" style="width:${Math.round(n/maxS*100)}%;background:${sC[s]}"></div></div></div>`).join('')||'<div class="empty">No data</div>';
+  const byE={};list.forEach(c=>{const e=c.submittedBy||'Unknown';if(!byE[e])byE[e]={grade:c.grade||'L3',total:0,value:0,approved:0,rejected:0};byE[e].total++;byE[e].value+=parseFloat(c.amount)||0;if(c.status==='approved')byE[e].approved++;if(c.status==='rejected')byE[e].rejected++;});
+  const rC={High:'var(--red)',Medium:'var(--amber)',Low:'var(--accent)'};
+  document.getElementById('an-emp').innerHTML=Object.entries(byE).map(([e,d])=>{const r=d.rejected/(d.total||1)>0.3?'High':d.rejected>0?'Medium':'Low';return`<tr><td>${e}</td><td><span class="badge b-ai">${d.grade}</span></td><td>${d.total}</td><td>₹${d.value.toLocaleString()}</td><td>${d.approved}</td><td>${d.rejected}</td><td style="color:${rC[r]};font-weight:600">${r}</td></tr>`;}).join('')||`<tr><td colspan="7"><div class="empty">No data</div></td></tr>`;
+}
+
+// ════════════════════════════════
+//  HELPERS
+// ════════════════════════════════
+function typeChip(t){const m={travel:'✈️ Travel',fuel:'⛽ Fuel',mobile:'📱 Mobile',food:'🍽️ Food',accommodation:'🏨 Hotel',other:'📦 Other'};return`<span class="chip">${m[t]||t}</span>`;}
+
+function showToast(icon,title,text,type='accent'){
+  const colors={accent:'var(--accent-dim)',red:'var(--red-dim)',blue:'var(--blue-dim)'};
+  const tc={accent:'var(--accent)',red:'var(--red)',blue:'var(--blue)'};
+  const el=document.getElementById('toastIcon');
+  el.style.background=colors[type]||colors.accent;el.style.color=tc[type]||tc.accent;el.textContent=icon;
+  document.getElementById('toastTitle').textContent=title;
+  document.getElementById('toastText').textContent=text;
+  const t=document.getElementById('toast');t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))closeModal(e.target.id);});
+
+// ════════════════════════════════
+//  DEMO DATA
+// ════════════════════════════════
+async function loadDemoData(){
+  const emps=[
+    {firstName:'Priya',lastName:'Mehta',email:'priya@claimsiq.demo',empId:'EMP001',grade:'L3',department:'Operations',managerEmail:'admin@claimsiq.demo',role:'employee',location:'Mumbai',createdAt:new Date().toISOString()},
+    {firstName:'Rahul',lastName:'Gupta',email:'rahul@claimsiq.demo',empId:'EMP002',grade:'L4',department:'Sales',managerEmail:'admin@claimsiq.demo',role:'manager',location:'Delhi',createdAt:new Date().toISOString()},
+    {firstName:'Sneha',lastName:'Joshi',email:'sneha@claimsiq.demo',empId:'EMP003',grade:'L2',department:'Finance',managerEmail:'rahul@claimsiq.demo',role:'finance',location:'Bangalore',createdAt:new Date().toISOString()},
+  ];
+  for(const e of emps)await db.ref('employees').push(e);
+  const claims=[
+    {id:'CLM-DM001',type:'travel',amount:45000,date:'2024-02-10',desc:'Client meeting Delhi — flight + hotel',submittedBy:'Priya Mehta',submittedEmail:'priya@claimsiq.demo',grade:'L3',managerEmail:'admin@claimsiq.demo',status:'pending',validationPassed:true,project:'Q1 Client Visit',origin:'Mumbai',dest:'Delhi',travelFrom:'2024-02-10',travelTo:'2024-02-12',tref:'TA-2024-001',mode:'Flight',files:['boarding_pass.pdf'],createdAt:new Date().toISOString(),history:[{action:'Submitted',by:'Priya Mehta',at:'10 Feb 2024'}]},
+    {id:'CLM-DM002',type:'fuel',amount:3200,date:'2024-02-14',desc:'Fuel for client site visits',submittedBy:'Rahul Gupta',submittedEmail:'rahul@claimsiq.demo',grade:'L4',managerEmail:'admin@claimsiq.demo',status:'approved',validationPassed:true,files:['fuel_slip.jpg'],createdAt:new Date().toISOString(),history:[{action:'Submitted',by:'Rahul Gupta',at:'14 Feb 2024'},{action:'Approved',by:'Admin User',at:'15 Feb 2024'}]},
+    {id:'CLM-DM003',type:'mobile',amount:1800,date:'2024-02-28',desc:'Monthly mobile bill',submittedBy:'Sneha Joshi',submittedEmail:'sneha@claimsiq.demo',grade:'L2',managerEmail:'rahul@claimsiq.demo',status:'approved',validationPassed:true,files:[],createdAt:new Date().toISOString(),history:[{action:'Submitted',by:'Sneha Joshi',at:'28 Feb 2024'},{action:'Approved',by:'Rahul Gupta',at:'1 Mar 2024'}]},
+    {id:'CLM-DM004',type:'food',amount:4500,date:'2024-03-01',desc:'Team lunch with client — exceeded limit',submittedBy:'Priya Mehta',submittedEmail:'priya@claimsiq.demo',grade:'L3',managerEmail:'admin@claimsiq.demo',status:'review',validationPassed:false,validationIssues:['Within policy limit'],files:['bill.jpg'],createdAt:new Date().toISOString(),history:[{action:'Submitted',by:'Priya Mehta',at:'1 Mar 2024'},{action:'Flagged',by:'System',at:'1 Mar 2024'}]},
+  ];
+  for(const c of claims)await db.ref('claims').push(c);
+  const mx=[
+    {grade:'L1',type:'all',selfLimit:500,mgrLimit:5000,financeAbove:20000,notes:'Junior',createdAt:new Date().toISOString()},
+    {grade:'L2',type:'all',selfLimit:1000,mgrLimit:8000,financeAbove:25000,notes:'Analyst',createdAt:new Date().toISOString()},
+    {grade:'L3',type:'all',selfLimit:2000,mgrLimit:15000,financeAbove:30000,notes:'Senior',createdAt:new Date().toISOString()},
+    {grade:'L4',type:'all',selfLimit:3000,mgrLimit:25000,financeAbove:50000,notes:'Lead',createdAt:new Date().toISOString()},
+    {grade:'L5',type:'all',selfLimit:5000,mgrLimit:40000,financeAbove:75000,notes:'Manager',createdAt:new Date().toISOString()},
+    {grade:'ALL',type:'travel',selfLimit:0,mgrLimit:30000,financeAbove:50000,notes:'Travel override',createdAt:new Date().toISOString()},
+  ];
+  for(const m of mx)await db.ref('approvalMatrix').push(m);
+  const pol=[
+    {type:'travel',max:50000,receipt:true,notes:'International needs extra approval',createdAt:new Date().toISOString()},
+    {type:'fuel',max:5000,receipt:true,notes:'Monthly cap',createdAt:new Date().toISOString()},
+    {type:'mobile',max:2000,receipt:false,notes:'Monthly mobile/internet',createdAt:new Date().toISOString()},
+    {type:'food',max:3000,receipt:false,notes:'Per month food',createdAt:new Date().toISOString()},
+    {type:'accommodation',max:10000,receipt:true,notes:'Receipt required',createdAt:new Date().toISOString()},
+  ];
+  for(const p of pol)await db.ref('policies').push(p);
+}
+</script>
+</body>
+</html>
