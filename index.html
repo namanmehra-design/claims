@@ -581,9 +581,55 @@ textarea{resize:vertical;min-height:80px}
 <body>
 
 <!-- Firebase SDKs (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<!-- Firebase compat SDKs (Auth + RTDB) -->
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+
+<!-- Firebase AI SDK — importmap so we can use ES module syntax inline -->
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app": "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js",
+    "firebase/ai": "https://www.gstatic.com/firebasejs/11.4.0/firebase-ai.js"
+  }
+}
+</script>
+
+<!-- Bootstrap Firebase AI — runs before any AI call is made -->
+<script type="module">
+  import { initializeApp, getApps } from 'firebase/app';
+  import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
+
+  const fbCfg = {
+    apiKey:            "AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
+    authDomain:        "claimsiq-fced7.firebaseapp.com",
+    databaseURL:       "https://claimsiq-fced7-default-rtdb.firebaseio.com",
+    projectId:         "claimsiq-fced7",
+    storageBucket:     "claimsiq-fced7.firebasestorage.app",
+    messagingSenderId: "592596475191",
+    appId:             "1:592596475191:web:3e6d165e79aa983e06ceb2"
+  };
+
+  // Only initialise once — compat layer may have done it already
+  const app = getApps().length ? getApps()[0] : initializeApp(fbCfg);
+
+  // GoogleAIBackend routes through Firebase → uses your Gemini key stored in Firebase project
+  const ai = getAI(app, { backend: new GoogleAIBackend() });
+
+  // Two models — flash for speed, pro for complex analysis
+  window._fbAIFlash = getGenerativeModel(ai, {
+    model: 'gemini-2.0-flash',
+    generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
+  });
+  window._fbAIPro = getGenerativeModel(ai, {
+    model: 'gemini-1.5-pro',
+    generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
+  });
+
+  window._fbAIReady = true;
+  console.log('%c✦ Firebase AI (Gemini 2.0 Flash) ready', 'color:#2563EB;font-weight:700');
+</script>
 <!-- ══════════════════════════════
      AUTH SCREEN
 ══════════════════════════════ -->
@@ -1091,7 +1137,7 @@ textarea{resize:vertical;min-height:80px}
 
     <!-- ━━━━━━ AI ASSISTANT ━━━━━━ -->
     <div class="page" id="page-aiassistant">
-      <div class="page-header"><div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about your claims data · Gemini 1.5 · <span class="gemini-key-status" style="cursor:pointer">○ API Key Needed</span></div></div></div>
+      <div class="page-header"><div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about your claims data · Firebase Gemini 2.0 · <span class="gemini-key-status" style="cursor:pointer">○ API Key Needed</span></div></div></div>
       <div class="card" style="overflow:hidden">
         <div class="chat-wrap">
           <div class="chat-messages" id="chatMessages">
@@ -1381,6 +1427,8 @@ textarea{resize:vertical;min-height:80px}
 //  The modular ES module above already called initializeApp,
 //  so we just get the existing app here.
 // ══════════════════════════════════════
+// Firebase compat layer — Auth + Realtime DB
+// App may already exist from the ES module above — getOrCreate pattern
 const fbConfig = {
   apiKey:"AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
   authDomain:"claimsiq-fced7.firebaseapp.com",
@@ -1390,35 +1438,52 @@ const fbConfig = {
   messagingSenderId:"592596475191",
   appId:"1:592596475191:web:3e6d165e79aa983e06ceb2"
 };
-// Init compat layer — safe to call even if modular app already exists
-try { firebase.initializeApp(fbConfig); } catch(e) { /* already initialised */ }
+try { firebase.initializeApp(fbConfig); } catch(e) { /* app already initialised by ES module */ }
 const auth = firebase.auth();
 const db = firebase.database();
 
 // ══════════════════════════════════════
-//  GEMINI — Google AI Studio SDK
-//  Uses @google/generative-ai browser bundle (loaded via CDN above)
-//  Get your free key at: https://aistudio.google.com/app/apikey
+//  GEMINI — Firebase AI SDK (Gemini 2.0 Flash)
+//  Routes through Firebase project — no API key restrictions.
+//  Model instances created in the <script type="module"> block above.
 // ══════════════════════════════════════
 
-// Key management — stored in localStorage so users set it once
-// Gemini API key — baked in for ClaimsIQ
+// Fallback REST key — used only if Firebase AI SDK fails to load
 const _GEMINI_KEY_DEFAULT = 'AIzaSyDwNDRhl5nLXJoW7bX1EnciRPafX9GcOCk';
 
-function getGeminiKey() {
-  return localStorage.getItem('claimsiq_gemini_key') || _GEMINI_KEY_DEFAULT;
-}
-function ensureGeminiKey() { return getGeminiKey(); }
-
 /**
- * callGemini — Direct Gemini REST API via fetch. No SDK. Works in any browser.
+ * callGemini — uses Firebase AI SDK (preferred) with REST fallback.
+ * @param {Array} parts  [{text:string}] or [{text}, {inline_data:{mime_type,data}}]
+ * @param {boolean} pro  true = gemini-1.5-pro (deep analysis), false = gemini-2.0-flash
  */
 async function callGemini(parts, pro=false) {
-  const key = getGeminiKey();
-  if (!key || !key.startsWith('AIza')) throw new Error('Invalid Gemini API key.');
+  // ── Path A: Firebase AI SDK (preferred) ──
+  // Wait up to 6s for the ES module to initialise
+  for (let i = 0; i < 60; i++) {
+    if (window._fbAIReady) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
 
-  const model = pro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  if (window._fbAIReady) {
+    const model = pro ? window._fbAIPro : window._fbAIFlash;
+    // Convert parts to Firebase AI SDK format
+    const sdkParts = parts.map(p => {
+      if (p.text !== undefined) return { text: p.text };
+      if (p.inline_data) return {
+        inlineData: { mimeType: p.inline_data.mime_type, data: p.inline_data.data }
+      };
+      if (p.inlineData) return p;
+      return p;
+    });
+    const result = await model.generateContent(sdkParts);
+    return result.response.text();
+  }
+
+  // ── Path B: Direct REST fallback (if SDK fails to load) ──
+  console.warn('Firebase AI SDK not ready — falling back to REST API');
+  const key = localStorage.getItem('claimsiq_gemini_key') || _GEMINI_KEY_DEFAULT;
+  const modelName = pro ? 'gemini-1.5-pro-latest' : 'gemini-2.0-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
 
   const restParts = parts.map(p => {
     if (p.text !== undefined) return { text: p.text };
@@ -1438,15 +1503,11 @@ async function callGemini(parts, pro=false) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    const msg = err?.error?.message || '';
-    if (resp.status === 403 || msg.includes('blocked')) throw new Error('API key restricted. Enable the Generative Language API at console.cloud.google.com for project 466510207505');
-    if (resp.status === 429) throw new Error('Rate limit. Wait a moment and try again.');
-    throw new Error(msg || `HTTP ${resp.status}`);
+    throw new Error(err?.error?.message || `Gemini HTTP ${resp.status}`);
   }
-
   const data = await resp.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Empty Gemini response.');
+  if (!text) throw new Error('Empty response from Gemini.');
   return text;
 }
 
@@ -1765,14 +1826,17 @@ function regGoToDashboard() {
 // Key status indicator — shown in AI panel
 function updateKeyStatus() {
   const els = document.querySelectorAll('.gemini-key-status');
+  const ready = !!window._fbAIReady;
   els.forEach(el => {
-    el.textContent = '● Gemini AI Ready';
-    el.style.color = 'var(--green)';
+    el.textContent = ready ? '● Gemini 2.0 Ready' : '◌ Initialising AI...';
+    el.style.color = ready ? 'var(--green)' : 'var(--amber)';
     el.style.cursor = 'default';
-    el.title = 'Gemini 1.5 Flash — AI features active';
+    el.title = ready ? 'Firebase AI (Gemini 2.0 Flash) — active' : 'Loading Firebase AI SDK...';
   });
+  // Re-check after 2s if not ready yet
+  if (!ready) setTimeout(updateKeyStatus, 2000);
 }
-window.addEventListener('load', () => setTimeout(updateKeyStatus, 300));
+window.addEventListener('load', () => setTimeout(updateKeyStatus, 800));
 let currentUser=null, currentProfile=null;
 let allClaims=[], allEmployees=[], matrixRules=[], policies=[], exportHistory=[];
 let uploadedFiles=[], aiDocFile=null, csvEmployees=[], editingEmpKey=null;
