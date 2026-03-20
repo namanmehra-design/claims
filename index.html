@@ -590,8 +590,832 @@ textarea{resize:vertical;min-height:80px}
 </style>
 </head>
 <body>
+<div id="loadingScreen" style="position:fixed;inset:0;background:#F4F6FA;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:Outfit,sans-serif">
+  <div style="text-align:center">
+    <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white;margin:0 auto 14px">C</div>
+    <div style="font-size:16px;font-weight:700;color:#0F172A;letter-spacing:-0.3px">ClaimsIQ</div>
+    <div style="font-size:12px;color:#94A3B8;margin-top:6px">Connecting...</div>
+    <div style="width:32px;height:3px;background:#E2E8F0;border-radius:99px;margin:12px auto 0;overflow:hidden">
+      <div style="width:100%;height:100%;background:linear-gradient(90deg,#2563EB,#7C3AED);animation:ldbar 1.2s ease-in-out infinite alternate;transform-origin:left"></div>
+    </div>
+  </div>
+</div>
+<style>@keyframes ldbar{from{transform:scaleX(0.1)}to{transform:scaleX(1)}}</style>
 
-<!-- Firebase SDKs (compat) -->
+
+<!-- ══════════════════════════════
+     AUTH SCREEN
+══════════════════════════════ -->
+<div id="authScreen" class="auth-screen" style="display:flex">
+  <div class="auth-left">
+    <div>
+      <div class="auth-brand">
+        <div class="auth-brand-icon">C</div>
+        <div>
+          <div class="auth-brand-name">ClaimsIQ</div>
+          <div class="auth-brand-tag">Enterprise Platform</div>
+        </div>
+      </div>
+      <div style="margin-bottom:32px">
+        <div style="font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1.2;margin-bottom:10px">AI-Powered Claims Processing</div>
+        <div style="font-size:13px;color:var(--text3);line-height:1.6">Automate your entire expense reimbursement workflow with enterprise-grade AI.</div>
+      </div>
+      <div class="auth-features">
+        <div class="auth-feature"><div class="auth-feature-icon">✦</div><div><div class="auth-feature-title">AI Document Scanning</div><div class="auth-feature-desc">Upload receipts or invoices — Gemini reads and fills the claim form automatically</div></div></div>
+        <div class="auth-feature"><div class="auth-feature-icon">🔒</div><div><div class="auth-feature-title">Smart Validation & Duplicates</div><div class="auth-feature-desc">Policy checks, arithmetic validation, and near-duplicate detection</div></div></div>
+        <div class="auth-feature"><div class="auth-feature-icon">📊</div><div><div class="auth-feature-title">Real-Time Analytics</div><div class="auth-feature-desc">Risk scoring, spend trends, and employee-level insights</div></div></div>
+        <div class="auth-feature"><div class="auth-feature-icon">🤖</div><div><div class="auth-feature-title">Conversational AI Assistant</div><div class="auth-feature-desc">Ask anything about your claims data — powered by Firebase Gemini</div></div></div>
+      </div>
+    </div>
+    <div class="auth-firebase-badge">
+      <div class="auth-firebase-dot"></div>
+      <div class="auth-firebase-text"><strong>Firebase AI Powered</strong>Document parsing, smart form filling, and conversational analytics using Gemini 2.0</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-box-title">Welcome back</div>
+      <div class="auth-box-sub">Sign in to your enterprise account</div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</div>
+        <div class="auth-tab" onclick="showRegWizard()">Register Enterprise</div>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-form" id="loginForm">
+        <div class="fg"><label>Email Address</label><input type="email" id="l-email" placeholder="you@company.com" autocomplete="email"></div>
+        <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="btn btn-primary" style="width:100%;padding:13px;font-size:14px" onclick="doLogin()">Sign In</button>
+        <div class="auth-divider"><span>or</span></div>
+        <button class="auth-demo-btn" onclick="demoLogin()">🚀 Launch Demo (Client Presentation)</button>
+        <div style="font-size:11px;color:var(--text3);text-align:center">Demo includes: 10 claims, 5 employees, approval matrix &amp; analytics</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     ENTERPRISE REGISTRATION WIZARD
+══════════════════════════════ -->
+<div id="regScreen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);position:relative;z-index:1;padding:20px">
+  <div class="reg-wrap">
+
+    <!-- HEADER + STEP INDICATOR -->
+    <div class="reg-header">
+      <div class="reg-brand">
+        <div class="reg-brand-icon">C</div>
+        <div class="reg-brand-name">ClaimsIQ Enterprise</div>
+      </div>
+      <div class="reg-steps" id="regSteps">
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot active" id="rdot1">1<span class="reg-step-label">Company</span></div>
+        </div>
+        <div class="reg-step-line" id="rline1"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot2">2<span class="reg-step-label">Admin</span></div>
+        </div>
+        <div class="reg-step-line" id="rline2"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot3">3<span class="reg-step-label">Grades</span></div>
+        </div>
+        <div class="reg-step-line" id="rline3"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot4">4<span class="reg-step-label">Policies</span></div>
+        </div>
+        <div class="reg-step-line" id="rline4"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot5">✓<span class="reg-step-label">Done</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP CONTENT -->
+    <div class="reg-body">
+      <div id="regError" style="display:none;background:#FEF2F2;border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px"></div>
+
+      <!-- STEP 1: Company -->
+      <div class="reg-page active" id="regPage1">
+        <div class="reg-step-title">Set up your company</div>
+        <div class="reg-step-sub">This is your enterprise workspace on ClaimsIQ. Your employees will join using your invite code.</div>
+        <div class="form-grid">
+          <div class="fg full"><label>Company Name *</label><input type="text" id="rg-cname" placeholder="e.g. Acme Technologies Pvt Ltd" autocomplete="organization"></div>
+          <div class="fg"><label>Industry *</label>
+            <select id="rg-industry">
+              <option value="">Select industry</option>
+              <option>Information Technology</option><option>Financial Services</option>
+              <option>Manufacturing</option><option>Healthcare</option>
+              <option>Retail & E-Commerce</option><option>Consulting</option>
+              <option>Real Estate</option><option>Education</option>
+              <option>Media & Entertainment</option><option>Other</option>
+            </select>
+          </div>
+          <div class="fg"><label>Company Size</label>
+            <select id="rg-size">
+              <option value="1-10">1–10 employees</option>
+              <option value="11-50">11–50 employees</option>
+              <option value="51-200" selected>51–200 employees</option>
+              <option value="201-1000">201–1,000 employees</option>
+              <option value="1000+">1,000+ employees</option>
+            </select>
+          </div>
+          <div class="fg"><label>Country</label>
+            <select id="rg-country">
+              <option value="India" selected>India</option>
+              <option value="USA">United States</option>
+              <option value="UK">United Kingdom</option>
+              <option value="UAE">UAE</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="fg"><label>Currency</label>
+            <select id="rg-currency">
+              <option value="INR" selected>INR — ₹ Indian Rupee</option>
+              <option value="USD">USD — $ US Dollar</option>
+              <option value="GBP">GBP — £ British Pound</option>
+              <option value="AED">AED — د.إ UAE Dirham</option>
+              <option value="SGD">SGD — S$ Singapore Dollar</option>
+            </select>
+          </div>
+          <div class="fg"><label>Fiscal Year Start</label>
+            <select id="rg-fy">
+              <option value="April" selected>April (India standard)</option>
+              <option value="January">January</option>
+              <option value="July">July</option>
+            </select>
+          </div>
+          <div class="fg"><label>Company Website / Domain</label><input type="text" id="rg-domain" placeholder="acmetech.in"></div>
+          <div class="fg"><label>Company GST / Tax ID</label><input type="text" id="rg-gst" placeholder="22AAAAA0000A1Z5 (optional)"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Admin Account -->
+      <div class="reg-page" id="regPage2">
+        <div class="reg-step-title">Create your admin account</div>
+        <div class="reg-step-sub">You'll be the super-admin for your enterprise. You can add more admins later.</div>
+        <div class="form-grid">
+          <div class="fg"><label>First Name *</label><input type="text" id="rg-fname" placeholder="Naman" autocomplete="given-name"></div>
+          <div class="fg"><label>Last Name *</label><input type="text" id="rg-lname" placeholder="Sharma" autocomplete="family-name"></div>
+          <div class="fg full"><label>Work Email *</label><input type="email" id="rg-email" placeholder="naman@company.com" autocomplete="email"></div>
+          <div class="fg"><label>Password *</label><input type="password" id="rg-pass" placeholder="Min 8 characters" autocomplete="new-password"></div>
+          <div class="fg"><label>Confirm Password *</label><input type="password" id="rg-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
+          <div class="fg"><label>Job Title</label><input type="text" id="rg-title" placeholder="e.g. CFO, Finance Manager"></div>
+          <div class="fg"><label>Phone</label><input type="tel" id="rg-phone" placeholder="+91 98xxx xxxxx"></div>
+          <div class="fg"><label>Location / Office</label><input type="text" id="rg-loc" placeholder="Mumbai HQ"></div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Grade Structure -->
+      <div class="reg-page" id="regPage3">
+        <div class="reg-step-title">Define your grade structure</div>
+        <div class="reg-step-sub">Set up employee grades and approval limits. These power the approval matrix. You can update these anytime in Admin Panel.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Grade Levels</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-glass btn-xs" onclick="loadGradeTemplate('india')">🇮🇳 India Standard</button>
+            <button class="btn btn-glass btn-xs" onclick="loadGradeTemplate('global')">🌐 Global Bands</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:70px 1fr 120px 120px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Code</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Title</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Self Approve</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Mgr Limit</div>
+          <div></div>
+        </div>
+        <div class="grade-list" id="gradeList"></div>
+        <button class="grade-add-btn" onclick="addGradeRow()">+ Add grade level</button>
+        <div style="margin-top:14px;padding:10px 14px;background:#EFF6FF;border-radius:8px;border:1px solid rgba(37,99,235,0.15);font-size:12px;color:var(--accent)">
+          ✦ Claims above the Manager Limit will automatically require Finance approval. You can fine-tune this per claim type in Admin Panel → Approval Matrix.
+        </div>
+      </div>
+
+      <!-- STEP 4: Expense Policies -->
+      <div class="reg-page" id="regPage4">
+        <div class="reg-step-title">Set expense policies</div>
+        <div class="reg-step-sub">Define monthly limits and receipt requirements by category. Start with a template or set custom limits.</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('conservative')">Conservative</button>
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('standard')">Standard</button>
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('generous')">Generous</button>
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('blank')" style="margin-left:auto">Clear all</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 110px 110px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Category</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Monthly Max</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Per-Claim Max</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Receipt</div>
+        </div>
+        <div id="policySetup" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="margin-top:14px;padding:10px 14px;background:#F0FDF4;border-radius:8px;border:1px solid rgba(5,150,105,0.15);font-size:12px;color:var(--green)">
+          ✓ Policies apply to all employees. You can override per grade in Admin Panel → Approval Matrix.
+        </div>
+      </div>
+
+      <!-- STEP 5: Success / Onboarding -->
+      <div class="reg-page" id="regPage5">
+        <div class="onboard-success">
+          <div class="onboard-icon">🎉</div>
+          <div class="onboard-title">Your enterprise is ready!</div>
+          <div class="onboard-sub" id="onboardSub">Welcome to ClaimsIQ. Your workspace has been configured and your data is live on Firebase.</div>
+          <div class="onboard-checklist">
+            <div class="onboard-check"><div class="onboard-check-icon">✓</div><span>Enterprise workspace created</span></div>
+            <div class="onboard-check"><div class="onboard-check-icon">✓</div><span>Admin account configured</span></div>
+            <div class="onboard-check"><div class="onboard-check-icon" id="gradeDoneIcon">✓</div><span id="gradeDoneText">Grade structure provisioned</span></div>
+            <div class="onboard-check"><div class="onboard-check-icon" id="policyDoneIcon">✓</div><span id="policyDoneText">Expense policies set</span></div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Your Enterprise Invite Code</div>
+            <div class="invite-code-box">
+              <div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:2px">Share with employees to let them join your workspace</div>
+                <div class="invite-code" id="onboardInviteCode">----</div>
+              </div>
+              <button class="btn btn-glass btn-sm" onclick="copyInviteCode()">Copy</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3)">Employees use this code when registering to auto-join your enterprise.</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /reg-body -->
+
+    <!-- FOOTER NAVIGATION -->
+    <div class="reg-footer">
+      <div>
+        <button class="btn btn-glass btn-sm" id="regBackBtn" onclick="regBack()" style="display:none">← Back</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:12px;color:var(--text3)"><span id="regStepLabel">Step 1 of 4</span></div>
+        <button class="btn btn-primary" id="regNextBtn" onclick="regNext()">Next →</button>
+      </div>
+    </div>
+
+  </div><!-- /reg-wrap -->
+  <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text3)">
+    Already have an account? <span style="color:var(--accent);cursor:pointer;font-weight:500" onclick="showAuthFromReg()">Sign in</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     APP SHELL
+══════════════════════════════ -->
+<div id="appShell" class="app" style="flex-direction:column">
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">C</div>
+      <div>
+        <div class="sidebar-brand-name">ClaimsIQ</div>
+        <div class="sidebar-brand-tag">Enterprise</div>
+      </div>
+      <button onclick="closeSidebar()" id="sidebarCloseBtn" style="display:none;margin-left:auto;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div class="enterprise-pill" onclick="navigate('admin');switchAdminTab('enterprise',document.querySelector('.admin-tab'))">
+      <div class="ep-dot"></div>
+      <div style="flex:1;min-width:0">
+        <div class="ep-name" id="sidebarEnterprise">My Enterprise</div>
+        <div class="ep-tag">Enterprise account</div>
+      </div>
+    </div>
+    <div class="user-card">
+      <div class="user-av" id="sidebarAvatar">?</div>
+      <div style="flex:1;min-width:0">
+        <div class="user-n" id="sidebarName">Loading...</div>
+        <div class="user-r" id="sidebarRole">—</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer"><button class="logout-btn" onclick="doLogout()">↪ Sign Out</button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main" id="mainContent">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openNewClaim()" id="newClaimBtn">+ New Claim</button>
+      </div>
+    </div>
+
+    <!-- ━━━━━━ DASHBOARD ━━━━━━ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="dashWelcome">Dashboard</div>
+          <div class="page-sub" id="dashDate"></div>
+        </div>
+        <button class="btn btn-primary" onclick="openNewClaim()">+ New Claim</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" style="--stat-color:var(--accent)"><div class="stat-icon" style="background:rgba(59,130,246,0.1)">📋</div><div class="stat-label">Total Claims</div><div class="stat-val" id="st-total">0</div><div class="stat-sub">All time</div></div>
+        <div class="stat-card" style="--stat-color:var(--amber)"><div class="stat-icon" style="background:var(--amber-dim)">⏳</div><div class="stat-label">Pending Approval</div><div class="stat-val" id="st-pending">0</div><div class="stat-sub">Awaiting review</div></div>
+        <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-icon" style="background:var(--green-dim)">✅</div><div class="stat-label">Approved</div><div class="stat-val" id="st-approved">0</div><div class="stat-sub" id="st-rate">0% rate</div></div>
+        <div class="stat-card" style="--stat-color:var(--purple)"><div class="stat-icon" style="background:var(--purple-dim)">₹</div><div class="stat-label">Total Value</div><div class="stat-val" id="st-value">₹0</div><div class="stat-sub" id="st-approved-val">Approved: ₹0</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recent Claims</span><button class="btn btn-glass btn-sm" onclick="navigate('claims')">View All</button></div>
+          <div id="dashRecent"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No claims yet</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Claims by Category</span></div>
+          <div class="card-body" id="dashCats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━━━ CLAIMS ━━━━━━ -->
+    <div class="page" id="page-claims">
+      <div class="page-header">
+        <div><div class="page-title">Claims</div><div class="page-sub" id="claimsSub">All expense claims</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openNewClaim()" id="claimsNewBtn">+ New Claim</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <input type="text" placeholder="Search claims, employees..." style="flex:1;min-width:160px" oninput="filterClaims(this.value)" id="claimSearch">
+        <select style="width:140px" onchange="filterStatus(this.value)"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="review">Review</option><option value="draft">Draft</option></select>
+        <select style="width:150px" onchange="filterType(this.value)"><option value="">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Hotel</option><option value="other">Other</option></select>
+        <button class="btn btn-glass btn-sm" onclick="refreshClaims()">↻</button>
+      </div>
+      <div class="card claims-table">
+        <div class="tbl-wrap"><table><thead><tr><th>Claim ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th>AI Score</th><th>Actions</th></tr></thead><tbody id="claimsTbody"></tbody></table></div>
+      </div>
+      <div class="claim-cards" id="claimsCardList"></div>
+    </div>
+
+    <!-- ━━━━━━ APPROVALS ━━━━━━ -->
+    <div class="page" id="page-approvals">
+      <div class="page-header"><div><div class="page-title">Approval Queue</div><div class="page-sub" id="approvalSub">0 claims pending your approval</div></div></div>
+      <div class="alert al-info" id="approvalAlert">Reviewing as: <strong id="approvalRoleLabel">—</strong> · Limits enforced by approval matrix.</div>
+      <div class="card claims-table">
+        <div class="tbl-wrap"><table><thead><tr><th>Claim ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Route</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="approvalsTbody"></tbody></table></div>
+      </div>
+      <div class="claim-cards" id="approvalsCardList"></div>
+    </div>
+
+    <!-- ━━━━━━ ADMIN ━━━━━━ -->
+    <div class="page" id="page-admin">
+      <div class="page-header"><div><div class="page-title">Admin Panel</div><div class="page-sub">Manage enterprise settings, employees, and approval rules</div></div></div>
+      <div class="admin-tabs" id="adminTabBar">
+        <div class="admin-tab active" onclick="switchAdminTab('enterprise',this)">🏢 Enterprise</div>
+        <div class="admin-tab" onclick="switchAdminTab('employees',this)">👥 Employees</div>
+        <div class="admin-tab" onclick="switchAdminTab('matrix',this)">🔧 Approval Matrix</div>
+        <div class="admin-tab" onclick="switchAdminTab('policies',this)">📋 Policies</div>
+        <div class="admin-tab" onclick="switchAdminTab('aianalyzer',this)">✦ Policy Engine</div>
+      </div>
+
+      <!-- ENTERPRISE TAB -->
+      <div id="tab-enterprise">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Enterprise Details</span><button class="btn btn-glass btn-sm" onclick="openEditEnterprise()">✏ Edit</button></div>
+          <div class="card-body">
+            <div class="form-grid" id="enterpriseDetails">
+              <div class="fg"><label>Company Name</label><div id="ent-name" style="font-size:14px;font-weight:600;color:var(--text);padding-top:4px">—</div></div>
+              <div class="fg"><label>Domain</label><div id="ent-domain" style="font-size:14px;color:var(--text2);padding-top:4px">—</div></div>
+              <div class="fg"><label>Industry</label><div id="ent-industry" style="font-size:14px;color:var(--text2);padding-top:4px">—</div></div>
+              <div class="fg"><label>Currency</label><div id="ent-currency" style="font-size:14px;color:var(--text2);padding-top:4px">INR</div></div>
+              <div class="fg"><label>Country</label><div id="ent-country" style="font-size:14px;color:var(--text2);padding-top:4px">—</div></div>
+              <div class="fg"><label>Invite Code</label><div id="ent-code" style="font-size:14px;color:var(--accent2);padding-top:4px;font-family:var(--mono)">—</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPLOYEES TAB -->
+      <div id="tab-employees" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:var(--text2)" id="empCount">0 employees</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-glass btn-sm" onclick="openImport()">↑ Upload File</button>
+            <button class="btn btn-primary btn-sm" onclick="openAddEmployee()">+ Add Employee</button>
+          </div>
+        </div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Grade</th><th>Dept</th><th>Manager</th><th>Role</th><th></th></tr></thead><tbody id="empTbody"></tbody></table></div></div>
+      </div>
+
+      <!-- MATRIX TAB -->
+      <div id="tab-matrix" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:var(--text2)">Approval limits by grade and claim type</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddMatrix()">+ Add Rule</button>
+        </div>
+        <div class="alert al-warn">Changes apply immediately to all future claims.</div>
+        <div class="card"><div class="card-body" style="padding:12px 18px">
+          <div class="mx-head"><span>Grade</span><span>Type</span><span>Self (₹)</span><span>Manager (₹)</span><span>Finance (₹)</span><span></span></div>
+          <div id="matrixList"></div>
+        </div></div>
+      </div>
+
+      <!-- POLICIES TAB -->
+      <div id="tab-policies" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:var(--text2)">Monthly limits per expense category</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddPolicy()">+ Add Policy</button>
+        </div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Monthly Max</th><th>Per-Claim Max</th><th>Receipt</th><th>Notes</th><th></th></tr></thead><tbody id="policyTbody"></tbody></table></div></div>
+      </div>
+
+      <!-- GEMINI POLICY ENGINE TAB -->
+      <div id="tab-aianalyzer" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">✦ Gemini Policy Engine</span>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;width:100%">Upload your HR policy — Gemini reads every rule and applies them to your approval matrix and expense limits instantly.</div>
+          </div>
+          <div class="card-body">
+            <!-- Drop zone -->
+            <div style="border:2px dashed rgba(99,102,241,0.3);border-radius:12px;padding:22px;text-align:center;cursor:pointer;background:#FAFBFF;margin-bottom:14px;transition:all 0.2s"
+              onclick="document.getElementById('pa-file').click()"
+              ondragover="event.preventDefault();this.style.borderColor='#4F46E5';this.style.background='#EEF2FF'"
+              ondragleave="this.style.borderColor='';this.style.background=''"
+              ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';onPolicyFileDrop(event)">
+              <div style="font-size:32px;margin-bottom:8px">📋</div>
+              <div style="font-size:14px;font-weight:600;color:#312E81" id="pa-file-label">Drop your policy document here</div>
+              <div style="font-size:11px;color:#818CF8;margin-top:4px">PDF · Image · Word · TXT — or paste text below</div>
+            </div>
+            <input type="file" id="pa-file" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="onPolicyFileSelected(this)">
+            <div class="fg" style="margin-bottom:14px">
+              <label>Or paste policy text</label>
+              <textarea id="pa-text" style="min-height:110px" placeholder="e.g. L1 staff: Fuel ₹2,000/month, Mobile ₹800. L2: Fuel ₹3,000. Travel >₹10,000 needs manager approval. Travel >₹50,000 needs Finance. Hotel max ₹8,000/night..."></textarea>
+            </div>
+            <button onclick="runPolicyAnalyzer()"
+              style="width:100%;padding:13px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:10px;cursor:pointer;font-family:var(--font);margin-bottom:14px">
+              ✦ Analyze &amp; Apply Rules with Gemini
+            </button>
+            <div class="ai-thinking" id="paThinking" style="margin-bottom:12px"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="paThinkLabel">Gemini is reading your policy...</span></div>
+            <div id="paResult" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━━━ ANALYTICS ━━━━━━ -->
+    <div class="page" id="page-analytics">
+      <div class="page-header"><div><div class="page-title">Analytics</div><div class="page-sub">Claims intelligence &amp; risk insights</div></div></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Avg Claim Value</div><div class="stat-val" id="an-avg">₹0</div></div>
+        <div class="stat-card"><div class="stat-label">Approval Rate</div><div class="stat-val" id="an-rate">0%</div></div>
+        <div class="stat-card"><div class="stat-label">Highest Single Claim</div><div class="stat-val" id="an-high">₹0</div></div>
+        <div class="stat-card"><div class="stat-label">Flagged / Review</div><div class="stat-val" id="an-flag">0</div></div>
+      </div>
+      <div class="two-col" style="margin-bottom:18px">
+        <div class="card"><div class="card-header"><span class="card-title">By Category</span></div><div class="card-body" id="an-type"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">By Status</span></div><div class="card-body" id="an-status"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Employee Risk Summary</span></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Grade</th><th>Claims</th><th>Total Value</th><th>Approved</th><th>Rejected</th><th>Risk Score</th></tr></thead><tbody id="an-emp"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ━━━━━━ ERP EXPORT ━━━━━━ -->
+    <div class="page" id="page-erp">
+      <div class="page-header"><div><div class="page-title">ERP Export</div><div class="page-sub">Export approved claims data for SAP, Oracle, or any ERP system</div></div></div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Export Format</span></div>
+          <div class="card-body">
+            <div class="export-format-grid" id="exportFormatGrid">
+              <div class="export-card selected" data-fmt="csv" onclick="selectExportFmt(this,'csv')"><div class="export-card-icon">📊</div><div class="export-card-name">CSV</div><div class="export-card-desc">Excel-compatible</div></div>
+              <div class="export-card" data-fmt="json" onclick="selectExportFmt(this,'json')"><div class="export-card-icon">{ }</div><div class="export-card-name">JSON</div><div class="export-card-desc">API / structured</div></div>
+              <div class="export-card" data-fmt="xml" onclick="selectExportFmt(this,'xml')"><div class="export-card-icon">📄</div><div class="export-card-name">XML</div><div class="export-card-desc">SAP / ERP standard</div></div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="fg"><label>Date From</label><input type="date" id="exp-from"></div>
+              <div class="fg"><label>Date To</label><input type="date" id="exp-to"></div>
+            </div>
+            <div class="fg" style="margin-bottom:16px">
+              <label>Include Statuses</label>
+              <div style="display:flex;gap:12px;padding-top:6px;flex-wrap:wrap">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text2);cursor:pointer"><input type="checkbox" id="exp-approved" checked style="width:auto"> Approved</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text2);cursor:pointer"><input type="checkbox" id="exp-pending" style="width:auto"> Pending</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text2);cursor:pointer"><input type="checkbox" id="exp-rejected" style="width:auto"> Rejected</label>
+              </div>
+            </div>
+            <div class="al-info alert" id="expPreview" style="font-size:12px">Select filters above to preview export.</div>
+            <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doExport()" id="expBtn">↓ Export File</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Export History</span></div>
+          <div class="card-body" id="exportHistory"><div class="empty"><div class="empty-icon">📤</div><div class="empty-title">No exports yet</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ━━━━━━ AI ASSISTANT ━━━━━━ -->
+<!-- chatbot removed -->
+
+  </div><!-- /main -->
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav" id="mobileNav"></div>
+  <button class="fab" onclick="openNewClaim()">+</button>
+
+</div><!-- /appShell -->
+
+<!-- ══════════════════════════════
+     MODALS
+══════════════════════════════ -->
+
+<!-- NEW CLAIM -->
+<div class="modal-overlay" id="newClaimModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">Submit Expense Claim</div>
+      <button class="modal-close" onclick="closeModal('newClaimModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- GEMINI EXPENSE PARSER -->
+      <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px solid rgba(99,102,241,0.2);border-radius:14px;padding:16px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#4F46E5,#7C3AED);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;flex-shrink:0">✦</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#312E81">Gemini Expense Parser</div>
+            <div style="font-size:11px;color:#6366F1">Drop a receipt or describe — AI fills every field instantly</div>
+          </div>
+          <span class="gemini-key-status" style="font-size:11px;cursor:pointer;color:var(--green)">● AI Ready</span>
+        </div>
+
+        <!-- Multi-file drop zone -->
+        <div id="aiDropZone"
+          style="border:2px dashed rgba(99,102,241,0.35);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.7);margin-bottom:10px"
+          onclick="document.getElementById('ai-doc-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#4F46E5';this.style.background='#EEF2FF'"
+          ondragleave="this.style.borderColor='';this.style.background=''"
+          ondrop="onAIDrop(event);this.style.borderColor='';this.style.background=''">
+          <div style="font-size:24px;margin-bottom:6px">📎</div>
+          <div style="font-size:13px;font-weight:600;color:#4338CA" id="aiDocLabel">Drop receipt, invoice, or ticket here</div>
+          <div style="font-size:11px;color:#818CF8;margin-top:3px">JPG · PNG · PDF · Up to 4 files · Drag & drop or click · AI auto-fills every field</div>
+        </div>
+        <input type="file" id="ai-doc-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple onchange="onAIDocSelected(this)">
+        <div id="aiDocPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+
+        <!-- Text fallback -->
+        <div style="display:flex;gap:8px">
+          <input type="text" id="ai-prompt"
+            placeholder="Or describe: 'Ola from office to airport 15 March ₹1200'"
+            style="flex:1;border-radius:8px;font-size:12px;padding:9px 12px;border-color:rgba(99,102,241,0.25)"
+            onkeydown="if(event.key==='Enter')runAIFill()">
+          <button class="btn btn-sm" onclick="runAIFill()"
+            style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:8px;white-space:nowrap;font-size:12px">
+            <span id="ai-btn-text">✦ Parse</span>
+          </button>
+        </div>
+
+        <div class="ai-thinking" id="aiThinking" style="margin-top:10px"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="aiThinkLabel">Gemini is reading...</span></div>
+        <div class="ai-result" id="aiResult" style="margin-top:8px"></div>
+      </div>
+
+      <!-- CLAIM FORM -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Claim Details</span>
+        <span style="font-size:11px;color:var(--text3)">· Fill manually or use AI above</span>
+      </div>
+      <div class="form-grid">
+        <div class="fg"><label>Claim Type *</label>
+          <select id="nc-type" onchange="toggleTravelFields();runLiveValidation()">
+            <option value="">Select type</option>
+            <option value="travel">✈️ Travel Domestic</option>
+            <option value="travel-intl">✈️ Travel International</option>
+            <option value="fuel">⛽ Fuel</option>
+            <option value="mobile">📱 Mobile / Internet</option>
+            <option value="food">🍽️ Food & Meal</option>
+            <option value="accommodation">🏨 Accommodation</option>
+            <option value="other">📦 Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Date of Expense *</label><input type="date" id="nc-date"></div>
+        <div class="fg"><label>Amount (₹) *</label><input type="number" id="nc-amount" placeholder="0.00" inputmode="decimal" oninput="runLiveValidation()"></div>
+        <div class="fg"><label>Vendor / Merchant</label><input type="text" id="nc-vendor" placeholder="e.g. Ola, IRCTC, Hotel Name"></div>
+        <div class="fg full"><label>Description / Business Purpose *</label><textarea id="nc-desc" placeholder="Describe the business reason for this expense..."></textarea></div>
+        <div class="fg"><label>Project Code</label><input type="text" id="nc-project" placeholder="e.g. PRJ-2025"></div>
+        <div class="fg"><label>Tax Amount (₹)</label><input type="number" id="nc-tax" placeholder="0.00" inputmode="decimal"></div>
+      </div>
+
+      <!-- TRAVEL FIELDS -->
+      <div id="travelBlock" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Travel Details</div>
+        <div class="form-grid">
+          <div class="fg"><label>From City</label><input type="text" id="nc-origin" placeholder="Mumbai"></div>
+          <div class="fg"><label>To City</label><input type="text" id="nc-dest" placeholder="Delhi"></div>
+          <div class="fg"><label>Travel From</label><input type="date" id="nc-tfrom"></div>
+          <div class="fg"><label>Travel To</label><input type="date" id="nc-tto"></div>
+          <div class="fg"><label>Mode of Travel</label>
+            <select id="nc-mode"><option>Flight</option><option>Train</option><option>Bus</option><option>Cab / Taxi</option><option>Own Vehicle</option></select>
+          </div>
+          <div class="fg"><label>Travel Approval Ref.</label><input type="text" id="nc-tref" placeholder="TA-2025-001"></div>
+        </div>
+      </div>
+
+      <!-- SUPPORTING DOCS -->
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Supporting Documents</div>
+        <div class="upload-zone" onclick="document.getElementById('nc-files').click()">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text">Click to attach receipts or invoices</div>
+          <div class="upload-sub">PDF, JPG, PNG, Excel supported · AI will auto-scan if form is empty</div>
+        </div>
+        <input type="file" id="nc-files" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" onchange="handleFiles(this)">
+        <div id="nc-file-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+      </div>
+
+      <!-- LIVE VALIDATION -->
+      <div id="liveVal" style="display:none;margin-top:16px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Submission Checklist</div>
+        <div id="valItems"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('newClaimModal')">Cancel</button>
+      <button class="btn btn-glass btn-sm" onclick="saveDraft()">Save Draft</button>
+      <button class="btn btn-primary" onclick="submitClaim()">✦ Submit Claim</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIM DETAIL -->
+<div class="modal-overlay" id="claimDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="cdTitle">Claim Details</div><button class="modal-close" onclick="closeModal('claimDetailModal')">✕</button></div>
+    <div class="modal-body" id="cdBody"></div>
+    <div class="modal-footer" id="cdFooter"></div>
+  </div>
+</div>
+
+<!-- ENTERPRISE EDIT -->
+<div class="modal-overlay" id="enterpriseModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Enterprise Details</div><button class="modal-close" onclick="closeModal('enterpriseModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label>Company Name *</label><input type="text" id="ent-name-input" placeholder="Acme Technologies Pvt Ltd"></div>
+        <div class="fg"><label>Domain</label><input type="text" id="ent-domain-input" placeholder="acmetech.in"></div>
+        <div class="form-grid">
+          <div class="fg"><label>Industry</label><input type="text" id="ent-industry-input" placeholder="Information Technology"></div>
+          <div class="fg"><label>Country</label><input type="text" id="ent-country-input" placeholder="India"></div>
+        </div>
+        <div class="form-grid">
+          <div class="fg"><label>Currency</label><select id="ent-currency-input"><option value="INR">INR — ₹</option><option value="USD">USD — $</option><option value="EUR">EUR — €</option></select></div>
+          <div class="fg"><label>Fiscal Year Start</label><select id="ent-fy-input"><option value="April">April</option><option value="January">January</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('enterpriseModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEnterprise()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EMPLOYEE -->
+<div class="modal-overlay" id="addEmpModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title" id="addEmpTitle">Add Employee</div><button class="modal-close" onclick="closeModal('addEmpModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>First Name</label><input type="text" id="ae-fname" placeholder="Rahul" autocomplete="given-name"></div>
+        <div class="fg"><label>Last Name</label><input type="text" id="ae-lname" placeholder="Sharma" autocomplete="family-name"></div>
+        <div class="fg"><label>Email</label><input type="email" id="ae-email" placeholder="rahul@company.com"></div>
+        <div class="fg"><label>Employee ID</label><input type="text" id="ae-empid" placeholder="EMP001"></div>
+        <div class="fg"><label>Grade</label><select id="ae-grade"><option value="L1">L1 — Junior</option><option value="L2">L2 — Analyst</option><option value="L3" selected>L3 — Senior</option><option value="L4">L4 — Lead</option><option value="L5">L5 — Manager</option><option value="L6">L6 — Director</option></select></div>
+        <div class="fg"><label>Department</label><input type="text" id="ae-dept" placeholder="Finance, Operations..."></div>
+        <div class="fg full"><label>Reporting Manager Email</label><input type="email" id="ae-mgr" placeholder="manager@company.com"></div>
+        <div class="fg"><label>Role</label><select id="ae-role"><option value="employee">Employee</option><option value="manager">Manager</option><option value="finance">Finance</option><option value="admin">Admin</option></select></div>
+        <div class="fg"><label>Location</label><input type="text" id="ae-loc" placeholder="Mumbai, Delhi..."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('addEmpModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Upload Employee Data</div><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#4338CA">
+        <strong>✦ Gemini-powered import</strong> — upload any file format. AI reads the columns automatically regardless of header names.
+      </div>
+      <div class="upload-zone" onclick="document.getElementById('empFile').click()" style="margin-top:4px"
+        ondragover="event.preventDefault();this.style.borderColor='#4F46E5'"
+        ondragleave="this.style.borderColor=''"
+        ondrop="event.preventDefault();parseEmpFileFromDrop(event)">
+        <div class="upload-icon">📊</div>
+        <div class="upload-text">Drop or click to upload employee data</div>
+        <div class="upload-sub">.csv · .xlsx · .xls · .txt · or paste below</div>
+      </div>
+      <input type="file" id="empFile" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="parseEmpFile(this)">
+      <div style="margin:10px 0 4px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Or paste employee data directly</div>
+      <textarea id="empPasteArea" style="min-height:80px;font-size:12px;font-family:var(--mono)" placeholder="Name, Email, Department, Grade&#10;Rahul Sharma, rahul@co.in, Finance, L3&#10;Priya Singh, priya@co.in, Marketing, L2"></textarea>
+      <button class="btn btn-primary btn-sm" onclick="parseEmpFromPaste()" style="margin-top:8px;width:100%">✦ Parse with Gemini</button>
+      <div id="importPreview" style="margin-top:10px;font-size:12px;color:var(--text2)"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="importBtn" disabled onclick="importEmployees()">Import Employees</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MATRIX -->
+<div class="modal-overlay" id="addMatrixModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Add Approval Rule</div><button class="modal-close" onclick="closeModal('addMatrixModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label>Employee Grade</label><select id="mx-grade"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="ALL">All Grades</option></select></div>
+        <div class="fg"><label>Claim Type</label><select id="mx-type"><option value="all">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Accommodation</option></select></div>
+        <div class="form-grid">
+          <div class="fg"><label>Self Approve (₹)</label><input type="number" id="mx-self" placeholder="1000" inputmode="numeric"></div>
+          <div class="fg"><label>Manager Limit (₹)</label><input type="number" id="mx-mgr" placeholder="10000" inputmode="numeric"></div>
+        </div>
+        <div class="fg"><label>Finance Required Above (₹)</label><input type="number" id="mx-fin" placeholder="25000" inputmode="numeric"></div>
+        <div class="fg"><label>Notes</label><textarea id="mx-notes" style="min-height:60px" placeholder="Context for this rule..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('addMatrixModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveMatrixRule()">Save Rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD POLICY -->
+<div class="modal-overlay" id="addPolicyModal">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Add Claim Policy</div><button class="modal-close" onclick="closeModal('addPolicyModal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fg"><label>Claim Type</label><select id="po-type"><option value="travel">Travel Domestic</option><option value="travel-intl">Travel International</option><option value="fuel">Fuel</option><option value="mobile">Mobile/Internet</option><option value="food">Food & Meal</option><option value="accommodation">Accommodation</option><option value="other">Other</option></select></div>
+        <div class="form-grid">
+          <div class="fg"><label>Monthly Max (₹)</label><input type="number" id="po-max" placeholder="5000" inputmode="numeric"></div>
+          <div class="fg"><label>Per-Claim Max (₹)</label><input type="number" id="po-per" placeholder="2000" inputmode="numeric"></div>
+        </div>
+        <div class="fg"><label>Receipt Required</label><select id="po-receipt"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="fg"><label>Notes</label><textarea id="po-notes" style="min-height:60px"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('addPolicyModal')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="savePolicy()">Save Policy</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- AI KEY MODAL -->
+<div class="modal-overlay" id="aiKeyModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">✦ Configure Gemini AI</div>
+      <button class="modal-close" onclick="closeModal('aiKeyModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#EFF6FF;border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.6">
+        <div style="font-weight:600;color:var(--accent);margin-bottom:6px">How to get a free API key</div>
+        1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a><br>
+        2. Click <strong>Create API key</strong> → select any project<br>
+        3. Copy the key (starts with <code style="background:#E0E7FF;padding:1px 5px;border-radius:4px">AIza</code>)<br>
+        4. Paste it below
+      </div>
+      <div class="fg">
+        <label>Gemini API Key</label>
+        <input type="text" id="aiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Stored locally in your browser · Never sent to our servers</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-glass btn-sm" onclick="closeModal('aiKeyModal')">Cancel</button>
+      <button class="btn btn-glass btn-sm" onclick="document.getElementById('aiKeyInput').value='';saveAIKey()">Clear Key</button>
+      <button class="btn btn-primary btn-sm" onclick="saveAIKey()">Save & Activate</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toastIcon"></div>
+  <div><div class="toast-title" id="toastTitle"></div><div class="toast-text" id="toastText"></div></div>
+</div>
+
+<!-- ══════════════════════════════
+     JAVASCRIPT
+══════════════════════════════ -->
+
+
+
+<!-- Firebase + App JS -->
 <script type="module">
 // ════════════════════════════════════════════════
 //  FIREBASE v12.3.0 — MODULAR SDK (all-in-one)
@@ -686,6 +1510,8 @@ async function callGemini(parts, pro=false) {
 
 // ── Auth state ──
 onAuthStateChanged(auth, async user => {
+  const loader = document.getElementById('loadingScreen');
+  if (loader) loader.style.display = 'none';
   if (user) {
     currentUser = user;
     const snap = await get(ref(db, 'employees'));
@@ -713,6 +1539,7 @@ onAuthStateChanged(auth, async user => {
 // Signal ready
 window._fbAIReady = true;
 window._firebaseReady = true;
+{ const l=document.getElementById('loadingScreen'); if(l) l.style.display='none'; }
 console.log('%c✦ Firebase v12.3.0 + Gemini 2.5 Flash ready', 'color:#059669;font-weight:700');
 
 // ── callGemini + Firebase init handled in module header above ──
@@ -2011,815 +2838,6 @@ async function loadDemoData(){
 }
 
 </script>
-<!-- ══════════════════════════════
-     AUTH SCREEN
-══════════════════════════════ -->
-<div id="authScreen" class="auth-screen">
-  <div class="auth-left">
-    <div>
-      <div class="auth-brand">
-        <div class="auth-brand-icon">C</div>
-        <div>
-          <div class="auth-brand-name">ClaimsIQ</div>
-          <div class="auth-brand-tag">Enterprise Platform</div>
-        </div>
-      </div>
-      <div style="margin-bottom:32px">
-        <div style="font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1.2;margin-bottom:10px">AI-Powered Claims Processing</div>
-        <div style="font-size:13px;color:var(--text3);line-height:1.6">Automate your entire expense reimbursement workflow with enterprise-grade AI.</div>
-      </div>
-      <div class="auth-features">
-        <div class="auth-feature"><div class="auth-feature-icon">✦</div><div><div class="auth-feature-title">AI Document Scanning</div><div class="auth-feature-desc">Upload receipts or invoices — Gemini reads and fills the claim form automatically</div></div></div>
-        <div class="auth-feature"><div class="auth-feature-icon">🔒</div><div><div class="auth-feature-title">Smart Validation & Duplicates</div><div class="auth-feature-desc">Policy checks, arithmetic validation, and near-duplicate detection</div></div></div>
-        <div class="auth-feature"><div class="auth-feature-icon">📊</div><div><div class="auth-feature-title">Real-Time Analytics</div><div class="auth-feature-desc">Risk scoring, spend trends, and employee-level insights</div></div></div>
-        <div class="auth-feature"><div class="auth-feature-icon">🤖</div><div><div class="auth-feature-title">Conversational AI Assistant</div><div class="auth-feature-desc">Ask anything about your claims data — powered by Firebase Gemini</div></div></div>
-      </div>
-    </div>
-    <div class="auth-firebase-badge">
-      <div class="auth-firebase-dot"></div>
-      <div class="auth-firebase-text"><strong>Firebase AI Powered</strong>Document parsing, smart form filling, and conversational analytics using Gemini 2.0</div>
-    </div>
-  </div>
-  <div class="auth-right">
-    <div class="auth-box">
-      <div class="auth-box-title">Welcome back</div>
-      <div class="auth-box-sub">Sign in to your enterprise account</div>
-      <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</div>
-        <div class="auth-tab" onclick="showRegWizard()">Register Enterprise</div>
-      </div>
-      <div class="auth-error" id="authError"></div>
-      <div class="auth-form" id="loginForm">
-        <div class="fg"><label>Email Address</label><input type="email" id="l-email" placeholder="you@company.com" autocomplete="email"></div>
-        <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
-        <button class="btn btn-primary" style="width:100%;padding:13px;font-size:14px" onclick="doLogin()">Sign In</button>
-        <div class="auth-divider"><span>or</span></div>
-        <button class="auth-demo-btn" onclick="demoLogin()">🚀 Launch Demo (Client Presentation)</button>
-        <div style="font-size:11px;color:var(--text3);text-align:center">Demo includes: 10 claims, 5 employees, approval matrix &amp; analytics</div>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════
-     ENTERPRISE REGISTRATION WIZARD
-══════════════════════════════ -->
-<div id="regScreen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);position:relative;z-index:1;padding:20px">
-  <div class="reg-wrap">
-
-    <!-- HEADER + STEP INDICATOR -->
-    <div class="reg-header">
-      <div class="reg-brand">
-        <div class="reg-brand-icon">C</div>
-        <div class="reg-brand-name">ClaimsIQ Enterprise</div>
-      </div>
-      <div class="reg-steps" id="regSteps">
-        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-          <div class="reg-step-dot active" id="rdot1">1<span class="reg-step-label">Company</span></div>
-        </div>
-        <div class="reg-step-line" id="rline1"></div>
-        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-          <div class="reg-step-dot" id="rdot2">2<span class="reg-step-label">Admin</span></div>
-        </div>
-        <div class="reg-step-line" id="rline2"></div>
-        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-          <div class="reg-step-dot" id="rdot3">3<span class="reg-step-label">Grades</span></div>
-        </div>
-        <div class="reg-step-line" id="rline3"></div>
-        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-          <div class="reg-step-dot" id="rdot4">4<span class="reg-step-label">Policies</span></div>
-        </div>
-        <div class="reg-step-line" id="rline4"></div>
-        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
-          <div class="reg-step-dot" id="rdot5">✓<span class="reg-step-label">Done</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP CONTENT -->
-    <div class="reg-body">
-      <div id="regError" style="display:none;background:#FEF2F2;border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px"></div>
-
-      <!-- STEP 1: Company -->
-      <div class="reg-page active" id="regPage1">
-        <div class="reg-step-title">Set up your company</div>
-        <div class="reg-step-sub">This is your enterprise workspace on ClaimsIQ. Your employees will join using your invite code.</div>
-        <div class="form-grid">
-          <div class="fg full"><label>Company Name *</label><input type="text" id="rg-cname" placeholder="e.g. Acme Technologies Pvt Ltd" autocomplete="organization"></div>
-          <div class="fg"><label>Industry *</label>
-            <select id="rg-industry">
-              <option value="">Select industry</option>
-              <option>Information Technology</option><option>Financial Services</option>
-              <option>Manufacturing</option><option>Healthcare</option>
-              <option>Retail & E-Commerce</option><option>Consulting</option>
-              <option>Real Estate</option><option>Education</option>
-              <option>Media & Entertainment</option><option>Other</option>
-            </select>
-          </div>
-          <div class="fg"><label>Company Size</label>
-            <select id="rg-size">
-              <option value="1-10">1–10 employees</option>
-              <option value="11-50">11–50 employees</option>
-              <option value="51-200" selected>51–200 employees</option>
-              <option value="201-1000">201–1,000 employees</option>
-              <option value="1000+">1,000+ employees</option>
-            </select>
-          </div>
-          <div class="fg"><label>Country</label>
-            <select id="rg-country">
-              <option value="India" selected>India</option>
-              <option value="USA">United States</option>
-              <option value="UK">United Kingdom</option>
-              <option value="UAE">UAE</option>
-              <option value="Singapore">Singapore</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="fg"><label>Currency</label>
-            <select id="rg-currency">
-              <option value="INR" selected>INR — ₹ Indian Rupee</option>
-              <option value="USD">USD — $ US Dollar</option>
-              <option value="GBP">GBP — £ British Pound</option>
-              <option value="AED">AED — د.إ UAE Dirham</option>
-              <option value="SGD">SGD — S$ Singapore Dollar</option>
-            </select>
-          </div>
-          <div class="fg"><label>Fiscal Year Start</label>
-            <select id="rg-fy">
-              <option value="April" selected>April (India standard)</option>
-              <option value="January">January</option>
-              <option value="July">July</option>
-            </select>
-          </div>
-          <div class="fg"><label>Company Website / Domain</label><input type="text" id="rg-domain" placeholder="acmetech.in"></div>
-          <div class="fg"><label>Company GST / Tax ID</label><input type="text" id="rg-gst" placeholder="22AAAAA0000A1Z5 (optional)"></div>
-        </div>
-      </div>
-
-      <!-- STEP 2: Admin Account -->
-      <div class="reg-page" id="regPage2">
-        <div class="reg-step-title">Create your admin account</div>
-        <div class="reg-step-sub">You'll be the super-admin for your enterprise. You can add more admins later.</div>
-        <div class="form-grid">
-          <div class="fg"><label>First Name *</label><input type="text" id="rg-fname" placeholder="Naman" autocomplete="given-name"></div>
-          <div class="fg"><label>Last Name *</label><input type="text" id="rg-lname" placeholder="Sharma" autocomplete="family-name"></div>
-          <div class="fg full"><label>Work Email *</label><input type="email" id="rg-email" placeholder="naman@company.com" autocomplete="email"></div>
-          <div class="fg"><label>Password *</label><input type="password" id="rg-pass" placeholder="Min 8 characters" autocomplete="new-password"></div>
-          <div class="fg"><label>Confirm Password *</label><input type="password" id="rg-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
-          <div class="fg"><label>Job Title</label><input type="text" id="rg-title" placeholder="e.g. CFO, Finance Manager"></div>
-          <div class="fg"><label>Phone</label><input type="tel" id="rg-phone" placeholder="+91 98xxx xxxxx"></div>
-          <div class="fg"><label>Location / Office</label><input type="text" id="rg-loc" placeholder="Mumbai HQ"></div>
-        </div>
-      </div>
-
-      <!-- STEP 3: Grade Structure -->
-      <div class="reg-page" id="regPage3">
-        <div class="reg-step-title">Define your grade structure</div>
-        <div class="reg-step-sub">Set up employee grades and approval limits. These power the approval matrix. You can update these anytime in Admin Panel.</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Grade Levels</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-glass btn-xs" onclick="loadGradeTemplate('india')">🇮🇳 India Standard</button>
-            <button class="btn btn-glass btn-xs" onclick="loadGradeTemplate('global')">🌐 Global Bands</button>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:70px 1fr 120px 120px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Code</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Title</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Self Approve</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Mgr Limit</div>
-          <div></div>
-        </div>
-        <div class="grade-list" id="gradeList"></div>
-        <button class="grade-add-btn" onclick="addGradeRow()">+ Add grade level</button>
-        <div style="margin-top:14px;padding:10px 14px;background:#EFF6FF;border-radius:8px;border:1px solid rgba(37,99,235,0.15);font-size:12px;color:var(--accent)">
-          ✦ Claims above the Manager Limit will automatically require Finance approval. You can fine-tune this per claim type in Admin Panel → Approval Matrix.
-        </div>
-      </div>
-
-      <!-- STEP 4: Expense Policies -->
-      <div class="reg-page" id="regPage4">
-        <div class="reg-step-title">Set expense policies</div>
-        <div class="reg-step-sub">Define monthly limits and receipt requirements by category. Start with a template or set custom limits.</div>
-        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('conservative')">Conservative</button>
-          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('standard')">Standard</button>
-          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('generous')">Generous</button>
-          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('blank')" style="margin-left:auto">Clear all</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 110px 110px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Category</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Monthly Max</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Per-Claim Max</div>
-          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Receipt</div>
-        </div>
-        <div id="policySetup" style="display:flex;flex-direction:column;gap:6px"></div>
-        <div style="margin-top:14px;padding:10px 14px;background:#F0FDF4;border-radius:8px;border:1px solid rgba(5,150,105,0.15);font-size:12px;color:var(--green)">
-          ✓ Policies apply to all employees. You can override per grade in Admin Panel → Approval Matrix.
-        </div>
-      </div>
-
-      <!-- STEP 5: Success / Onboarding -->
-      <div class="reg-page" id="regPage5">
-        <div class="onboard-success">
-          <div class="onboard-icon">🎉</div>
-          <div class="onboard-title">Your enterprise is ready!</div>
-          <div class="onboard-sub" id="onboardSub">Welcome to ClaimsIQ. Your workspace has been configured and your data is live on Firebase.</div>
-          <div class="onboard-checklist">
-            <div class="onboard-check"><div class="onboard-check-icon">✓</div><span>Enterprise workspace created</span></div>
-            <div class="onboard-check"><div class="onboard-check-icon">✓</div><span>Admin account configured</span></div>
-            <div class="onboard-check"><div class="onboard-check-icon" id="gradeDoneIcon">✓</div><span id="gradeDoneText">Grade structure provisioned</span></div>
-            <div class="onboard-check"><div class="onboard-check-icon" id="policyDoneIcon">✓</div><span id="policyDoneText">Expense policies set</span></div>
-          </div>
-          <div style="margin-bottom:12px">
-            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Your Enterprise Invite Code</div>
-            <div class="invite-code-box">
-              <div>
-                <div style="font-size:11px;color:var(--text3);margin-bottom:2px">Share with employees to let them join your workspace</div>
-                <div class="invite-code" id="onboardInviteCode">----</div>
-              </div>
-              <button class="btn btn-glass btn-sm" onclick="copyInviteCode()">Copy</button>
-            </div>
-            <div style="font-size:11px;color:var(--text3)">Employees use this code when registering to auto-join your enterprise.</div>
-          </div>
-        </div>
-      </div>
-    </div><!-- /reg-body -->
-
-    <!-- FOOTER NAVIGATION -->
-    <div class="reg-footer">
-      <div>
-        <button class="btn btn-glass btn-sm" id="regBackBtn" onclick="regBack()" style="display:none">← Back</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:12px;color:var(--text3)"><span id="regStepLabel">Step 1 of 4</span></div>
-        <button class="btn btn-primary" id="regNextBtn" onclick="regNext()">Next →</button>
-      </div>
-    </div>
-
-  </div><!-- /reg-wrap -->
-  <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text3)">
-    Already have an account? <span style="color:var(--accent);cursor:pointer;font-weight:500" onclick="showAuthFromReg()">Sign in</span>
-  </div>
-</div>
-
-<!-- ══════════════════════════════
-     APP SHELL
-══════════════════════════════ -->
-<div id="appShell" class="app" style="flex-direction:column">
-
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-brand-icon">C</div>
-      <div>
-        <div class="sidebar-brand-name">ClaimsIQ</div>
-        <div class="sidebar-brand-tag">Enterprise</div>
-      </div>
-      <button onclick="closeSidebar()" id="sidebarCloseBtn" style="display:none;margin-left:auto;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
-    </div>
-    <div class="enterprise-pill" onclick="navigate('admin');switchAdminTab('enterprise',document.querySelector('.admin-tab'))">
-      <div class="ep-dot"></div>
-      <div style="flex:1;min-width:0">
-        <div class="ep-name" id="sidebarEnterprise">My Enterprise</div>
-        <div class="ep-tag">Enterprise account</div>
-      </div>
-    </div>
-    <div class="user-card">
-      <div class="user-av" id="sidebarAvatar">?</div>
-      <div style="flex:1;min-width:0">
-        <div class="user-n" id="sidebarName">Loading...</div>
-        <div class="user-r" id="sidebarRole">—</div>
-      </div>
-    </div>
-    <nav class="sidebar-nav" id="sidebarNav"></nav>
-    <div class="sidebar-footer"><button class="logout-btn" onclick="doLogout()">↪ Sign Out</button></div>
-  </aside>
-
-  <!-- MAIN -->
-  <div class="main" id="mainContent">
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></div>
-        <div class="topbar-title" id="topbarTitle">Dashboard</div>
-      </div>
-      <div class="topbar-right">
-        <button class="btn btn-primary btn-sm" onclick="openNewClaim()" id="newClaimBtn">+ New Claim</button>
-      </div>
-    </div>
-
-    <!-- ━━━━━━ DASHBOARD ━━━━━━ -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <div>
-          <div class="page-title" id="dashWelcome">Dashboard</div>
-          <div class="page-sub" id="dashDate"></div>
-        </div>
-        <button class="btn btn-primary" onclick="openNewClaim()">+ New Claim</button>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card" style="--stat-color:var(--accent)"><div class="stat-icon" style="background:rgba(59,130,246,0.1)">📋</div><div class="stat-label">Total Claims</div><div class="stat-val" id="st-total">0</div><div class="stat-sub">All time</div></div>
-        <div class="stat-card" style="--stat-color:var(--amber)"><div class="stat-icon" style="background:var(--amber-dim)">⏳</div><div class="stat-label">Pending Approval</div><div class="stat-val" id="st-pending">0</div><div class="stat-sub">Awaiting review</div></div>
-        <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-icon" style="background:var(--green-dim)">✅</div><div class="stat-label">Approved</div><div class="stat-val" id="st-approved">0</div><div class="stat-sub" id="st-rate">0% rate</div></div>
-        <div class="stat-card" style="--stat-color:var(--purple)"><div class="stat-icon" style="background:var(--purple-dim)">₹</div><div class="stat-label">Total Value</div><div class="stat-val" id="st-value">₹0</div><div class="stat-sub" id="st-approved-val">Approved: ₹0</div></div>
-      </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Recent Claims</span><button class="btn btn-glass btn-sm" onclick="navigate('claims')">View All</button></div>
-          <div id="dashRecent"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No claims yet</div></div></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Claims by Category</span></div>
-          <div class="card-body" id="dashCats"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ━━━━━━ CLAIMS ━━━━━━ -->
-    <div class="page" id="page-claims">
-      <div class="page-header">
-        <div><div class="page-title">Claims</div><div class="page-sub" id="claimsSub">All expense claims</div></div>
-        <button class="btn btn-primary btn-sm" onclick="openNewClaim()" id="claimsNewBtn">+ New Claim</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-        <input type="text" placeholder="Search claims, employees..." style="flex:1;min-width:160px" oninput="filterClaims(this.value)" id="claimSearch">
-        <select style="width:140px" onchange="filterStatus(this.value)"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="review">Review</option><option value="draft">Draft</option></select>
-        <select style="width:150px" onchange="filterType(this.value)"><option value="">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Hotel</option><option value="other">Other</option></select>
-        <button class="btn btn-glass btn-sm" onclick="refreshClaims()">↻</button>
-      </div>
-      <div class="card claims-table">
-        <div class="tbl-wrap"><table><thead><tr><th>Claim ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th>AI Score</th><th>Actions</th></tr></thead><tbody id="claimsTbody"></tbody></table></div>
-      </div>
-      <div class="claim-cards" id="claimsCardList"></div>
-    </div>
-
-    <!-- ━━━━━━ APPROVALS ━━━━━━ -->
-    <div class="page" id="page-approvals">
-      <div class="page-header"><div><div class="page-title">Approval Queue</div><div class="page-sub" id="approvalSub">0 claims pending your approval</div></div></div>
-      <div class="alert al-info" id="approvalAlert">Reviewing as: <strong id="approvalRoleLabel">—</strong> · Limits enforced by approval matrix.</div>
-      <div class="card claims-table">
-        <div class="tbl-wrap"><table><thead><tr><th>Claim ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Route</th><th>Submitted</th><th>Actions</th></tr></thead><tbody id="approvalsTbody"></tbody></table></div>
-      </div>
-      <div class="claim-cards" id="approvalsCardList"></div>
-    </div>
-
-    <!-- ━━━━━━ ADMIN ━━━━━━ -->
-    <div class="page" id="page-admin">
-      <div class="page-header"><div><div class="page-title">Admin Panel</div><div class="page-sub">Manage enterprise settings, employees, and approval rules</div></div></div>
-      <div class="admin-tabs" id="adminTabBar">
-        <div class="admin-tab active" onclick="switchAdminTab('enterprise',this)">🏢 Enterprise</div>
-        <div class="admin-tab" onclick="switchAdminTab('employees',this)">👥 Employees</div>
-        <div class="admin-tab" onclick="switchAdminTab('matrix',this)">🔧 Approval Matrix</div>
-        <div class="admin-tab" onclick="switchAdminTab('policies',this)">📋 Policies</div>
-        <div class="admin-tab" onclick="switchAdminTab('aianalyzer',this)">✦ Policy Engine</div>
-      </div>
-
-      <!-- ENTERPRISE TAB -->
-      <div id="tab-enterprise">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Enterprise Details</span><button class="btn btn-glass btn-sm" onclick="openEditEnterprise()">✏ Edit</button></div>
-          <div class="card-body">
-            <div class="form-grid" id="enterpriseDetails">
-              <div class="fg"><label>Company Name</label><div id="ent-name" style="font-size:14px;font-weight:600;color:var(--text);padding-top:4px">—</div></div>
-              <div class="fg"><label>Domain</label><div id="ent-domain" style="font-size:14px;color:var(--text2);padding-top:4px">—</div></div>
-              <div class="fg"><label>Industry</label><div id="ent-industry" style="font-size:14px;color:var(--text2);padding-top:4px">—</div></div>
-              <div class="fg"><label>Currency</label><div id="ent-currency" style="font-size:14px;color:var(--text2);padding-top:4px">INR</div></div>
-              <div class="fg"><label>Country</label><div id="ent-country" style="font-size:14px;color:var(--text2);padding-top:4px">—</div></div>
-              <div class="fg"><label>Invite Code</label><div id="ent-code" style="font-size:14px;color:var(--accent2);padding-top:4px;font-family:var(--mono)">—</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- EMPLOYEES TAB -->
-      <div id="tab-employees" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-          <div style="font-size:13px;color:var(--text2)" id="empCount">0 employees</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-glass btn-sm" onclick="openImport()">↑ Upload File</button>
-            <button class="btn btn-primary btn-sm" onclick="openAddEmployee()">+ Add Employee</button>
-          </div>
-        </div>
-        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Grade</th><th>Dept</th><th>Manager</th><th>Role</th><th></th></tr></thead><tbody id="empTbody"></tbody></table></div></div>
-      </div>
-
-      <!-- MATRIX TAB -->
-      <div id="tab-matrix" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-          <div style="font-size:13px;color:var(--text2)">Approval limits by grade and claim type</div>
-          <button class="btn btn-primary btn-sm" onclick="openAddMatrix()">+ Add Rule</button>
-        </div>
-        <div class="alert al-warn">Changes apply immediately to all future claims.</div>
-        <div class="card"><div class="card-body" style="padding:12px 18px">
-          <div class="mx-head"><span>Grade</span><span>Type</span><span>Self (₹)</span><span>Manager (₹)</span><span>Finance (₹)</span><span></span></div>
-          <div id="matrixList"></div>
-        </div></div>
-      </div>
-
-      <!-- POLICIES TAB -->
-      <div id="tab-policies" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-          <div style="font-size:13px;color:var(--text2)">Monthly limits per expense category</div>
-          <button class="btn btn-primary btn-sm" onclick="openAddPolicy()">+ Add Policy</button>
-        </div>
-        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Monthly Max</th><th>Per-Claim Max</th><th>Receipt</th><th>Notes</th><th></th></tr></thead><tbody id="policyTbody"></tbody></table></div></div>
-      </div>
-
-      <!-- GEMINI POLICY ENGINE TAB -->
-      <div id="tab-aianalyzer" style="display:none">
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">✦ Gemini Policy Engine</span>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px;width:100%">Upload your HR policy — Gemini reads every rule and applies them to your approval matrix and expense limits instantly.</div>
-          </div>
-          <div class="card-body">
-            <!-- Drop zone -->
-            <div style="border:2px dashed rgba(99,102,241,0.3);border-radius:12px;padding:22px;text-align:center;cursor:pointer;background:#FAFBFF;margin-bottom:14px;transition:all 0.2s"
-              onclick="document.getElementById('pa-file').click()"
-              ondragover="event.preventDefault();this.style.borderColor='#4F46E5';this.style.background='#EEF2FF'"
-              ondragleave="this.style.borderColor='';this.style.background=''"
-              ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';onPolicyFileDrop(event)">
-              <div style="font-size:32px;margin-bottom:8px">📋</div>
-              <div style="font-size:14px;font-weight:600;color:#312E81" id="pa-file-label">Drop your policy document here</div>
-              <div style="font-size:11px;color:#818CF8;margin-top:4px">PDF · Image · Word · TXT — or paste text below</div>
-            </div>
-            <input type="file" id="pa-file" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="onPolicyFileSelected(this)">
-            <div class="fg" style="margin-bottom:14px">
-              <label>Or paste policy text</label>
-              <textarea id="pa-text" style="min-height:110px" placeholder="e.g. L1 staff: Fuel ₹2,000/month, Mobile ₹800. L2: Fuel ₹3,000. Travel >₹10,000 needs manager approval. Travel >₹50,000 needs Finance. Hotel max ₹8,000/night..."></textarea>
-            </div>
-            <button onclick="runPolicyAnalyzer()"
-              style="width:100%;padding:13px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:10px;cursor:pointer;font-family:var(--font);margin-bottom:14px">
-              ✦ Analyze &amp; Apply Rules with Gemini
-            </button>
-            <div class="ai-thinking" id="paThinking" style="margin-bottom:12px"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="paThinkLabel">Gemini is reading your policy...</span></div>
-            <div id="paResult" style="display:none"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ━━━━━━ ANALYTICS ━━━━━━ -->
-    <div class="page" id="page-analytics">
-      <div class="page-header"><div><div class="page-title">Analytics</div><div class="page-sub">Claims intelligence &amp; risk insights</div></div></div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">Avg Claim Value</div><div class="stat-val" id="an-avg">₹0</div></div>
-        <div class="stat-card"><div class="stat-label">Approval Rate</div><div class="stat-val" id="an-rate">0%</div></div>
-        <div class="stat-card"><div class="stat-label">Highest Single Claim</div><div class="stat-val" id="an-high">₹0</div></div>
-        <div class="stat-card"><div class="stat-label">Flagged / Review</div><div class="stat-val" id="an-flag">0</div></div>
-      </div>
-      <div class="two-col" style="margin-bottom:18px">
-        <div class="card"><div class="card-header"><span class="card-title">By Category</span></div><div class="card-body" id="an-type"></div></div>
-        <div class="card"><div class="card-header"><span class="card-title">By Status</span></div><div class="card-body" id="an-status"></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Employee Risk Summary</span></div>
-        <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Grade</th><th>Claims</th><th>Total Value</th><th>Approved</th><th>Rejected</th><th>Risk Score</th></tr></thead><tbody id="an-emp"></tbody></table></div>
-      </div>
-    </div>
-
-    <!-- ━━━━━━ ERP EXPORT ━━━━━━ -->
-    <div class="page" id="page-erp">
-      <div class="page-header"><div><div class="page-title">ERP Export</div><div class="page-sub">Export approved claims data for SAP, Oracle, or any ERP system</div></div></div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header"><span class="card-title">Export Format</span></div>
-          <div class="card-body">
-            <div class="export-format-grid" id="exportFormatGrid">
-              <div class="export-card selected" data-fmt="csv" onclick="selectExportFmt(this,'csv')"><div class="export-card-icon">📊</div><div class="export-card-name">CSV</div><div class="export-card-desc">Excel-compatible</div></div>
-              <div class="export-card" data-fmt="json" onclick="selectExportFmt(this,'json')"><div class="export-card-icon">{ }</div><div class="export-card-name">JSON</div><div class="export-card-desc">API / structured</div></div>
-              <div class="export-card" data-fmt="xml" onclick="selectExportFmt(this,'xml')"><div class="export-card-icon">📄</div><div class="export-card-name">XML</div><div class="export-card-desc">SAP / ERP standard</div></div>
-            </div>
-            <div class="form-grid" style="margin-bottom:14px">
-              <div class="fg"><label>Date From</label><input type="date" id="exp-from"></div>
-              <div class="fg"><label>Date To</label><input type="date" id="exp-to"></div>
-            </div>
-            <div class="fg" style="margin-bottom:16px">
-              <label>Include Statuses</label>
-              <div style="display:flex;gap:12px;padding-top:6px;flex-wrap:wrap">
-                <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text2);cursor:pointer"><input type="checkbox" id="exp-approved" checked style="width:auto"> Approved</label>
-                <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text2);cursor:pointer"><input type="checkbox" id="exp-pending" style="width:auto"> Pending</label>
-                <label style="display:flex;align-items:center;gap:6px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text2);cursor:pointer"><input type="checkbox" id="exp-rejected" style="width:auto"> Rejected</label>
-              </div>
-            </div>
-            <div class="al-info alert" id="expPreview" style="font-size:12px">Select filters above to preview export.</div>
-            <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doExport()" id="expBtn">↓ Export File</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Export History</span></div>
-          <div class="card-body" id="exportHistory"><div class="empty"><div class="empty-icon">📤</div><div class="empty-title">No exports yet</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ━━━━━━ AI ASSISTANT ━━━━━━ -->
-<!-- chatbot removed -->
-
-  </div><!-- /main -->
-
-  <!-- MOBILE NAV -->
-  <div class="mobile-nav" id="mobileNav"></div>
-  <button class="fab" onclick="openNewClaim()">+</button>
-
-</div><!-- /appShell -->
-
-<!-- ══════════════════════════════
-     MODALS
-══════════════════════════════ -->
-
-<!-- NEW CLAIM -->
-<div class="modal-overlay" id="newClaimModal">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <div class="modal-title">Submit Expense Claim</div>
-      <button class="modal-close" onclick="closeModal('newClaimModal')">✕</button>
-    </div>
-    <div class="modal-body">
-
-      <!-- GEMINI EXPENSE PARSER -->
-      <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px solid rgba(99,102,241,0.2);border-radius:14px;padding:16px;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#4F46E5,#7C3AED);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;flex-shrink:0">✦</div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:#312E81">Gemini Expense Parser</div>
-            <div style="font-size:11px;color:#6366F1">Drop a receipt or describe — AI fills every field instantly</div>
-          </div>
-          <span class="gemini-key-status" style="font-size:11px;cursor:pointer;color:var(--green)">● AI Ready</span>
-        </div>
-
-        <!-- Multi-file drop zone -->
-        <div id="aiDropZone"
-          style="border:2px dashed rgba(99,102,241,0.35);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.7);margin-bottom:10px"
-          onclick="document.getElementById('ai-doc-input').click()"
-          ondragover="event.preventDefault();this.style.borderColor='#4F46E5';this.style.background='#EEF2FF'"
-          ondragleave="this.style.borderColor='';this.style.background=''"
-          ondrop="onAIDrop(event);this.style.borderColor='';this.style.background=''">
-          <div style="font-size:24px;margin-bottom:6px">📎</div>
-          <div style="font-size:13px;font-weight:600;color:#4338CA" id="aiDocLabel">Drop receipt, invoice, or ticket here</div>
-          <div style="font-size:11px;color:#818CF8;margin-top:3px">JPG · PNG · PDF · Up to 4 files · Drag & drop or click · AI auto-fills every field</div>
-        </div>
-        <input type="file" id="ai-doc-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple onchange="onAIDocSelected(this)">
-        <div id="aiDocPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-
-        <!-- Text fallback -->
-        <div style="display:flex;gap:8px">
-          <input type="text" id="ai-prompt"
-            placeholder="Or describe: 'Ola from office to airport 15 March ₹1200'"
-            style="flex:1;border-radius:8px;font-size:12px;padding:9px 12px;border-color:rgba(99,102,241,0.25)"
-            onkeydown="if(event.key==='Enter')runAIFill()">
-          <button class="btn btn-sm" onclick="runAIFill()"
-            style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:8px;white-space:nowrap;font-size:12px">
-            <span id="ai-btn-text">✦ Parse</span>
-          </button>
-        </div>
-
-        <div class="ai-thinking" id="aiThinking" style="margin-top:10px"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="aiThinkLabel">Gemini is reading...</span></div>
-        <div class="ai-result" id="aiResult" style="margin-top:8px"></div>
-      </div>
-
-      <!-- CLAIM FORM -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)">
-        <span style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Claim Details</span>
-        <span style="font-size:11px;color:var(--text3)">· Fill manually or use AI above</span>
-      </div>
-      <div class="form-grid">
-        <div class="fg"><label>Claim Type *</label>
-          <select id="nc-type" onchange="toggleTravelFields();runLiveValidation()">
-            <option value="">Select type</option>
-            <option value="travel">✈️ Travel Domestic</option>
-            <option value="travel-intl">✈️ Travel International</option>
-            <option value="fuel">⛽ Fuel</option>
-            <option value="mobile">📱 Mobile / Internet</option>
-            <option value="food">🍽️ Food & Meal</option>
-            <option value="accommodation">🏨 Accommodation</option>
-            <option value="other">📦 Other</option>
-          </select>
-        </div>
-        <div class="fg"><label>Date of Expense *</label><input type="date" id="nc-date"></div>
-        <div class="fg"><label>Amount (₹) *</label><input type="number" id="nc-amount" placeholder="0.00" inputmode="decimal" oninput="runLiveValidation()"></div>
-        <div class="fg"><label>Vendor / Merchant</label><input type="text" id="nc-vendor" placeholder="e.g. Ola, IRCTC, Hotel Name"></div>
-        <div class="fg full"><label>Description / Business Purpose *</label><textarea id="nc-desc" placeholder="Describe the business reason for this expense..."></textarea></div>
-        <div class="fg"><label>Project Code</label><input type="text" id="nc-project" placeholder="e.g. PRJ-2025"></div>
-        <div class="fg"><label>Tax Amount (₹)</label><input type="number" id="nc-tax" placeholder="0.00" inputmode="decimal"></div>
-      </div>
-
-      <!-- TRAVEL FIELDS -->
-      <div id="travelBlock" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-        <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Travel Details</div>
-        <div class="form-grid">
-          <div class="fg"><label>From City</label><input type="text" id="nc-origin" placeholder="Mumbai"></div>
-          <div class="fg"><label>To City</label><input type="text" id="nc-dest" placeholder="Delhi"></div>
-          <div class="fg"><label>Travel From</label><input type="date" id="nc-tfrom"></div>
-          <div class="fg"><label>Travel To</label><input type="date" id="nc-tto"></div>
-          <div class="fg"><label>Mode of Travel</label>
-            <select id="nc-mode"><option>Flight</option><option>Train</option><option>Bus</option><option>Cab / Taxi</option><option>Own Vehicle</option></select>
-          </div>
-          <div class="fg"><label>Travel Approval Ref.</label><input type="text" id="nc-tref" placeholder="TA-2025-001"></div>
-        </div>
-      </div>
-
-      <!-- SUPPORTING DOCS -->
-      <div style="margin-top:16px">
-        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Supporting Documents</div>
-        <div class="upload-zone" onclick="document.getElementById('nc-files').click()">
-          <div class="upload-icon">📎</div>
-          <div class="upload-text">Click to attach receipts or invoices</div>
-          <div class="upload-sub">PDF, JPG, PNG, Excel supported · AI will auto-scan if form is empty</div>
-        </div>
-        <input type="file" id="nc-files" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls" onchange="handleFiles(this)">
-        <div id="nc-file-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
-      </div>
-
-      <!-- LIVE VALIDATION -->
-      <div id="liveVal" style="display:none;margin-top:16px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Submission Checklist</div>
-        <div id="valItems"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('newClaimModal')">Cancel</button>
-      <button class="btn btn-glass btn-sm" onclick="saveDraft()">Save Draft</button>
-      <button class="btn btn-primary" onclick="submitClaim()">✦ Submit Claim</button>
-    </div>
-  </div>
-</div>
-
-<!-- CLAIM DETAIL -->
-<div class="modal-overlay" id="claimDetailModal">
-  <div class="modal modal-lg">
-    <div class="modal-header"><div class="modal-title" id="cdTitle">Claim Details</div><button class="modal-close" onclick="closeModal('claimDetailModal')">✕</button></div>
-    <div class="modal-body" id="cdBody"></div>
-    <div class="modal-footer" id="cdFooter"></div>
-  </div>
-</div>
-
-<!-- ENTERPRISE EDIT -->
-<div class="modal-overlay" id="enterpriseModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><div class="modal-title">Enterprise Details</div><button class="modal-close" onclick="closeModal('enterpriseModal')">✕</button></div>
-    <div class="modal-body">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="fg"><label>Company Name *</label><input type="text" id="ent-name-input" placeholder="Acme Technologies Pvt Ltd"></div>
-        <div class="fg"><label>Domain</label><input type="text" id="ent-domain-input" placeholder="acmetech.in"></div>
-        <div class="form-grid">
-          <div class="fg"><label>Industry</label><input type="text" id="ent-industry-input" placeholder="Information Technology"></div>
-          <div class="fg"><label>Country</label><input type="text" id="ent-country-input" placeholder="India"></div>
-        </div>
-        <div class="form-grid">
-          <div class="fg"><label>Currency</label><select id="ent-currency-input"><option value="INR">INR — ₹</option><option value="USD">USD — $</option><option value="EUR">EUR — €</option></select></div>
-          <div class="fg"><label>Fiscal Year Start</label><select id="ent-fy-input"><option value="April">April</option><option value="January">January</option></select></div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('enterpriseModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="saveEnterprise()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD EMPLOYEE -->
-<div class="modal-overlay" id="addEmpModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><div class="modal-title" id="addEmpTitle">Add Employee</div><button class="modal-close" onclick="closeModal('addEmpModal')">✕</button></div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="fg"><label>First Name</label><input type="text" id="ae-fname" placeholder="Rahul" autocomplete="given-name"></div>
-        <div class="fg"><label>Last Name</label><input type="text" id="ae-lname" placeholder="Sharma" autocomplete="family-name"></div>
-        <div class="fg"><label>Email</label><input type="email" id="ae-email" placeholder="rahul@company.com"></div>
-        <div class="fg"><label>Employee ID</label><input type="text" id="ae-empid" placeholder="EMP001"></div>
-        <div class="fg"><label>Grade</label><select id="ae-grade"><option value="L1">L1 — Junior</option><option value="L2">L2 — Analyst</option><option value="L3" selected>L3 — Senior</option><option value="L4">L4 — Lead</option><option value="L5">L5 — Manager</option><option value="L6">L6 — Director</option></select></div>
-        <div class="fg"><label>Department</label><input type="text" id="ae-dept" placeholder="Finance, Operations..."></div>
-        <div class="fg full"><label>Reporting Manager Email</label><input type="email" id="ae-mgr" placeholder="manager@company.com"></div>
-        <div class="fg"><label>Role</label><select id="ae-role"><option value="employee">Employee</option><option value="manager">Manager</option><option value="finance">Finance</option><option value="admin">Admin</option></select></div>
-        <div class="fg"><label>Location</label><input type="text" id="ae-loc" placeholder="Mumbai, Delhi..."></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('addEmpModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="saveEmployee()">Save Employee</button>
-    </div>
-  </div>
-</div>
-
-<!-- IMPORT MODAL -->
-<div class="modal-overlay" id="importModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><div class="modal-title">Upload Employee Data</div><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
-    <div class="modal-body">
-      <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:#4338CA">
-        <strong>✦ Gemini-powered import</strong> — upload any file format. AI reads the columns automatically regardless of header names.
-      </div>
-      <div class="upload-zone" onclick="document.getElementById('empFile').click()" style="margin-top:4px"
-        ondragover="event.preventDefault();this.style.borderColor='#4F46E5'"
-        ondragleave="this.style.borderColor=''"
-        ondrop="event.preventDefault();parseEmpFileFromDrop(event)">
-        <div class="upload-icon">📊</div>
-        <div class="upload-text">Drop or click to upload employee data</div>
-        <div class="upload-sub">.csv · .xlsx · .xls · .txt · or paste below</div>
-      </div>
-      <input type="file" id="empFile" accept=".csv,.xlsx,.xls,.txt" style="display:none" onchange="parseEmpFile(this)">
-      <div style="margin:10px 0 4px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Or paste employee data directly</div>
-      <textarea id="empPasteArea" style="min-height:80px;font-size:12px;font-family:var(--mono)" placeholder="Name, Email, Department, Grade&#10;Rahul Sharma, rahul@co.in, Finance, L3&#10;Priya Singh, priya@co.in, Marketing, L2"></textarea>
-      <button class="btn btn-primary btn-sm" onclick="parseEmpFromPaste()" style="margin-top:8px;width:100%">✦ Parse with Gemini</button>
-      <div id="importPreview" style="margin-top:10px;font-size:12px;color:var(--text2)"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('importModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" id="importBtn" disabled onclick="importEmployees()">Import Employees</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD MATRIX -->
-<div class="modal-overlay" id="addMatrixModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><div class="modal-title">Add Approval Rule</div><button class="modal-close" onclick="closeModal('addMatrixModal')">✕</button></div>
-    <div class="modal-body">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="fg"><label>Employee Grade</label><select id="mx-grade"><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="L4">L4</option><option value="L5">L5</option><option value="L6">L6</option><option value="ALL">All Grades</option></select></div>
-        <div class="fg"><label>Claim Type</label><select id="mx-type"><option value="all">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="mobile">Mobile</option><option value="food">Food</option><option value="accommodation">Accommodation</option></select></div>
-        <div class="form-grid">
-          <div class="fg"><label>Self Approve (₹)</label><input type="number" id="mx-self" placeholder="1000" inputmode="numeric"></div>
-          <div class="fg"><label>Manager Limit (₹)</label><input type="number" id="mx-mgr" placeholder="10000" inputmode="numeric"></div>
-        </div>
-        <div class="fg"><label>Finance Required Above (₹)</label><input type="number" id="mx-fin" placeholder="25000" inputmode="numeric"></div>
-        <div class="fg"><label>Notes</label><textarea id="mx-notes" style="min-height:60px" placeholder="Context for this rule..."></textarea></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('addMatrixModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="saveMatrixRule()">Save Rule</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD POLICY -->
-<div class="modal-overlay" id="addPolicyModal">
-  <div class="modal modal-sm">
-    <div class="modal-header"><div class="modal-title">Add Claim Policy</div><button class="modal-close" onclick="closeModal('addPolicyModal')">✕</button></div>
-    <div class="modal-body">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="fg"><label>Claim Type</label><select id="po-type"><option value="travel">Travel Domestic</option><option value="travel-intl">Travel International</option><option value="fuel">Fuel</option><option value="mobile">Mobile/Internet</option><option value="food">Food & Meal</option><option value="accommodation">Accommodation</option><option value="other">Other</option></select></div>
-        <div class="form-grid">
-          <div class="fg"><label>Monthly Max (₹)</label><input type="number" id="po-max" placeholder="5000" inputmode="numeric"></div>
-          <div class="fg"><label>Per-Claim Max (₹)</label><input type="number" id="po-per" placeholder="2000" inputmode="numeric"></div>
-        </div>
-        <div class="fg"><label>Receipt Required</label><select id="po-receipt"><option value="true">Yes</option><option value="false">No</option></select></div>
-        <div class="fg"><label>Notes</label><textarea id="po-notes" style="min-height:60px"></textarea></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('addPolicyModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="savePolicy()">Save Policy</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- AI KEY MODAL -->
-<div class="modal-overlay" id="aiKeyModal">
-  <div class="modal modal-sm">
-    <div class="modal-header">
-      <div class="modal-title">✦ Configure Gemini AI</div>
-      <button class="modal-close" onclick="closeModal('aiKeyModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:#EFF6FF;border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.6">
-        <div style="font-weight:600;color:var(--accent);margin-bottom:6px">How to get a free API key</div>
-        1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a><br>
-        2. Click <strong>Create API key</strong> → select any project<br>
-        3. Copy the key (starts with <code style="background:#E0E7FF;padding:1px 5px;border-radius:4px">AIza</code>)<br>
-        4. Paste it below
-      </div>
-      <div class="fg">
-        <label>Gemini API Key</label>
-        <input type="text" id="aiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Stored locally in your browser · Never sent to our servers</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('aiKeyModal')">Cancel</button>
-      <button class="btn btn-glass btn-sm" onclick="document.getElementById('aiKeyInput').value='';saveAIKey()">Clear Key</button>
-      <button class="btn btn-primary btn-sm" onclick="saveAIKey()">Save & Activate</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="toast-icon" id="toastIcon"></div>
-  <div><div class="toast-title" id="toastTitle"></div><div class="toast-text" id="toastText"></div></div>
-</div>
-
-<!-- ══════════════════════════════
-     JAVASCRIPT
-══════════════════════════════ -->
 
 </body>
 </html>
