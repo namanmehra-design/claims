@@ -508,6 +508,74 @@ textarea{resize:vertical;min-height:80px}
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
   .stat-val{font-size:18px}
 }
+
+/* ═══════════════════════════════════════
+   ENTERPRISE REGISTRATION WIZARD
+═══════════════════════════════════════ */
+#regScreen{
+  min-height:100vh;display:none;align-items:center;justify-content:center;
+  background:var(--bg);position:relative;z-index:1;padding:20px;
+}
+.reg-wrap{
+  width:100%;max-width:640px;
+  background:#FFFFFF;border:1px solid var(--border2);
+  border-radius:24px;box-shadow:0 8px 48px rgba(0,0,0,0.10);
+  overflow:hidden;
+}
+.reg-header{
+  background:linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 100%);
+  padding:28px 32px 22px;border-bottom:1px solid var(--border);
+}
+.reg-brand{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.reg-brand-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white}
+.reg-brand-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.reg-steps{display:flex;align-items:center;gap:0}
+.reg-step{display:flex;align-items:center;gap:0;flex:1}
+.reg-step-dot{
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);
+  background:#FFFFFF;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--text3);flex-shrink:0;
+  transition:all 0.3s;z-index:1;position:relative;
+}
+.reg-step-dot.active{border-color:var(--accent);background:var(--accent);color:white;box-shadow:0 0 0 4px rgba(37,99,235,0.12)}
+.reg-step-dot.done{border-color:var(--green);background:var(--green);color:white}
+.reg-step-line{flex:1;height:2px;background:var(--border);margin:0 4px;transition:background 0.3s}
+.reg-step-line.done{background:var(--green)}
+.reg-step-label{position:absolute;top:34px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--text3);white-space:nowrap;text-transform:uppercase;letter-spacing:0.5px}
+.reg-step-dot.active .reg-step-label,.reg-step-dot.done .reg-step-label{color:var(--accent)}
+.reg-body{padding:28px 32px}
+.reg-step-title{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.4px;margin-bottom:4px}
+.reg-step-sub{font-size:13px;color:var(--text2);margin-bottom:22px}
+.reg-footer{padding:16px 32px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#FAFBFC}
+.reg-page{display:none}
+.reg-page.active{display:block}
+
+/* Grade builder */
+.grade-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.grade-row{display:grid;grid-template-columns:70px 1fr 1fr auto;gap:8px;align-items:center}
+.grade-row input,grade-row select{font-size:13px;padding:8px 10px}
+.grade-add-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);cursor:pointer;padding:6px 0;background:none;border:none;font-family:var(--font);font-weight:500}
+.grade-add-btn:hover{color:#1D4ED8}
+
+/* Policy quick-set */
+.policy-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.policy-card{background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s}
+.policy-card.selected{border-color:var(--accent);background:#EFF6FF}
+.policy-card-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.policy-card-desc{font-size:11px;color:var(--text3)}
+
+/* Onboarding success */
+.onboard-success{text-align:center;padding:16px 0 8px}
+.onboard-icon{font-size:52px;margin-bottom:16px;animation:popIn 0.5s cubic-bezier(0.34,1.4,0.64,1)}
+@keyframes popIn{from{transform:scale(0.3);opacity:0}to{transform:scale(1);opacity:1}}
+.onboard-title{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:8px}
+.onboard-sub{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+.onboard-checklist{display:flex;flex-direction:column;gap:8px;text-align:left;background:#F8FAFC;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px}
+.onboard-check{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.onboard-check-icon{width:20px;height:20px;border-radius:50%;background:var(--green-dim);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.invite-code-box{background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px dashed rgba(37,99,235,0.3);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.invite-code{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);letter-spacing:2px}
+
 </style>
 </head>
 <body>
@@ -551,7 +619,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="auth-box-sub">Sign in to your enterprise account</div>
       <div class="auth-tabs">
         <div class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</div>
-        <div class="auth-tab" onclick="switchAuthTab('register',this)">Register</div>
+        <div class="auth-tab" onclick="showRegWizard()">Register Enterprise</div>
       </div>
       <div class="auth-error" id="authError"></div>
       <div class="auth-form" id="loginForm">
@@ -562,20 +630,211 @@ textarea{resize:vertical;min-height:80px}
         <button class="auth-demo-btn" onclick="demoLogin()">🚀 Launch Demo (Client Presentation)</button>
         <div style="font-size:11px;color:var(--text3);text-align:center">Demo includes: 10 claims, 5 employees, approval matrix &amp; analytics</div>
       </div>
-      <div class="auth-form" id="registerForm" style="display:none">
-        <div class="form-grid">
-          <div class="fg"><label>First Name</label><input type="text" id="r-fname" placeholder="Naman" autocomplete="given-name"></div>
-          <div class="fg"><label>Last Name</label><input type="text" id="r-lname" placeholder="Sharma" autocomplete="family-name"></div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     ENTERPRISE REGISTRATION WIZARD
+══════════════════════════════ -->
+<div id="regScreen" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);position:relative;z-index:1;padding:20px">
+  <div class="reg-wrap">
+
+    <!-- HEADER + STEP INDICATOR -->
+    <div class="reg-header">
+      <div class="reg-brand">
+        <div class="reg-brand-icon">C</div>
+        <div class="reg-brand-name">ClaimsIQ Enterprise</div>
+      </div>
+      <div class="reg-steps" id="regSteps">
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot active" id="rdot1">1<span class="reg-step-label">Company</span></div>
         </div>
-        <div class="fg"><label>Work Email</label><input type="email" id="r-email" placeholder="you@company.com" autocomplete="email"></div>
-        <div class="fg"><label>Password</label><input type="password" id="r-pass" placeholder="Min 6 characters" autocomplete="new-password"></div>
-        <div class="form-grid">
-          <div class="fg"><label>Grade</label><select id="r-grade"><option value="L1">L1 — Junior</option><option value="L2">L2 — Analyst</option><option value="L3" selected>L3 — Senior</option><option value="L4">L4 — Lead</option><option value="L5">L5 — Manager</option><option value="L6">L6 — Director</option></select></div>
-          <div class="fg"><label>Department</label><input type="text" id="r-dept" placeholder="Finance, Ops..."></div>
+        <div class="reg-step-line" id="rline1"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot2">2<span class="reg-step-label">Admin</span></div>
         </div>
-        <button class="btn btn-primary" style="width:100%;padding:13px;" onclick="doRegister()">Create Account</button>
+        <div class="reg-step-line" id="rline2"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot3">3<span class="reg-step-label">Grades</span></div>
+        </div>
+        <div class="reg-step-line" id="rline3"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot4">4<span class="reg-step-label">Policies</span></div>
+        </div>
+        <div class="reg-step-line" id="rline4"></div>
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="reg-step-dot" id="rdot5">✓<span class="reg-step-label">Done</span></div>
+        </div>
       </div>
     </div>
+
+    <!-- STEP CONTENT -->
+    <div class="reg-body">
+      <div id="regError" style="display:none;background:#FEF2F2;border:1px solid rgba(220,38,38,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px"></div>
+
+      <!-- STEP 1: Company -->
+      <div class="reg-page active" id="regPage1">
+        <div class="reg-step-title">Set up your company</div>
+        <div class="reg-step-sub">This is your enterprise workspace on ClaimsIQ. Your employees will join using your invite code.</div>
+        <div class="form-grid">
+          <div class="fg full"><label>Company Name *</label><input type="text" id="rg-cname" placeholder="e.g. Acme Technologies Pvt Ltd" autocomplete="organization"></div>
+          <div class="fg"><label>Industry *</label>
+            <select id="rg-industry">
+              <option value="">Select industry</option>
+              <option>Information Technology</option><option>Financial Services</option>
+              <option>Manufacturing</option><option>Healthcare</option>
+              <option>Retail & E-Commerce</option><option>Consulting</option>
+              <option>Real Estate</option><option>Education</option>
+              <option>Media & Entertainment</option><option>Other</option>
+            </select>
+          </div>
+          <div class="fg"><label>Company Size</label>
+            <select id="rg-size">
+              <option value="1-10">1–10 employees</option>
+              <option value="11-50">11–50 employees</option>
+              <option value="51-200" selected>51–200 employees</option>
+              <option value="201-1000">201–1,000 employees</option>
+              <option value="1000+">1,000+ employees</option>
+            </select>
+          </div>
+          <div class="fg"><label>Country</label>
+            <select id="rg-country">
+              <option value="India" selected>India</option>
+              <option value="USA">United States</option>
+              <option value="UK">United Kingdom</option>
+              <option value="UAE">UAE</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="fg"><label>Currency</label>
+            <select id="rg-currency">
+              <option value="INR" selected>INR — ₹ Indian Rupee</option>
+              <option value="USD">USD — $ US Dollar</option>
+              <option value="GBP">GBP — £ British Pound</option>
+              <option value="AED">AED — د.إ UAE Dirham</option>
+              <option value="SGD">SGD — S$ Singapore Dollar</option>
+            </select>
+          </div>
+          <div class="fg"><label>Fiscal Year Start</label>
+            <select id="rg-fy">
+              <option value="April" selected>April (India standard)</option>
+              <option value="January">January</option>
+              <option value="July">July</option>
+            </select>
+          </div>
+          <div class="fg"><label>Company Website / Domain</label><input type="text" id="rg-domain" placeholder="acmetech.in"></div>
+          <div class="fg"><label>Company GST / Tax ID</label><input type="text" id="rg-gst" placeholder="22AAAAA0000A1Z5 (optional)"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Admin Account -->
+      <div class="reg-page" id="regPage2">
+        <div class="reg-step-title">Create your admin account</div>
+        <div class="reg-step-sub">You'll be the super-admin for your enterprise. You can add more admins later.</div>
+        <div class="form-grid">
+          <div class="fg"><label>First Name *</label><input type="text" id="rg-fname" placeholder="Naman" autocomplete="given-name"></div>
+          <div class="fg"><label>Last Name *</label><input type="text" id="rg-lname" placeholder="Sharma" autocomplete="family-name"></div>
+          <div class="fg full"><label>Work Email *</label><input type="email" id="rg-email" placeholder="naman@company.com" autocomplete="email"></div>
+          <div class="fg"><label>Password *</label><input type="password" id="rg-pass" placeholder="Min 8 characters" autocomplete="new-password"></div>
+          <div class="fg"><label>Confirm Password *</label><input type="password" id="rg-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
+          <div class="fg"><label>Job Title</label><input type="text" id="rg-title" placeholder="e.g. CFO, Finance Manager"></div>
+          <div class="fg"><label>Phone</label><input type="tel" id="rg-phone" placeholder="+91 98xxx xxxxx"></div>
+          <div class="fg"><label>Location / Office</label><input type="text" id="rg-loc" placeholder="Mumbai HQ"></div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Grade Structure -->
+      <div class="reg-page" id="regPage3">
+        <div class="reg-step-title">Define your grade structure</div>
+        <div class="reg-step-sub">Set up employee grades and approval limits. These power the approval matrix. You can update these anytime in Admin Panel.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Grade Levels</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-glass btn-xs" onclick="loadGradeTemplate('india')">🇮🇳 India Standard</button>
+            <button class="btn btn-glass btn-xs" onclick="loadGradeTemplate('global')">🌐 Global Bands</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:70px 1fr 120px 120px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Code</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Title</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Self Approve</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Mgr Limit</div>
+          <div></div>
+        </div>
+        <div class="grade-list" id="gradeList"></div>
+        <button class="grade-add-btn" onclick="addGradeRow()">+ Add grade level</button>
+        <div style="margin-top:14px;padding:10px 14px;background:#EFF6FF;border-radius:8px;border:1px solid rgba(37,99,235,0.15);font-size:12px;color:var(--accent)">
+          ✦ Claims above the Manager Limit will automatically require Finance approval. You can fine-tune this per claim type in Admin Panel → Approval Matrix.
+        </div>
+      </div>
+
+      <!-- STEP 4: Expense Policies -->
+      <div class="reg-page" id="regPage4">
+        <div class="reg-step-title">Set expense policies</div>
+        <div class="reg-step-sub">Define monthly limits and receipt requirements by category. Start with a template or set custom limits.</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('conservative')">Conservative</button>
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('standard')">Standard</button>
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('generous')">Generous</button>
+          <button class="btn btn-glass btn-sm" onclick="loadPolicyTemplate('blank')" style="margin-left:auto">Clear all</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 110px 110px 80px;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Category</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Monthly Max</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Per-Claim Max</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px">Receipt</div>
+        </div>
+        <div id="policySetup" style="display:flex;flex-direction:column;gap:6px"></div>
+        <div style="margin-top:14px;padding:10px 14px;background:#F0FDF4;border-radius:8px;border:1px solid rgba(5,150,105,0.15);font-size:12px;color:var(--green)">
+          ✓ Policies apply to all employees. You can override per grade in Admin Panel → Approval Matrix.
+        </div>
+      </div>
+
+      <!-- STEP 5: Success / Onboarding -->
+      <div class="reg-page" id="regPage5">
+        <div class="onboard-success">
+          <div class="onboard-icon">🎉</div>
+          <div class="onboard-title">Your enterprise is ready!</div>
+          <div class="onboard-sub" id="onboardSub">Welcome to ClaimsIQ. Your workspace has been configured and your data is live on Firebase.</div>
+          <div class="onboard-checklist">
+            <div class="onboard-check"><div class="onboard-check-icon">✓</div><span>Enterprise workspace created</span></div>
+            <div class="onboard-check"><div class="onboard-check-icon">✓</div><span>Admin account configured</span></div>
+            <div class="onboard-check"><div class="onboard-check-icon" id="gradeDoneIcon">✓</div><span id="gradeDoneText">Grade structure provisioned</span></div>
+            <div class="onboard-check"><div class="onboard-check-icon" id="policyDoneIcon">✓</div><span id="policyDoneText">Expense policies set</span></div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Your Enterprise Invite Code</div>
+            <div class="invite-code-box">
+              <div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:2px">Share with employees to let them join your workspace</div>
+                <div class="invite-code" id="onboardInviteCode">----</div>
+              </div>
+              <button class="btn btn-glass btn-sm" onclick="copyInviteCode()">Copy</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3)">Employees use this code when registering to auto-join your enterprise.</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /reg-body -->
+
+    <!-- FOOTER NAVIGATION -->
+    <div class="reg-footer">
+      <div>
+        <button class="btn btn-glass btn-sm" id="regBackBtn" onclick="regBack()" style="display:none">← Back</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:12px;color:var(--text3)"><span id="regStepLabel">Step 1 of 4</span></div>
+        <button class="btn btn-primary" id="regNextBtn" onclick="regNext()">Next →</button>
+      </div>
+    </div>
+
+  </div><!-- /reg-wrap -->
+  <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text3)">
+    Already have an account? <span style="color:var(--accent);cursor:pointer;font-weight:500" onclick="showAuthFromReg()">Sign in</span>
   </div>
 </div>
 
@@ -1149,38 +1408,46 @@ const _GEMINI_KEY_DEFAULT = 'AIzaSyDwNDRhl5nLXJoW7bX1EnciRPafX9GcOCk';
 function getGeminiKey() {
   return localStorage.getItem('claimsiq_gemini_key') || _GEMINI_KEY_DEFAULT;
 }
-
-function ensureGeminiKey() {
-  return getGeminiKey(); // Key is pre-set, always available
-}
+function ensureGeminiKey() { return getGeminiKey(); }
 
 /**
- * callGemini — unified interface for all AI features.
- * @param {Array} parts  [{text:string}] or [{text}, {inline_data:{mime_type, data}}]
- * @param {boolean} pro  true = gemini-1.5-pro, false = gemini-1.5-flash
+ * callGemini — Direct Gemini REST API via fetch. No SDK. Works in any browser.
  */
 async function callGemini(parts, pro=false) {
-  const key = ensureGeminiKey();
-  if (!key) throw new Error('No Gemini API key. AI features disabled.');
+  const key = getGeminiKey();
+  if (!key || !key.startsWith('AIza')) throw new Error('Invalid Gemini API key.');
 
-  // GoogleGenerativeAI is exposed as window.GoogleGenerativeAI by the CDN bundle
-  const SDK = window.GoogleGenerativeAI;
-  if (!SDK) throw new Error('@google/generative-ai SDK not loaded. Check CDN connection.');
+  const model = pro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
-  const genAI = new SDK(key);
-  const modelName = pro ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
-  const model = genAI.getGenerativeModel({ model: modelName });
-
-  // Convert parts to SDK format
-  const sdkParts = parts.map(p => {
+  const restParts = parts.map(p => {
     if (p.text !== undefined) return { text: p.text };
-    if (p.inline_data) return { inlineData: { mimeType: p.inline_data.mime_type, data: p.inline_data.data } };
-    if (p.inlineData) return p;
+    if (p.inline_data) return { inline_data: p.inline_data };
+    if (p.inlineData) return { inline_data: { mime_type: p.inlineData.mimeType, data: p.inlineData.data } };
     return p;
   });
 
-  const result = await model.generateContent(sdkParts);
-  return result.response.text();
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: restParts }],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    const msg = err?.error?.message || '';
+    if (resp.status === 403 || msg.includes('blocked')) throw new Error('API key restricted. Enable the Generative Language API at console.cloud.google.com for project 466510207505');
+    if (resp.status === 429) throw new Error('Rate limit. Wait a moment and try again.');
+    throw new Error(msg || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Empty Gemini response.');
+  return text;
 }
 
 function extractJSON(text) {
@@ -1197,6 +1464,299 @@ function fileToBase64(file) {
     r.readAsDataURL(file);
   });
 }
+
+// ══════════════════════════════════════
+//  ENTERPRISE REGISTRATION WIZARD
+// ══════════════════════════════════════
+let regStep = 1;
+const REG_TOTAL = 4; // steps before success screen
+let regGrades = [];
+let regPolicies = [];
+let regData = {};
+
+// ── Show / hide screens ──
+function showRegWizard() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('regScreen').style.display = 'flex';
+  initGradeList();
+  initPolicyList();
+  regStep = 1;
+  updateRegUI();
+}
+function showAuthFromReg() {
+  document.getElementById('regScreen').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+}
+
+// ── Step navigation ──
+function regNext() {
+  if (regStep === REG_TOTAL + 1) { regGoToDashboard(); return; }
+  if (!regValidateStep(regStep)) return;
+  if (regStep === REG_TOTAL) { regFinish(); return; }
+  regStep++;
+  updateRegUI();
+}
+function regBack() {
+  if (regStep <= 1) { showAuthFromReg(); return; }
+  regStep--;
+  updateRegUI();
+}
+function updateRegUI() {
+  // Pages
+  document.querySelectorAll('.reg-page').forEach((p, i) => {
+    p.classList.toggle('active', i + 1 === regStep);
+  });
+  // Step dots
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.getElementById('rdot' + i);
+    if (!dot) continue;
+    dot.classList.remove('active', 'done');
+    if (i < regStep) dot.classList.add('done');
+    else if (i === regStep) dot.classList.add('active');
+  }
+  // Lines
+  for (let i = 1; i <= 4; i++) {
+    const line = document.getElementById('rline' + i);
+    if (line) line.classList.toggle('done', i < regStep);
+  }
+  // Back/Next buttons
+  document.getElementById('regBackBtn').style.display = regStep > 1 ? 'inline-flex' : 'none';
+  const nextBtn = document.getElementById('regNextBtn');
+  const labelEl = document.getElementById('regStepLabel');
+  if (regStep === REG_TOTAL) {
+    nextBtn.textContent = 'Create Enterprise →';
+    nextBtn.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+    labelEl.textContent = `Step ${regStep} of ${REG_TOTAL}`;
+  } else if (regStep > REG_TOTAL) {
+    nextBtn.textContent = 'Go to Dashboard →';
+    nextBtn.style.background = 'linear-gradient(135deg,var(--accent),var(--purple))';
+    labelEl.textContent = 'Setup complete!';
+    document.getElementById('regBackBtn').style.display = 'none';
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.style.background = '';
+    labelEl.textContent = `Step ${regStep} of ${REG_TOTAL}`;
+  }
+  document.getElementById('regError').style.display = 'none';
+}
+
+// ── Validation per step ──
+function regValidateStep(step) {
+  const err = (msg) => {
+    const el = document.getElementById('regError');
+    el.textContent = msg; el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return false;
+  };
+  if (step === 1) {
+    if (!document.getElementById('rg-cname').value.trim()) return err('Please enter your company name.');
+    if (!document.getElementById('rg-industry').value) return err('Please select your industry.');
+  }
+  if (step === 2) {
+    const fn = document.getElementById('rg-fname').value.trim();
+    const email = document.getElementById('rg-email').value.trim();
+    const pass = document.getElementById('rg-pass').value;
+    const pass2 = document.getElementById('rg-pass2').value;
+    if (!fn || !email) return err('Please fill in your name and email.');
+    if (!pass || pass.length < 8) return err('Password must be at least 8 characters.');
+    if (pass !== pass2) return err('Passwords do not match.');
+    if (!email.includes('@')) return err('Please enter a valid email address.');
+  }
+  return true;
+}
+
+// ── Grade templates ──
+const GRADE_TEMPLATES = {
+  india: [
+    { code: 'L1', title: 'Junior Analyst', selfLimit: 0, mgrLimit: 3000 },
+    { code: 'L2', title: 'Analyst', selfLimit: 0, mgrLimit: 8000 },
+    { code: 'L3', title: 'Senior Analyst', selfLimit: 2000, mgrLimit: 15000 },
+    { code: 'L4', title: 'Lead / Team Lead', selfLimit: 5000, mgrLimit: 30000 },
+    { code: 'L5', title: 'Manager', selfLimit: 10000, mgrLimit: 75000 },
+    { code: 'L6', title: 'Director / VP', selfLimit: 25000, mgrLimit: 200000 },
+  ],
+  global: [
+    { code: 'IC1', title: 'Associate', selfLimit: 0, mgrLimit: 5000 },
+    { code: 'IC2', title: 'Senior Associate', selfLimit: 1000, mgrLimit: 15000 },
+    { code: 'IC3', title: 'Principal', selfLimit: 3000, mgrLimit: 40000 },
+    { code: 'M1', title: 'Manager', selfLimit: 8000, mgrLimit: 80000 },
+    { code: 'M2', title: 'Senior Manager', selfLimit: 15000, mgrLimit: 150000 },
+    { code: 'M3', title: 'Director', selfLimit: 25000, mgrLimit: 300000 },
+    { code: 'VP', title: 'Vice President', selfLimit: 50000, mgrLimit: 500000 },
+  ],
+};
+
+function loadGradeTemplate(tpl) {
+  regGrades = [...(GRADE_TEMPLATES[tpl] || [])];
+  renderGradeList();
+}
+function initGradeList() {
+  if (regGrades.length === 0) regGrades = [...GRADE_TEMPLATES.india];
+  renderGradeList();
+}
+function renderGradeList() {
+  const container = document.getElementById('gradeList');
+  container.innerHTML = regGrades.map((g, i) => `
+    <div style="display:grid;grid-template-columns:70px 1fr 120px 120px 36px;gap:8px;align-items:center">
+      <input type="text" value="${g.code}" placeholder="L1" style="font-size:12px;padding:8px 10px;font-family:var(--mono);font-weight:700;text-align:center" oninput="regGrades[${i}].code=this.value">
+      <input type="text" value="${g.title}" placeholder="Job title" style="font-size:12px;padding:8px 10px" oninput="regGrades[${i}].title=this.value">
+      <input type="number" value="${g.selfLimit}" placeholder="0" style="font-size:12px;padding:8px 10px" oninput="regGrades[${i}].selfLimit=+this.value">
+      <input type="number" value="${g.mgrLimit}" placeholder="10000" style="font-size:12px;padding:8px 10px" oninput="regGrades[${i}].mgrLimit=+this.value">
+      <button onclick="removeGrade(${i})" style="background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text3);cursor:pointer;padding:6px;font-size:13px;line-height:1" title="Remove">✕</button>
+    </div>`).join('');
+}
+function addGradeRow() {
+  regGrades.push({ code: '', title: '', selfLimit: 0, mgrLimit: 0 });
+  renderGradeList();
+}
+function removeGrade(i) {
+  regGrades.splice(i, 1);
+  renderGradeList();
+}
+
+// ── Policy templates ──
+const POLICY_CATS = [
+  { type: 'travel', label: '✈️ Travel (Domestic)', icon: '✈️' },
+  { type: 'travel-intl', label: '✈️ Travel (International)', icon: '✈️' },
+  { type: 'accommodation', label: '🏨 Accommodation / Hotel', icon: '🏨' },
+  { type: 'fuel', label: '⛽ Fuel / Mileage', icon: '⛽' },
+  { type: 'food', label: '🍽️ Food & Meals', icon: '🍽️' },
+  { type: 'mobile', label: '📱 Mobile / Internet', icon: '📱' },
+  { type: 'other', label: '📦 Other / Miscellaneous', icon: '📦' },
+];
+const POLICY_TPLS = {
+  conservative: { travel:30000, 'travel-intl':80000, accommodation:5000, fuel:2000, food:1000, mobile:800, other:2000 },
+  standard:     { travel:50000, 'travel-intl':150000, accommodation:8000, fuel:5000, food:3000, mobile:1500, other:5000 },
+  generous:     { travel:100000, 'travel-intl':300000, accommodation:15000, fuel:10000, food:8000, mobile:3000, other:15000 },
+  blank:        { travel:0, 'travel-intl':0, accommodation:0, fuel:0, food:0, mobile:0, other:0 },
+};
+function initPolicyList() {
+  regPolicies = POLICY_CATS.map(c => ({ type: c.type, label: c.label, max: 0, perClaim: 0, receipt: true }));
+  loadPolicyTemplate('standard');
+}
+function loadPolicyTemplate(tpl) {
+  const vals = POLICY_TPLS[tpl] || {};
+  regPolicies = POLICY_CATS.map(c => ({
+    type: c.type, label: c.label,
+    max: vals[c.type] || 0,
+    perClaim: Math.round((vals[c.type] || 0) * 0.4),
+    receipt: tpl !== 'blank',
+  }));
+  renderPolicyList();
+}
+function renderPolicyList() {
+  const container = document.getElementById('policySetup');
+  container.innerHTML = regPolicies.map((p, i) => `
+    <div style="display:grid;grid-template-columns:1fr 110px 110px 80px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:500;color:var(--text)">${p.label}</div>
+      <input type="number" value="${p.max||''}" placeholder="No limit" style="font-size:12px;padding:7px 10px" oninput="regPolicies[${i}].max=+this.value" title="Monthly max (₹)">
+      <input type="number" value="${p.perClaim||''}" placeholder="No limit" style="font-size:12px;padding:7px 10px" oninput="regPolicies[${i}].perClaim=+this.value" title="Per-claim max (₹)">
+      <select style="font-size:12px;padding:7px 8px" onchange="regPolicies[${i}].receipt=this.value==='true'" title="Receipt required?">
+        <option value="true" ${p.receipt?'selected':''}>Receipt</option>
+        <option value="false" ${!p.receipt?'selected':''}>Optional</option>
+      </select>
+    </div>`).join('');
+}
+
+// ── Final submit — create Firebase records ──
+async function regFinish() {
+  const nextBtn = document.getElementById('regNextBtn');
+  nextBtn.textContent = 'Creating...'; nextBtn.disabled = true;
+  document.getElementById('regError').style.display = 'none';
+  try {
+    // Collect all data
+    const companyName = document.getElementById('rg-cname').value.trim();
+    const inviteCode = companyName.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4) + Math.random().toString(36).slice(2,6).toUpperCase();
+    const enterpriseData = {
+      name: companyName,
+      industry: document.getElementById('rg-industry').value,
+      size: document.getElementById('rg-size').value,
+      country: document.getElementById('rg-country').value,
+      currency: document.getElementById('rg-currency').value,
+      fiscalYear: document.getElementById('rg-fy').value,
+      domain: document.getElementById('rg-domain').value.trim(),
+      gst: document.getElementById('rg-gst').value.trim(),
+      inviteCode,
+      createdAt: new Date().toISOString(),
+    };
+
+    const fname = document.getElementById('rg-fname').value.trim();
+    const lname = document.getElementById('rg-lname').value.trim();
+    const email = document.getElementById('rg-email').value.trim();
+    const pass  = document.getElementById('rg-pass').value;
+
+    // 1. Create Firebase Auth user
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: fname + ' ' + lname });
+
+    // 2. Save enterprise
+    await db.ref('enterprise').set(enterpriseData);
+
+    // 3. Save admin employee record
+    await db.ref('employees').push({
+      firstName: fname, lastName: lname, email,
+      title: document.getElementById('rg-title').value.trim(),
+      phone: document.getElementById('rg-phone').value.trim(),
+      location: document.getElementById('rg-loc').value.trim(),
+      grade: regGrades.length > 0 ? regGrades[regGrades.length - 1].code : 'L6',
+      department: 'Administration', role: 'admin',
+      managerEmail: '', empId: 'ADM001',
+      createdAt: new Date().toISOString(),
+    });
+
+    // 4. Save approval matrix from grades
+    const validGrades = regGrades.filter(g => g.code);
+    for (const g of validGrades) {
+      await db.ref('approvalMatrix').push({
+        grade: g.code, type: 'all',
+        selfLimit: g.selfLimit || 0,
+        mgrLimit: g.mgrLimit || 0,
+        financeAbove: Math.round(g.mgrLimit * 2) || 50000,
+        notes: g.title, source: 'onboarding',
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    // 5. Save policies
+    for (const p of regPolicies) {
+      if (p.max > 0 || p.perClaim > 0) {
+        await db.ref('policies').push({
+          type: p.type, max: p.max, perClaim: p.perClaim,
+          receipt: p.receipt, notes: '',
+          source: 'onboarding', createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    // 6. Show success screen
+    document.getElementById('onboardSub').textContent =
+      `Welcome to ClaimsIQ, ${fname}! ${companyName} is live. Share your invite code with employees.`;
+    document.getElementById('onboardInviteCode').textContent = inviteCode;
+    document.getElementById('gradeDoneText').textContent =
+      `${validGrades.length} grade levels provisioned`;
+    document.getElementById('policyDoneText').textContent =
+      `${regPolicies.filter(p=>p.max>0).length} expense policies configured`;
+
+    regStep = REG_TOTAL + 1;
+    updateRegUI();
+
+  } catch(err) {
+    const el = document.getElementById('regError');
+    el.textContent = err.message; el.style.display = 'block';
+    nextBtn.textContent = 'Create Enterprise →'; nextBtn.disabled = false;
+  }
+}
+
+function copyInviteCode() {
+  const code = document.getElementById('onboardInviteCode').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('📋','Copied!','Invite code copied to clipboard','green'));
+}
+
+function regGoToDashboard() {
+  document.getElementById('regScreen').style.display = 'none';
+  // Auth state listener will trigger showApp()
+}
+
 
 // ══════════════════════════════════════
 //  GEMINI SETUP CHECK
@@ -1256,9 +1816,9 @@ function showApp(){
 }
 
 function switchAuthTab(tab,el){
-  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
   document.getElementById('loginForm').style.display=tab==='login'?'flex':'none';
-  document.getElementById('registerForm').style.display=tab==='register'?'flex':'none';
   document.getElementById('authError').style.display='none';
 }
 async function doLogin(){
@@ -1266,17 +1826,7 @@ async function doLogin(){
   if(!e||!p){showAuthErr('Please enter email and password.');return;}
   try{await auth.signInWithEmailAndPassword(e,p);}catch(err){showAuthErr(err.message);}
 }
-async function doRegister(){
-  const fn=document.getElementById('r-fname').value.trim(),ln=document.getElementById('r-lname').value.trim();
-  const e=document.getElementById('r-email').value.trim(),p=document.getElementById('r-pass').value;
-  const g=document.getElementById('r-grade').value,d=document.getElementById('r-dept').value.trim();
-  if(!fn||!e||!p){showAuthErr('Please fill all required fields.');return;}
-  try{
-    const c=await auth.createUserWithEmailAndPassword(e,p);
-    await c.user.updateProfile({displayName:fn+' '+ln});
-    await db.ref('employees').push({firstName:fn,lastName:ln,email:e,grade:g,department:d,role:'admin',location:'',managerEmail:'',empId:'EMP-'+Date.now().toString().slice(-4),createdAt:new Date().toISOString()});
-  }catch(err){showAuthErr(err.message);}
-}
+// doRegister moved to wizard — see regFinish()
 async function demoLogin(){
   try{await auth.signInWithEmailAndPassword('demo@claimsiq.ai','demo123456');}
   catch{
@@ -2005,10 +2555,11 @@ ${context}`;
     typingEl.querySelector('.chat-bubble').textContent=reply;
     chatHistory.push({role:'assistant',text:reply});
   }catch(e){
-    const isBlocked = e.message&&(e.message.includes('blocked')||e.message.includes('SDK did not load'));
-    typingEl.querySelector('.chat-bubble').innerHTML = isBlocked
-      ? '⚠️ <strong>Firebase AI Logic not enabled yet.</strong><br><br>Enable it at: <a href="https://console.firebase.google.com/project/claimsiq-fced7/ai" target="_blank" style="color:var(--accent2)">Firebase Console → AI Logic</a>, then reload the page.'
-      : 'Sorry, I could not process that. Error: '+e.message;
+    const msg = e.message || '';
+    const isKeyIssue = msg.includes('restricted') || msg.includes('blocked') || msg.includes('403');
+    typingEl.querySelector('.chat-bubble').innerHTML = isKeyIssue
+      ? '⚠️ <strong>Gemini API not enabled for this key.</strong><br><br>Go to <a href="https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com?project=466510207505" target="_blank" style="color:var(--accent)">Google Cloud Console</a> → Enable the <strong>Generative Language API</strong> for project 466510207505, then reload.'
+      : 'Sorry, I could not process that. ' + msg;
   }
   document.getElementById('chatMessages').scrollTop=999999;
 }
