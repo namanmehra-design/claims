@@ -306,7 +306,7 @@ select option{background:#0A0E1A;color:var(--txt);}
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
           <input id="claimQ" placeholder="Search..." style="max-width:200px" oninput="window.renderClaims()">
           <select id="claimS" onchange="window.renderClaims()" style="width:130px"><option value="">All Status</option><option>pending</option><option>approved</option><option>rejected</option><option>draft</option><option>review</option></select>
-          <select id="claimT" onchange="window.renderClaims()" style="width:130px"><option value="">All Types</option><option>travel</option><option>fuel</option><option>food</option><option>mobile</option><option>accommodation</option><option>other</option></select>
+          <select id="claimT" onchange="window.renderClaims()" style="width:130px"><option value="">All Types</option><option>travel</option><option>travel-intl</option><option>train</option><option>fuel</option><option>parking</option><option>tolls</option><option>food</option><option>accommodation</option><option>mobile</option><option>wifi</option><option>printing</option><option>household</option><option>other</option></select>
         </div>
         <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="claimRows"></tbody></table></div></div>
       </div>
@@ -445,10 +445,16 @@ select option{background:#0A0E1A;color:var(--txt);}
             <option value="">Select type</option>
             <option value="travel">✈ Travel Domestic</option>
             <option value="travel-intl">✈ Travel International</option>
-            <option value="fuel">⛽ Fuel</option>
-            <option value="food">🍽 Food & Meal</option>
-            <option value="mobile">📱 Mobile</option>
-            <option value="accommodation">🏨 Hotel</option>
+            <option value="train">🚆 Train</option>
+            <option value="fuel">⛽ Fuel / Petrol</option>
+            <option value="parking">🅿 Parking</option>
+            <option value="tolls">🛣 Tolls / Fastag</option>
+            <option value="food">🍽 Food & Meals</option>
+            <option value="accommodation">🏨 Hotel / Accommodation</option>
+            <option value="mobile">📱 Mobile / Internet</option>
+            <option value="wifi">📶 WiFi / Broadband</option>
+            <option value="printing">🖨 Printing / Stationery</option>
+            <option value="household">🏠 Household Benefits</option>
             <option value="other">📦 Other</option>
           </select>
         </div>
@@ -459,15 +465,26 @@ select option{background:#0A0E1A;color:var(--txt);}
         <div class="fld"><label>Project Code</label><input type="text" id="nc-project"></div>
         <div class="fld"><label>Tax (₹)</label><input type="number" id="nc-tax" placeholder="0"></div>
       </div>
+      <!-- TRAVEL FIELDS -->
       <div id="travelFields" style="display:none;border-top:1px solid var(--bdr);padding-top:14px;margin-top:4px">
         <div style="font-size:10px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Travel Details</div>
         <div class="g2">
-          <div class="fld"><label>From</label><input type="text" id="nc-origin" placeholder="Mumbai"></div>
-          <div class="fld"><label>To</label><input type="text" id="nc-dest" placeholder="Delhi"></div>
-          <div class="fld"><label>Travel From</label><input type="date" id="nc-tfrom"></div>
-          <div class="fld"><label>Travel To</label><input type="date" id="nc-tto"></div>
-          <div class="fld"><label>Mode</label><select id="nc-mode"><option>Flight</option><option>Train</option><option>Bus</option><option>Cab / Taxi</option><option>Own Vehicle</option></select></div>
-          <div class="fld"><label>Ref / PNR</label><input type="text" id="nc-tref"></div>
+          <div class="fld"><label>Departure City</label><input type="text" id="nc-origin" placeholder="e.g. Mumbai"></div>
+          <div class="fld"><label>Destination City</label><input type="text" id="nc-dest" placeholder="e.g. Delhi"></div>
+          <div class="fld"><label>Departure Date</label><input type="date" id="nc-tfrom"></div>
+          <div class="fld"><label>Return Date</label><input type="date" id="nc-tto"></div>
+          <div class="fld"><label>Mode of Transport</label><select id="nc-mode"><option value="Flight">Flight</option><option value="Train">Train</option><option value="Bus">Bus</option><option value="Cab / Taxi">Cab / Taxi</option><option value="Own Vehicle">Own Vehicle</option><option value="Metro / Local">Metro / Local</option><option value="Ferry / Ship">Ferry / Ship</option></select></div>
+          <div class="fld"><label>Booking Ref / PNR</label><input type="text" id="nc-tref" placeholder="PNR or booking ref"></div>
+        </div>
+      </div>
+      <!-- ACCOMMODATION FIELDS -->
+      <div id="accomFields" style="display:none;border-top:1px solid var(--bdr);padding-top:14px;margin-top:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Stay Details</div>
+        <div class="g2">
+          <div class="fld"><label>Check-in Date</label><input type="date" id="nc-checkin"></div>
+          <div class="fld"><label>Check-out Date</label><input type="date" id="nc-checkout"></div>
+          <div class="fld"><label>City</label><input type="text" id="nc-accom-city" placeholder="e.g. Bangalore"></div>
+          <div class="fld"><label>No. of Nights</label><input type="number" id="nc-nights" placeholder="1" min="1"></div>
         </div>
       </div>
     </div>
@@ -633,31 +650,52 @@ const db=getDatabase(app);
 const auth=getAuth(app);
 
 // ═══════════════════════════════════════════════════════════
-//  GEMINI — Firebase AI Logic, lazy init, gemini-2.5-flash
-//  Exact same pattern as IPL auction v19 lines 888-898
+//  GEMINI — Firebase AI SDK first, REST fallback
+//  Firebase AI SDK: gemini-2.5-flash via GoogleAIBackend
+//  REST fallback: user's AI Studio key via generativelanguage API
 // ═══════════════════════════════════════════════════════════
 let _model=null;
 function getModel(){
   if(_model) return _model;
-  try{
-    const ai=getAI(app,{backend:new GoogleAIBackend()});
-    _model=getGenerativeModel(ai,{model:"gemini-2.5-flash"});
-    return _model;
-  }catch(e){
-    throw new Error("Firebase AI Logic not enabled. Go to Firebase Console → Build → AI Logic → Enable.");
-  }
+  const ai=getAI(app,{backend:new GoogleAIBackend()});
+  _model=getGenerativeModel(ai,{model:"gemini-2.5-flash"});
+  return _model;
 }
 
+function getUserKey(){return localStorage.getItem('claimsiq_key')||'';}
+
 async function callGemini(parts){
-  const m=getModel();
-  // Convert inlineData parts (IPL pattern exactly)
   const sdkParts=parts.map(p=>{
     if(p.text!==undefined) return{text:p.text};
     if(p.inlineData) return{inlineData:{data:p.inlineData.data,mimeType:p.inlineData.mimeType}};
     return p;
   });
-  const result=await m.generateContent({contents:[{role:"user",parts:sdkParts}]});
-  return result.response.text();
+
+  // Try Firebase AI SDK first (same as IPL auction)
+  try{
+    const m=getModel();
+    const result=await m.generateContent({contents:[{role:"user",parts:sdkParts}]});
+    return result.response.text();
+  }catch(fbErr){
+    // If Firebase AI Logic not enabled, fall back to REST with user's key
+    const key=getUserKey();
+    if(!key){
+      throw new Error("Firebase AI Logic not enabled. Click AI Key button in topbar and add your key from aistudio.google.com");
+    }
+    // REST fallback — convert inlineData back to REST format
+    const restParts=sdkParts.map(p=>{
+      if(p.text!==undefined) return{text:p.text};
+      if(p.inlineData) return{inline_data:{mime_type:p.inlineData.mimeType,data:p.inlineData.data}};
+      return p;
+    });
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{role:'user',parts:restParts}],generationConfig:{temperature:0.1,maxOutputTokens:2048}})
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${r.status}`);}
+    const d=await r.json();
+    return d?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  }
 }
 
 function cleanJSON(text){
@@ -762,7 +800,17 @@ window.doRegister=async function(){
     const grades=['L1','L2','L3','L4','L5','L6'];
     const limits=[{s:0,m:3000,f:15000},{s:0,m:8000,f:30000},{s:2000,m:15000,f:60000},{s:5000,m:30000,f:150000},{s:10000,m:75000,f:300000},{s:25000,m:200000,f:1000000}];
     for(let i=0;i<grades.length;i++) await push(ref(db,'approvalMatrix'),{grade:grades[i],type:'all',selfLimit:limits[i].s,mgrLimit:limits[i].m,financeAbove:limits[i].f,createdAt:new Date().toISOString()});
+    // Seed default policies
+    const defPolicies=[
+      {type:'travel',max:50000,perClaim:25000,receipt:true},
+      {type:'accommodation',max:20000,perClaim:8000,receipt:true},
+      {type:'food',max:5000,perClaim:2000,receipt:false},
+      {type:'fuel',max:5000,perClaim:2000,receipt:true},
+      {type:'mobile',max:1000,perClaim:1000,receipt:false},
+    ];
+    for(const p of defPolicies) await push(ref(db,'policies'),{...p,createdAt:new Date().toISOString(),source:'default'});
     toast('Enterprise created! Welcome '+fn,'ok');
+    window.showPane('signin');
   }catch(e){toast(e.message,'err');}
 };
 
@@ -851,8 +899,8 @@ async function parseReceipts(){
       inlineData:{data:await toB64(f),mimeType:f.type||'image/jpeg'}
     })));
     const PROMPT=`Extract expense data from this receipt/invoice and return ONLY valid JSON:
-{"type":"travel|fuel|food|mobile|accommodation|other","amount":<number>,"date":"YYYY-MM-DD","vendor":"<name>","desc":"<business purpose>","tax":<number or null>,"origin":<city or null>,"dest":<city or null>,"travelFrom":<date or null>,"travelTo":<date or null>,"mode":<mode or null>,"tref":<ref or null>}
-Return ONLY the JSON object.`;
+{"type":"travel|travel-intl|train|fuel|parking|tolls|food|accommodation|mobile|wifi|printing|household|other","amount":<number>,"date":"YYYY-MM-DD","vendor":"<name>","desc":"<business purpose>","tax":<number or null>,"origin":<city or null>,"dest":<city or null>,"travelFrom":<date or null>,"travelTo":<date or null>,"mode":<Flight|Train|Bus|Cab/Taxi|Own Vehicle or null>,"tref":<PNR or null>,"checkIn":<YYYY-MM-DD or null>,"checkOut":<YYYY-MM-DD or null>,"accomCity":<city or null>,"nights":<number or null>}
+Return ONLY the JSON object. For hotels extract check-in and check-out dates. For travel extract both departure and return dates.`;
     const text=await callGemini([...imageParts,{text:PROMPT}]);
     const p=cleanJSON(text);
     fillForm(p);
@@ -891,6 +939,8 @@ function fillForm(p){
   s('nc-vendor',p.vendor);s('nc-desc',p.desc);s('nc-tax',p.tax);
   s('nc-origin',p.origin);s('nc-dest',p.dest);
   s('nc-tfrom',p.travelFrom);s('nc-tto',p.travelTo);s('nc-tref',p.tref);
+  s('nc-checkin',p.checkIn);s('nc-checkout',p.checkOut);
+  s('nc-accom-city',p.accomCity);s('nc-nights',p.nights);
   if(p.mode){const sel=document.getElementById('nc-mode');if(sel){const o=Array.from(sel.options).find(x=>x.value.toLowerCase().includes(p.mode.toLowerCase().split('/')[0].trim().toLowerCase()));if(o)sel.value=o.value;}}
   window.toggleTravel();
 }
@@ -899,10 +949,13 @@ function fillForm(p){
 //  CLAIM CRUD
 // ═══════════════════════════════════════════════════════════
 window.openClaim=function(){
-  ['nc-type','nc-amount','nc-vendor','nc-desc','nc-project','nc-tax','nc-origin','nc-dest','nc-tref'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  ['nc-tfrom','nc-tto'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['nc-type','nc-amount','nc-vendor','nc-desc','nc-project','nc-tax',
+   'nc-origin','nc-dest','nc-tref','nc-tfrom','nc-tto',
+   'nc-checkin','nc-checkout','nc-accom-city','nc-nights'
+  ].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('nc-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('travelFields').style.display='none';
+  document.getElementById('accomFields').style.display='none';
   document.getElementById('rcStatus').className='ai-status';
   document.getElementById('rcLabel').textContent='Drop receipt / invoice here, or click to upload';
   document.getElementById('rcText').value='';
@@ -911,7 +964,23 @@ window.openClaim=function(){
 };
 window.toggleTravel=function(){
   const t=document.getElementById('nc-type').value;
-  document.getElementById('travelFields').style.display=(t==='travel'||t==='travel-intl')?'block':'none';
+  // Travel fields: domestic, international, train
+  const isTravel=t==='travel'||t==='travel-intl'||t==='train';
+  document.getElementById('travelFields').style.display=isTravel?'block':'none';
+  // Accommodation fields: hotel only
+  document.getElementById('accomFields').style.display=t==='accommodation'?'block':'none';
+  // Clear origin/dest placeholders for intl travel
+  if(t==='travel-intl'){
+    document.getElementById('nc-origin').placeholder='e.g. Mumbai / BOM';
+    document.getElementById('nc-dest').placeholder='e.g. London / LHR';
+  } else if(t==='train'){
+    document.getElementById('nc-origin').placeholder='e.g. Mumbai CST';
+    document.getElementById('nc-dest').placeholder='e.g. Delhi Junction';
+    document.getElementById('nc-mode').value='Train';
+  } else {
+    document.getElementById('nc-origin').placeholder='e.g. Mumbai';
+    document.getElementById('nc-dest').placeholder='e.g. Delhi';
+  }
 };
 window.submitClaim=async function(){
   const type=document.getElementById('nc-type').value;
@@ -925,9 +994,16 @@ window.submitClaim=async function(){
     vendor:document.getElementById('nc-vendor').value,desc,
     project:document.getElementById('nc-project').value,
     tax:parseFloat(document.getElementById('nc-tax').value)||0,
-    origin:document.getElementById('nc-origin').value,dest:document.getElementById('nc-dest').value,
-    travelFrom:document.getElementById('nc-tfrom').value,travelTo:document.getElementById('nc-tto').value,
-    tref:document.getElementById('nc-tref').value,mode:document.getElementById('nc-mode').value,
+    origin:document.getElementById('nc-origin').value,
+    dest:document.getElementById('nc-dest').value,
+    travelFrom:document.getElementById('nc-tfrom').value,
+    travelTo:document.getElementById('nc-tto').value,
+    tref:document.getElementById('nc-tref').value,
+    mode:document.getElementById('nc-mode').value,
+    checkIn:document.getElementById('nc-checkin').value,
+    checkOut:document.getElementById('nc-checkout').value,
+    accomCity:document.getElementById('nc-accom-city').value,
+    nights:parseInt(document.getElementById('nc-nights').value)||0,
     status:'pending',submittedBy:name,submittedEmail:me.email,
     grade:profile?.grade||'L3',managerEmail:profile?.managerEmail||'',
     createdAt:new Date().toISOString(),
