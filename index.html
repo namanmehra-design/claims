@@ -794,7 +794,7 @@ function getKey(){return localStorage.getItem('claimsiq_key')||'AIzaSyDXb1NxtZoF
 
 async function callGemini(parts,pro=false){
   const key=getKey();
-  const model=pro?'gemini-1.5-pro-latest':'gemini-2.0-flash';
+  const model=pro?'gemini-1.5-pro':'gemini-2.0-flash';
   const restParts=parts.map(p=>{
     if(p.text!==undefined) return{text:p.text};
     if(p.inlineData) return{inline_data:{mime_type:p.inlineData.mimeType,data:p.inlineData.data}};
