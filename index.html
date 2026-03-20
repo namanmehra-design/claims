@@ -205,12 +205,30 @@ select option{background:white;}
       <div style="font-size:20px;font-weight:800;color:var(--txt)">ClaimsIQ</div>
       <div style="font-size:12px;color:var(--muted);margin-top:2px">Enterprise Claims Platform</div>
     </div>
-    <div class="auth-bdy">
+    <div class="auth-bdy" id="signInPane">
       <div class="fld"><label>Email</label><input type="email" id="authEmail" placeholder="you@company.com" autocomplete="email"></div>
       <div class="fld"><label>Password</label><input type="password" id="authPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')window.handleAuth()"></div>
       <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="window.handleAuth()">Sign In</button>
-      <button class="btn btn-ghost btn-full" onclick="window.demoLogin()">🚀 Launch Demo</button>
-      <div style="font-size:11px;color:var(--muted2);text-align:center;margin-top:10px">Demo: 10 claims · 5 employees · approval matrix</div>
+      <button class="btn btn-ghost btn-full" style="margin-bottom:8px" onclick="window.demoLogin()">🚀 Launch Demo</button>
+      <div style="text-align:center"><span style="font-size:12px;color:var(--muted2)">New company? </span><button onclick="window.showRegister()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">Register Enterprise →</button></div>
+    </div>
+    <!-- REGISTER PANE -->
+    <div class="auth-bdy" id="registerPane" style="display:none">
+      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:14px">Set up your company on ClaimsIQ</div>
+      <div class="fld"><label>Company Name *</label><input type="text" id="rg-company" placeholder="Acme Technologies Pvt Ltd"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fld"><label>Industry</label><select id="rg-industry"><option value="">Select</option><option>Technology</option><option>Financial Services</option><option>Manufacturing</option><option>Healthcare</option><option>Consulting</option><option>Retail</option><option>Other</option></select></div>
+        <div class="fld"><label>Currency</label><select id="rg-currency"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option><option value="AED">AED</option></select></div>
+      </div>
+      <div style="border-top:1px solid var(--bdr);padding-top:12px;margin-top:4px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--muted)">Admin Account</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fld"><label>First Name *</label><input type="text" id="rg-fname" placeholder="Naman"></div>
+        <div class="fld"><label>Last Name *</label><input type="text" id="rg-lname" placeholder="Sharma"></div>
+      </div>
+      <div class="fld"><label>Work Email *</label><input type="email" id="rg-email" placeholder="you@company.com"></div>
+      <div class="fld"><label>Password *</label><input type="password" id="rg-pass" placeholder="Min 8 characters"></div>
+      <button class="btn btn-primary btn-full" style="margin-bottom:8px" onclick="window.registerEnterprise()">Create Enterprise Account</button>
+      <div style="text-align:center"><button onclick="window.showSignIn()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">← Back to Sign In</button></div>
     </div>
   </div>
 </div>
@@ -616,6 +634,7 @@ select option{background:white;}
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import{getDatabase,ref,set,get,push,update,remove,onValue}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,signOut}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import{getAI,getGenerativeModel,GoogleAIBackend}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-ai.js";
 
 const cfg={
   apiKey:"AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
@@ -711,6 +730,55 @@ window.demoLogin=async function(){
 
 window.doLogout=function(){signOut(auth);};
 
+window.showRegister=function(){
+  document.getElementById('signInPane').style.display='none';
+  document.getElementById('registerPane').style.display='block';
+};
+window.showSignIn=function(){
+  document.getElementById('registerPane').style.display='none';
+  document.getElementById('signInPane').style.display='block';
+};
+window.registerEnterprise=async function(){
+  const company=document.getElementById('rg-company').value.trim();
+  const fname=document.getElementById('rg-fname').value.trim();
+  const lname=document.getElementById('rg-lname').value.trim();
+  const email=document.getElementById('rg-email').value.trim();
+  const pass=document.getElementById('rg-pass').value;
+  if(!company||!fname||!email||!pass){toast('Fill in all required fields','err');return;}
+  if(pass.length<8){toast('Password must be at least 8 characters','err');return;}
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pass);
+    await updateProfile(cred.user,{displayName:fname+' '+lname});
+    const inviteCode=company.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4)+Math.random().toString(36).slice(2,6).toUpperCase();
+    await set(ref(db,'enterprise'),{
+      name:company,
+      industry:document.getElementById('rg-industry').value,
+      currency:document.getElementById('rg-currency').value,
+      country:'India',domain:'',
+      inviteCode,
+      createdAt:new Date().toISOString()
+    });
+    await push(ref(db,'employees'),{
+      firstName:fname,lastName:lname,email,
+      grade:'L6',department:'Administration',
+      role:'admin',empId:'ADM001',
+      location:'',managerEmail:'',
+      createdAt:new Date().toISOString()
+    });
+    // Seed default approval matrix
+    const grades=[
+      {grade:'L1',selfLimit:0,mgrLimit:3000,financeAbove:15000},
+      {grade:'L2',selfLimit:0,mgrLimit:8000,financeAbove:30000},
+      {grade:'L3',selfLimit:2000,mgrLimit:15000,financeAbove:60000},
+      {grade:'L4',selfLimit:5000,mgrLimit:30000,financeAbove:150000},
+      {grade:'L5',selfLimit:10000,mgrLimit:75000,financeAbove:300000},
+      {grade:'L6',selfLimit:25000,mgrLimit:200000,financeAbove:1000000},
+    ];
+    for(const g of grades) await push(ref(db,'approvalMatrix'),{...g,type:'all',createdAt:new Date().toISOString()});
+    toast('Enterprise created! Welcome '+fname,'ok');
+  }catch(e){toast(e.message,'err');}
+};
+
 // ── Navigation ──
 const PAGES={dashboard:'Dashboard',claims:'All Claims',approvals:'Approvals',analytics:'Analytics',erp:'ERP Export',admin:'Admin Panel'};
 const NAV_BY_ROLE={
@@ -789,28 +857,26 @@ function loadData(){
   });
 }
 
-// ── Gemini REST (pure fetch, no SDK) ──
-function getKey(){return localStorage.getItem('claimsiq_key')||'AIzaSyDXb1NxtZoFoQLbeRLgpPrhTSTwMBg7L-E';}
+// ── Gemini via Firebase AI SDK (IPL auction pattern — lazy init) ──
+let _geminiFlash=null,_geminiPro=null;
+function getGeminiModel(pro=false){
+  if(pro){
+    if(!_geminiPro){const ai=getAI(app,{backend:new GoogleAIBackend()});_geminiPro=getGenerativeModel(ai,{model:'gemini-2.0-flash'});}
+    return _geminiPro;
+  }
+  if(!_geminiFlash){const ai=getAI(app,{backend:new GoogleAIBackend()});_geminiFlash=getGenerativeModel(ai,{model:'gemini-2.0-flash'});}
+  return _geminiFlash;
+}
 
 async function callGemini(parts,pro=false){
-  const key=getKey();
-  const model=pro?'gemini-1.5-pro':'gemini-2.0-flash';
-  const restParts=parts.map(p=>{
+  const model=getGeminiModel(pro);
+  const sdkParts=parts.map(p=>{
     if(p.text!==undefined) return{text:p.text};
-    if(p.inlineData) return{inline_data:{mime_type:p.inlineData.mimeType,data:p.inlineData.data}};
+    if(p.inlineData) return p;
     return p;
   });
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({contents:[{role:'user',parts:restParts}],generationConfig:{temperature:0.1,maxOutputTokens:2048}})
-  });
-  if(!r.ok){
-    const e=await r.json().catch(()=>({}));
-    throw new Error(e?.error?.message||`HTTP ${r.status}`);
-  }
-  const d=await r.json();
-  return d?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  const result=await model.generateContent({contents:[{role:'user',parts:sdkParts}]});
+  return result.response.text();
 }
 
 function extractJSON(text){
