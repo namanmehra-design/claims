@@ -716,11 +716,14 @@ async function toB64(file){
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
-let me=null,profile=null;
+let me=null,profile=null,entId=null;
 let claims=[],employees=[],matrix=[],policies=[];
 let ent={name:'My Enterprise',domain:'',industry:'',country:'India',currency:'INR',inviteCode:''};
 let editEmpKey=null,pendingImport=[];
 let polFile=null,rcFiles=[];
+
+// ── Enterprise-scoped ref helper ──
+function eref(path){return ref(db,'enterprises/'+entId+'/'+path);}
 
 // ═══════════════════════════════════════════════════════════
 //  TOAST
@@ -754,13 +757,28 @@ function showApp(){
 onAuthStateChanged(auth,async u=>{
   if(u){
     me=u;
-    const snap=await get(ref(db,'employees'));
-    const d=snap.val()||{};
-    const m=Object.entries(d).find(([,v])=>v.email===u.email);
-    if(m) profile={key:m[0],...m[1]};
-    else profile={email:u.email,firstName:(u.displayName||'User').split(' ')[0],lastName:'',grade:'L6',role:'admin'};
-    showApp();
-  }else{showAuth();}
+    // Look up which enterprise this user belongs to
+    // Users store their entId in /userIndex/{uid}/entId
+    const uidSnap=await get(ref(db,'userIndex/'+u.uid));
+    if(uidSnap.val()?.entId){
+      entId=uidSnap.val().entId;
+      // Load profile from enterprise employees
+      const snap=await get(eref('employees'));
+      const d=snap.val()||{};
+      const m=Object.entries(d).find(([,v])=>v.email===u.email);
+      if(m) profile={key:m[0],...m[1]};
+      else profile={email:u.email,firstName:(u.displayName||'User').split(' ')[0],lastName:'',grade:'L6',role:'admin'};
+      showApp();
+    } else {
+      // No enterprise linked — show auth so user can register or sign in
+      showAuth();
+      toast('Account has no enterprise. Register or contact your admin.','err');
+      await signOut(auth);
+    }
+  }else{
+    entId=null;
+    showAuth();
+  }
 });
 
 window.handleAuth=function(){
@@ -771,13 +789,26 @@ window.handleAuth=function(){
 };
 
 window.demoLogin=async function(){
-  try{await signInWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');}
-  catch{
+  const DEMO_ENT_ID='demo-enterprise';
+  try{
+    // Try sign in
+    await signInWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
+    // Ensure userIndex points to demo enterprise
+    const uid=(await get(ref(db,'userIndex/'+auth.currentUser?.uid))).val();
+    if(!uid?.entId){
+      await set(ref(db,'userIndex/'+auth.currentUser.uid),{entId:DEMO_ENT_ID});
+    }
+  }catch{
     try{
+      // Create demo account
       const c=await createUserWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
       await updateProfile(c.user,{displayName:'Demo Admin'});
-      await set(ref(db,'enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
-      await push(ref(db,'employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+      // Write userIndex
+      await set(ref(db,'userIndex/'+c.user.uid),{entId:DEMO_ENT_ID,email:'demo@claimsiq.ai'});
+      // Seed demo enterprise data under demo-enterprise namespace
+      entId=DEMO_ENT_ID;
+      await set(eref('enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
+      await push(eref('employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
       await seedDemo();
     }catch(e2){toast('Demo error: '+e2.message,'err');}
   }
@@ -794,13 +825,20 @@ window.doRegister=async function(){
   try{
     const c=await createUserWithEmailAndPassword(auth,email,pass);
     await updateProfile(c.user,{displayName:fn+' '+ln});
+    // Create a new unique enterprise ID
+    const newEntRef=push(ref(db,'enterprises'));
+    const newEntId=newEntRef.key;
     const code=company.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4)+Math.random().toString(36).slice(2,6).toUpperCase();
-    await set(ref(db,'enterprise'),{name:company,industry:document.getElementById('rg-industry').value,currency:document.getElementById('rg-currency').value,country:'India',domain:'',inviteCode:code,createdAt:new Date().toISOString()});
-    await push(ref(db,'employees'),{firstName:fn,lastName:ln,email,grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+    // Write userIndex so auth state can find this user's enterprise
+    await set(ref(db,'userIndex/'+c.user.uid),{entId:newEntId,email:email});
+    // Set local entId so eref() works
+    entId=newEntId;
+    // Write all data under enterprise namespace
+    await set(eref('enterprise'),{name:company,industry:document.getElementById('rg-industry').value,currency:document.getElementById('rg-currency').value,country:'India',domain:'',inviteCode:code,createdAt:new Date().toISOString()});
+    const empRef=await push(eref('employees'),{firstName:fn,lastName:ln,email,grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
     const grades=['L1','L2','L3','L4','L5','L6'];
     const limits=[{s:0,m:3000,f:15000},{s:0,m:8000,f:30000},{s:2000,m:15000,f:60000},{s:5000,m:30000,f:150000},{s:10000,m:75000,f:300000},{s:25000,m:200000,f:1000000}];
-    for(let i=0;i<grades.length;i++) await push(ref(db,'approvalMatrix'),{grade:grades[i],type:'all',selfLimit:limits[i].s,mgrLimit:limits[i].m,financeAbove:limits[i].f,createdAt:new Date().toISOString()});
-    // Seed default policies
+    for(let i=0;i<grades.length;i++) await push(eref('approvalMatrix'),{grade:grades[i],type:'all',selfLimit:limits[i].s,mgrLimit:limits[i].m,financeAbove:limits[i].f,createdAt:new Date().toISOString()});
     const defPolicies=[
       {type:'travel',max:50000,perClaim:25000,receipt:true},
       {type:'accommodation',max:20000,perClaim:8000,receipt:true},
@@ -808,7 +846,7 @@ window.doRegister=async function(){
       {type:'fuel',max:5000,perClaim:2000,receipt:true},
       {type:'mobile',max:1000,perClaim:1000,receipt:false},
     ];
-    for(const p of defPolicies) await push(ref(db,'policies'),{...p,createdAt:new Date().toISOString(),source:'default'});
+    for(const p of defPolicies) await push(eref('policies'),{...p,createdAt:new Date().toISOString(),source:'default'});
     toast('Enterprise created! Welcome '+fn,'ok');
     window.showPane('signin');
   }catch(e){toast(e.message,'err');}
@@ -858,16 +896,16 @@ window.closeSb=function(){document.getElementById('sidebar').classList.remove('o
 //  DATA
 // ═══════════════════════════════════════════════════════════
 function loadData(){
-  onValue(ref(db,'enterprise'),s=>{if(s.val()){ent={...ent,...s.val()};document.getElementById('sbEnt').textContent=ent.name;renderEnt();}});
-  onValue(ref(db,'claims'),s=>{
+  onValue(eref('enterprise'),s=>{if(s.val()){ent={...ent,...s.val()};document.getElementById('sbEnt').textContent=ent.name;renderEnt();}});
+  onValue(eref('claims'),s=>{
     claims=[];const d=s.val()||{};
     Object.entries(d).forEach(([k,v])=>claims.push({key:k,...v}));
     claims.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
     renderDash();window.renderClaims();renderApprovals();renderAnalytics();buildNav();
   });
-  onValue(ref(db,'employees'),s=>{employees=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>employees.push({key:k,...v}));renderEmps();});
-  onValue(ref(db,'approvalMatrix'),s=>{matrix=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>matrix.push({key:k,...v}));renderMatrix();});
-  onValue(ref(db,'policies'),s=>{policies=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>policies.push({key:k,...v}));renderPolicies();});
+  onValue(eref('employees'),s=>{employees=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>employees.push({key:k,...v}));renderEmps();});
+  onValue(eref('approvalMatrix'),s=>{matrix=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>matrix.push({key:k,...v}));renderMatrix();});
+  onValue(eref('policies'),s=>{policies=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>policies.push({key:k,...v}));renderPolicies();});
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -988,7 +1026,7 @@ window.submitClaim=async function(){
   const desc=document.getElementById('nc-desc').value;
   if(!type||!amount||!desc){toast('Fill Type, Amount and Purpose','err');return;}
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim()||me.email;
-  await push(ref(db,'claims'),{
+  await push(eref('claims'),{
     id:'CLM-'+Date.now().toString(16).toUpperCase().slice(-8),
     type,amount:parseFloat(amount),date:document.getElementById('nc-date').value,
     vendor:document.getElementById('nc-vendor').value,desc,
@@ -1013,7 +1051,7 @@ window.submitClaim=async function(){
 };
 window.saveDraft=async function(){
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim()||me.email;
-  await push(ref(db,'claims'),{id:'CLM-'+Date.now().toString(16).toUpperCase().slice(-8),type:document.getElementById('nc-type').value||'other',amount:parseFloat(document.getElementById('nc-amount').value)||0,date:document.getElementById('nc-date').value,desc:document.getElementById('nc-desc').value||'Draft',status:'draft',submittedBy:name,submittedEmail:me.email,grade:profile?.grade||'L3',createdAt:new Date().toISOString()});
+  await push(eref('claims'),{id:'CLM-'+Date.now().toString(16).toUpperCase().slice(-8),type:document.getElementById('nc-type').value||'other',amount:parseFloat(document.getElementById('nc-amount').value)||0,date:document.getElementById('nc-date').value,desc:document.getElementById('nc-desc').value||'Draft',status:'draft',submittedBy:name,submittedEmail:me.email,grade:profile?.grade||'L3',createdAt:new Date().toISOString()});
   window.closeMod('mClaim');toast('Draft saved','ok');
 };
 
@@ -1111,14 +1149,14 @@ function renderApprovals(){
 window.approveClaim=async function(key){
   const c=claims.find(x=>x.key===key);if(!c)return;
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
-  await update(ref(db,'claims/'+key),{status:'approved',approvedBy:name,history:[...(c.history||[]),{action:'Approved',by:name,at:new Date().toLocaleString()}]});
+  await update(eref('claims/'+key),{status:'approved',approvedBy:name,history:[...(c.history||[]),{action:'Approved',by:name,at:new Date().toLocaleString()}]});
   toast('Approved','ok');
 };
 window.rejectClaim=async function(key){
   const reason=prompt('Rejection reason:')||'Rejected';
   const c=claims.find(x=>x.key===key);if(!c)return;
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
-  await update(ref(db,'claims/'+key),{status:'rejected',history:[...(c.history||[]),{action:'Rejected: '+reason,by:name,at:new Date().toLocaleString()}]});
+  await update(eref('claims/'+key),{status:'rejected',history:[...(c.history||[]),{action:'Rejected: '+reason,by:name,at:new Date().toLocaleString()}]});
   toast('Rejected','ok');
 };
 
@@ -1182,7 +1220,7 @@ window.openEditEnt=function(){
   document.getElementById('mEnt').classList.add('open');
 };
 window.saveEnt=async function(){
-  await set(ref(db,'enterprise'),{...ent,name:document.getElementById('en-n').value.trim(),domain:document.getElementById('en-d').value.trim(),industry:document.getElementById('en-i').value.trim(),currency:document.getElementById('en-c').value,country:document.getElementById('en-co').value.trim()});
+  await set(eref('enterprise'),{...ent,name:document.getElementById('en-n').value.trim(),domain:document.getElementById('en-d').value.trim(),industry:document.getElementById('en-i').value.trim(),currency:document.getElementById('en-c').value,country:document.getElementById('en-co').value.trim()});
   window.closeMod('mEnt');toast('Enterprise updated','ok');
 };
 
@@ -1206,11 +1244,11 @@ window.editEmp=function(key){const e=employees.find(x=>x.key===key);if(!e)return
 window.saveEmp=async function(){
   const d={firstName:document.getElementById('em-fn').value.trim(),lastName:document.getElementById('em-ln').value.trim(),email:document.getElementById('em-email').value.trim(),empId:document.getElementById('em-id').value.trim()||'EMP'+Date.now().toString().slice(-4),grade:document.getElementById('em-grade').value,department:document.getElementById('em-dept').value.trim(),managerEmail:document.getElementById('em-mgr').value.trim(),role:document.getElementById('em-role').value,location:document.getElementById('em-loc').value.trim(),updatedAt:new Date().toISOString()};
   if(!d.firstName||!d.email){toast('Name and email required','err');return;}
-  if(editEmpKey) await update(ref(db,'employees/'+editEmpKey),d);
-  else{d.createdAt=new Date().toISOString();await push(ref(db,'employees'),d);}
+  if(editEmpKey) await update(eref('employees/'+editEmpKey),d);
+  else{d.createdAt=new Date().toISOString();await push(eref('employees'),d);}
   window.closeMod('mEmp');toast(editEmpKey?'Updated':'Added','ok');
 };
-window.delEmp=async function(key){const e=employees.find(x=>x.key===key);if(confirm(`Delete ${e?.firstName} ${e?.lastName}?`))await remove(ref(db,'employees/'+key));};
+window.delEmp=async function(key){const e=employees.find(x=>x.key===key);if(confirm(`Delete ${e?.firstName} ${e?.lastName}?`))await remove(eref('employees/'+key));};
 
 window.openImport=function(){pendingImport=[];document.getElementById('empPaste').value='';document.getElementById('impStatus').className='ai-status';document.getElementById('impPreview').textContent='';document.getElementById('impBtn').disabled=true;document.getElementById('mImport').classList.add('open');};
 window.empFileSet=function(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{document.getElementById('empPaste').value=e.target.result.slice(0,3000);};r.readAsText(file);input.value='';};
@@ -1234,7 +1272,7 @@ Data:\n${text}\nReturn ONLY the JSON array.`;
     document.getElementById('impBtn').disabled=false;
   }catch(e){st.className='ai-status fail';st.textContent='❌ '+e.message;}
 };
-window.doImport=async function(){for(const e of pendingImport){e.createdAt=new Date().toISOString();await push(ref(db,'employees'),e);}window.closeMod('mImport');toast(pendingImport.length+' imported','ok');};
+window.doImport=async function(){for(const e of pendingImport){e.createdAt=new Date().toISOString();await push(eref('employees'),e);}window.closeMod('mImport');toast(pendingImport.length+' imported','ok');};
 
 function renderMatrix(){
   const tbody=document.getElementById('matrixRows');
@@ -1248,8 +1286,8 @@ function renderMatrix(){
     <td><button class="btn btn-danger btn-sm" onclick="window.delMatrix('${r.key}')">Del</button></td></tr>`).join('');
 }
 window.openAddMatrix=function(){document.getElementById('mMatrix').classList.add('open');};
-window.saveMatrix=async function(){await push(ref(db,'approvalMatrix'),{grade:document.getElementById('mx-g').value,type:document.getElementById('mx-t').value,selfLimit:parseFloat(document.getElementById('mx-s').value)||0,mgrLimit:parseFloat(document.getElementById('mx-m').value)||0,financeAbove:parseFloat(document.getElementById('mx-f').value)||0,createdAt:new Date().toISOString()});window.closeMod('mMatrix');toast('Rule added','ok');};
-window.delMatrix=async function(key){if(confirm('Delete?'))await remove(ref(db,'approvalMatrix/'+key));};
+window.saveMatrix=async function(){await push(eref('approvalMatrix'),{grade:document.getElementById('mx-g').value,type:document.getElementById('mx-t').value,selfLimit:parseFloat(document.getElementById('mx-s').value)||0,mgrLimit:parseFloat(document.getElementById('mx-m').value)||0,financeAbove:parseFloat(document.getElementById('mx-f').value)||0,createdAt:new Date().toISOString()});window.closeMod('mMatrix');toast('Rule added','ok');};
+window.delMatrix=async function(key){if(confirm('Delete?'))await remove(eref('approvalMatrix/'+key));};
 
 function renderPolicies(){
   const tbody=document.getElementById('policyRows');
@@ -1262,8 +1300,8 @@ function renderPolicies(){
     <td><button class="btn btn-danger btn-sm" onclick="window.delPolicy('${p.key}')">Del</button></td></tr>`).join('');
 }
 window.openAddPolicy=function(){document.getElementById('mPolicy').classList.add('open');};
-window.savePolicy=async function(){await push(ref(db,'policies'),{type:document.getElementById('po-t').value,max:parseFloat(document.getElementById('po-m').value)||0,perClaim:parseFloat(document.getElementById('po-p').value)||0,receipt:document.getElementById('po-r').value,createdAt:new Date().toISOString()});window.closeMod('mPolicy');toast('Policy added','ok');};
-window.delPolicy=async function(key){if(confirm('Delete?'))await remove(ref(db,'policies/'+key));};
+window.savePolicy=async function(){await push(eref('policies'),{type:document.getElementById('po-t').value,max:parseFloat(document.getElementById('po-m').value)||0,perClaim:parseFloat(document.getElementById('po-p').value)||0,receipt:document.getElementById('po-r').value,createdAt:new Date().toISOString()});window.closeMod('mPolicy');toast('Policy added','ok');};
+window.delPolicy=async function(key){if(confirm('Delete?'))await remove(eref('policies/'+key));};
 
 window.swTab=function(name,el){
   ['enterprise','employees','matrix','policies','engine'].forEach(t=>{const x=document.getElementById('tab-'+t);if(x)x.style.display=t===name?'block':'none';});
@@ -1294,8 +1332,8 @@ Extract ALL numeric limits. Return ONLY JSON.`;
     const result=await callGemini(parts);
     const parsed=cleanJSON(result);
     let mc=0,pc=0;
-    if(parsed.matrixRules?.length){for(const r of parsed.matrixRules){await push(ref(db,'approvalMatrix'),{...r,createdAt:new Date().toISOString(),source:'Policy Engine'});mc++;}}
-    if(parsed.policyRules?.length){for(const p of parsed.policyRules){await push(ref(db,'policies'),{...p,createdAt:new Date().toISOString(),source:'Policy Engine'});pc++;}}
+    if(parsed.matrixRules?.length){for(const r of parsed.matrixRules){await push(eref('approvalMatrix'),{...r,createdAt:new Date().toISOString(),source:'Policy Engine'});mc++;}}
+    if(parsed.policyRules?.length){for(const p of parsed.policyRules){await push(eref('policies'),{...p,createdAt:new Date().toISOString(),source:'Policy Engine'});pc++;}}
     st.className='ai-status done';st.textContent=`✅ Applied ${mc} matrix rules + ${pc} expense limits`;
     document.getElementById('polResult').innerHTML=`<div style="background:var(--green-dim);border:1px solid rgba(16,185,129,.2);border-radius:var(--r);padding:14px;margin-top:8px">
       <div style="font-weight:600;color:var(--green);margin-bottom:6px">Policy applied</div>
@@ -1331,12 +1369,13 @@ window.saveAIKey=function(){
 //  DEMO DATA
 // ═══════════════════════════════════════════════════════════
 async function seedDemo(){
+  // entId must be set to 'demo-enterprise' before calling this
   const emps=[
     {firstName:'Ananya',lastName:'Singh',email:'ananya@acmetech.in',empId:'EMP001',grade:'L2',department:'Marketing',managerEmail:'demo@claimsiq.ai',role:'employee',location:'Mumbai',createdAt:new Date().toISOString()},
     {firstName:'Vikram',lastName:'Patel',email:'vikram@acmetech.in',empId:'EMP002',grade:'L5',department:'Engineering',managerEmail:'demo@claimsiq.ai',role:'manager',location:'Bangalore',createdAt:new Date().toISOString()},
     {firstName:'Priya',lastName:'Sharma',email:'priya@acmetech.in',empId:'EMP003',grade:'L3',department:'Finance',managerEmail:'demo@claimsiq.ai',role:'finance',location:'Delhi',createdAt:new Date().toISOString()},
   ];
-  for(const e of emps) await push(ref(db,'employees'),e);
+  for(const e of emps) await push(eref('employees'),e);
   const claimData=[
     {id:'CLM-A1B2C3D4',type:'travel',amount:7200,date:'2025-02-01',desc:'Flight to Delhi for strategy meeting',submittedBy:'Vikram Patel',submittedEmail:'vikram@acmetech.in',grade:'L5',status:'approved',origin:'Mumbai',dest:'Delhi',mode:'Flight',tref:'PNR-XK782',createdAt:'2025-02-01T08:00:00Z',history:[{action:'Submitted',by:'Vikram Patel',at:'1 Feb 2025'},{action:'Approved',by:'Demo Admin',at:'3 Feb 2025'}]},
     {id:'CLM-E5F6G7H8',type:'accommodation',amount:9500,date:'2025-02-05',desc:'Hotel stay during client visit',submittedBy:'Priya Sharma',submittedEmail:'priya@acmetech.in',grade:'L3',status:'pending',vendor:'Marriott Bangalore',createdAt:'2025-02-05T09:00:00Z',history:[{action:'Submitted',by:'Priya Sharma',at:'5 Feb 2025'}]},
@@ -1344,9 +1383,9 @@ async function seedDemo(){
     {id:'CLM-M3N4O5P6',type:'fuel',amount:2200,date:'2025-01-28',desc:'Fuel for client site visits',submittedBy:'Ananya Singh',submittedEmail:'ananya@acmetech.in',grade:'L2',status:'rejected',createdAt:'2025-01-28T11:00:00Z',history:[{action:'Submitted',by:'Ananya Singh',at:'28 Jan'},{action:'Rejected: Exceeds limit',by:'Demo Admin',at:'29 Jan'}]},
     {id:'CLM-Q7R8S9T0',type:'travel',amount:28500,date:'2025-01-25',desc:'Mumbai to Hyderabad — operations review',submittedBy:'Vikram Patel',submittedEmail:'vikram@acmetech.in',grade:'L5',status:'pending',origin:'Mumbai',dest:'Hyderabad',mode:'Flight',createdAt:'2025-01-25T07:00:00Z',history:[{action:'Submitted',by:'Vikram Patel',at:'25 Jan'}]},
   ];
-  for(const c of claimData) await push(ref(db,'claims'),c);
+  for(const c of claimData) await push(eref('claims'),c);
   const mx=[{g:'L1',s:0,m:3000,f:15000},{g:'L2',s:0,m:8000,f:30000},{g:'L3',s:2000,m:15000,f:60000},{g:'L4',s:5000,m:30000,f:150000},{g:'L5',s:10000,m:75000,f:300000},{g:'L6',s:25000,m:200000,f:1000000}];
-  for(const r of mx) await push(ref(db,'approvalMatrix'),{grade:r.g,type:'all',selfLimit:r.s,mgrLimit:r.m,financeAbove:r.f,createdAt:new Date().toISOString()});
+  for(const r of mx) await push(eref('approvalMatrix'),{grade:r.g,type:'all',selfLimit:r.s,mgrLimit:r.m,financeAbove:r.f,createdAt:new Date().toISOString()});
 }
 
 console.log('ClaimsIQ v7 — Firebase AI SDK gemini-2.5-flash');
