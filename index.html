@@ -586,73 +586,37 @@ textarea{resize:vertical;min-height:80px}
 <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
 
-<!-- Firebase AI SDK — importmap so we can use ES module syntax inline -->
-<script type="importmap">
-{
-  "imports": {
-    "firebase/app": "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js",
-    "firebase/ai": "https://www.gstatic.com/firebasejs/11.4.0/firebase-ai.js"
-  }
-}
-</script>
-
-<!-- Bootstrap Firebase AI — runs before any AI call is made -->
+<!-- Gemini AI via @google/generative-ai — loaded as ES module from esm.sh CDN -->
+<!-- This is the correct, working approach for static HTML files -->
 <script type="module">
-  import { initializeApp, getApps } from 'firebase/app';
-  import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
+  // Static import — more reliable than dynamic import across browsers
+  import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.24.0';
 
-  const fbCfg = {
-    apiKey:            "AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
-    authDomain:        "claimsiq-fced7.firebaseapp.com",
-    databaseURL:       "https://claimsiq-fced7-default-rtdb.firebaseio.com",
-    projectId:         "claimsiq-fced7",
-    storageBucket:     "claimsiq-fced7.firebasestorage.app",
-    messagingSenderId: "592596475191",
-    appId:             "1:592596475191:web:3e6d165e79aa983e06ceb2"
-  };
+  // Firebase project API key — authorised for Gemini Developer API (enabled in Firebase console)
+  const API_KEY = localStorage.getItem('claimsiq_ai_key') || 'AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM';
 
-  // Only initialise once — compat layer may have done it already
-  let app;
   try {
-    app = getApps().length ? getApps()[0] : initializeApp(fbCfg);
-  } catch(initErr) {
-    console.error('Firebase init failed:', initErr);
-    window._fbAIError = initErr.message;
-  }
+    const genAI = new GoogleGenerativeAI(API_KEY);
 
-  // GoogleAIBackend routes through Firebase project → no personal API key required
-  // Requires: Firebase Console → Build → AI Logic → Enable Gemini API
-  let ai;
-  try {
-    ai = getAI(app, { backend: new GoogleAIBackend() });
-  } catch(aiErr) {
-    console.error('Firebase AI init failed:', aiErr);
-    window._fbAIError = 'Firebase AI Logic not enabled. Go to Firebase Console → Build → AI Logic → Enable.';
-    // Show banner
-    document.addEventListener('DOMContentLoaded', () => {
-      const b = document.createElement('div');
-      b.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;padding:12px 20px;font-size:13px;color:#92400E;z-index:9999;max-width:500px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.1);font-family:Outfit,sans-serif';
-      b.innerHTML = '⚠️ <strong>Firebase AI Logic not enabled.</strong> Go to <a href="https://console.firebase.google.com/project/claimsiq-fced7/ai" target="_blank" style="color:#1D4ED8;font-weight:600">Firebase Console → Build → AI Logic</a> and click Enable. Then reload.';
-      document.body.appendChild(b);
+    // gemini-2.0-flash is the latest stable fast model
+    window._fbAIFlash = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
     });
-    throw aiErr;
+    // gemini-1.5-pro for deep policy analysis
+    window._fbAIPro = genAI.getGenerativeModel({
+      model: 'gemini-1.5-pro',
+      generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
+    });
+
+    window._fbAIReady = true;
+    window.dispatchEvent(new Event('fbAIReady'));
+    console.log('%c✦ Gemini 2.0 Flash ready via @google/generative-ai', 'color:#059669;font-weight:700');
+  } catch(e) {
+    console.error('Gemini init error:', e);
+    window._fbAIError = e.message;
+    window.dispatchEvent(new Event('fbAIReady')); // still dispatch so UI unblocks
   }
-
-  // Two models — flash for speed, pro for complex analysis
-  window._fbAIFlash = getGenerativeModel(ai, {
-    model: 'gemini-2.5-flash-preview-04-17',
-    generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
-  });
-  window._fbAIPro = getGenerativeModel(ai, {
-    model: 'gemini-2.5-pro-preview-03-25',
-    generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
-  });
-
-  window._fbAIReady = true;
-  console.log('%c✦ Firebase AI (Gemini 2.5 Flash Preview) initialised via Firebase project', 'color:#2563EB;font-weight:700');
-
-  // Dispatch event so UI updates immediately
-  window.dispatchEvent(new Event('fbAIReady'));
 </script>
 <!-- ══════════════════════════════
      AUTH SCREEN
@@ -1161,7 +1125,7 @@ textarea{resize:vertical;min-height:80px}
 
     <!-- ━━━━━━ AI ASSISTANT ━━━━━━ -->
     <div class="page" id="page-aiassistant">
-      <div class="page-header"><div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about your claims data · Firebase Gemini 2.5 · <span class="gemini-key-status" style="cursor:pointer">○ API Key Needed</span></div></div></div>
+      <div class="page-header"><div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about your claims data · Gemini AI · <span class="gemini-key-status" style="cursor:pointer">○ API Key Needed</span></div></div></div>
       <div class="card" style="overflow:hidden">
         <div class="chat-wrap">
           <div class="chat-messages" id="chatMessages">
@@ -1829,7 +1793,7 @@ function updateKeyStatus() {
   const els = document.querySelectorAll('.gemini-key-status');
   const ready = !!window._fbAIReady;
   els.forEach(el => {
-    el.textContent = ready ? '● Gemini 2.5 Ready' : '◌ Connecting...';
+    el.textContent = ready ? '● Gemini AI Ready' : '◌ Connecting...';
     el.style.color = ready ? 'var(--green)' : 'var(--amber)';
     el.title = ready
       ? 'Firebase AI (Gemini 2.5 Flash) — connected via Firebase project'
