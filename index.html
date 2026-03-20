@@ -250,6 +250,52 @@ select option{background:#0A0E1A;color:var(--txt);}
   </div>
 </div>
 
+<!-- SUPERADMIN PANEL (hidden, accessed via namanmehra@gmail.com only) -->
+<div id="superadminPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);z-index:600;overflow-y:auto;padding:20px">
+  <div style="max-width:900px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:var(--txt)">⚡ Super Admin Console</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">ClaimsIQ Platform Management · namanmehra@gmail.com</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeSuperAdmin()">✕ Close</button>
+    </div>
+    <!-- Stats -->
+    <div class="stats" style="margin-bottom:20px">
+      <div class="stat"><div class="stat-label">Total Enterprises</div><div class="stat-val" id="sa-entCount">—</div></div>
+      <div class="stat"><div class="stat-label">Total Users</div><div class="stat-val" id="sa-userCount">—</div></div>
+      <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="sa-claimCount">—</div></div>
+      <div class="stat"><div class="stat-label">Demo Enterprise</div><div class="stat-val" id="sa-demoStatus" style="font-size:16px">—</div></div>
+    </div>
+    <!-- Enterprise list -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr">
+        <div class="card-title">All Enterprises</div>
+        <button class="btn btn-primary btn-sm" onclick="window.saRefresh()">↻ Refresh</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Company</th><th>ID</th><th>Industry</th><th>Created</th><th>Employees</th><th>Claims</th><th>Actions</th></tr></thead>
+        <tbody id="sa-entTable"></tbody>
+      </table></div>
+    </div>
+    <!-- Demo controls -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr"><div class="card-title">🚀 Demo Enterprise</div></div>
+      <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="window.saReseedDemo()">↻ Re-seed Demo Data</button>
+        <button class="btn btn-danger btn-sm" onclick="window.saWipeDemoData()">🗑 Wipe Demo Data Only</button>
+      </div>
+    </div>
+    <!-- Danger zone -->
+    <div class="card" style="border-color:rgba(248,113,113,.3)">
+      <div class="card-hdr" style="border-color:rgba(248,113,113,.2)"><div class="card-title" style="color:var(--red)">⚠ Danger Zone</div></div>
+      <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-danger btn-sm" onclick="window.saWipeAll()">💥 Wipe Entire Database</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- APP SHELL -->
 <div id="app-shell">
   <div class="sb-overlay" id="sbOverlay" onclick="window.closeSb()"></div>
@@ -810,15 +856,46 @@ function showApp(){
   buildNav(); loadData(); nav('dashboard');
 }
 
+const SUPERADMIN_EMAIL='namanmehra@gmail.com';
+const DEMO_ENT_ID='demo-enterprise';
+
 onAuthStateChanged(auth,async u=>{
   if(u){
     me=u;
-    // Look up which enterprise this user belongs to
-    // Users store their entId in /userIndex/{uid}/entId
+    // Superadmin — special panel
+    if(u.email===SUPERADMIN_EMAIL){
+      showAuth(); // keep auth hidden
+      document.getElementById('auth-view').classList.remove('active');
+      document.getElementById('app-shell').classList.remove('active');
+      window.openSuperAdmin();
+      return;
+    }
+    // Demo user
+    if(u.email==='demo@claimsiq.ai'){
+      entId=DEMO_ENT_ID;
+      const snap=await get(eref('employees'));
+      const d=snap.val()||{};
+      const m=Object.entries(d).find(([,v])=>v.email===u.email);
+      if(m){
+        profile={key:m[0],...m[1]};
+        showApp();
+      } else {
+        // Demo data missing — reseed it
+        await set(eref('enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
+        await push(eref('employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+        await seedDemo();
+        const snap2=await get(eref('employees'));
+        const d2=snap2.val()||{};
+        const m2=Object.entries(d2).find(([,v])=>v.email===u.email);
+        profile=m2?{key:m2[0],...m2[1]}:{email:u.email,firstName:'Demo',lastName:'Admin',grade:'L6',role:'admin'};
+        showApp();
+      }
+      return;
+    }
+    // Regular user — look up userIndex
     const uidSnap=await get(ref(db,'userIndex/'+u.uid));
     if(uidSnap.val()?.entId){
       entId=uidSnap.val().entId;
-      // Load profile from enterprise employees
       const snap=await get(eref('employees'));
       const d=snap.val()||{};
       const m=Object.entries(d).find(([,v])=>v.email===u.email);
@@ -826,9 +903,8 @@ onAuthStateChanged(auth,async u=>{
       else profile={email:u.email,firstName:(u.displayName||'User').split(' ')[0],lastName:'',grade:'L6',role:'admin'};
       showApp();
     } else {
-      // No enterprise linked — show auth so user can register or sign in
       showAuth();
-      toast('Account has no enterprise. Register or contact your admin.','err');
+      toast('No enterprise linked to this account. Please register first.','err');
       await signOut(auth);
     }
   }else{
@@ -845,28 +921,15 @@ window.handleAuth=function(){
 };
 
 window.demoLogin=async function(){
-  const DEMO_ENT_ID='demo-enterprise';
+  // Auth state handler takes care of everything once signed in
   try{
-    // Try sign in
     await signInWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
-    // Ensure userIndex points to demo enterprise
-    const uid=(await get(ref(db,'userIndex/'+auth.currentUser?.uid))).val();
-    if(!uid?.entId){
-      await set(ref(db,'userIndex/'+auth.currentUser.uid),{entId:DEMO_ENT_ID});
-    }
   }catch{
     try{
-      // Create demo account
       const c=await createUserWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
       await updateProfile(c.user,{displayName:'Demo Admin'});
-      // Write userIndex
-      await set(ref(db,'userIndex/'+c.user.uid),{entId:DEMO_ENT_ID,email:'demo@claimsiq.ai'});
-      // Seed demo enterprise data under demo-enterprise namespace
-      entId=DEMO_ENT_ID;
-      await set(eref('enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
-      await push(eref('employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
-      await seedDemo();
-    }catch(e2){toast('Demo error: '+e2.message,'err');}
+      // Auth state handler will detect demo@claimsiq.ai and seed data
+    }catch(e2){toast('Demo setup error: '+e2.message,'err');}
   }
 };
 
@@ -908,7 +971,10 @@ window.doRegister=async function(){
   }catch(e){toast(e.message,'err');}
 };
 
-window.doLogout=function(){signOut(auth);};
+window.doLogout=function(){
+  document.getElementById('superadminPanel').style.display='none';
+  signOut(auth);
+};
 window.showPane=function(p){
   document.getElementById('paneSignIn').style.display=p==='signin'?'block':'none';
   document.getElementById('paneRegister').style.display=p==='register'?'block':'none';
@@ -1488,6 +1554,92 @@ async function seedDemo(){
   const mx=[{g:'L1',s:0,m:3000,f:15000},{g:'L2',s:0,m:8000,f:30000},{g:'L3',s:2000,m:15000,f:60000},{g:'L4',s:5000,m:30000,f:150000},{g:'L5',s:10000,m:75000,f:300000},{g:'L6',s:25000,m:200000,f:1000000}];
   for(const r of mx) await push(eref('approvalMatrix'),{grade:r.g,type:'all',selfLimit:r.s,mgrLimit:r.m,financeAbove:r.f,createdAt:new Date().toISOString()});
 }
+
+// ═══════════════════════════════════════════════════════════
+//  SUPERADMIN
+// ═══════════════════════════════════════════════════════════
+window.openSuperAdmin=async function(){
+  document.getElementById('superadminPanel').style.display='block';
+  window.saRefresh();
+};
+window.closeSuperAdmin=async function(){
+  document.getElementById('superadminPanel').style.display='none';
+  await signOut(auth);
+};
+
+window.saRefresh=async function(){
+  try{
+    const snap=await get(ref(db,'enterprises'));
+    const data=snap.val()||{};
+    const entIds=Object.keys(data);
+    document.getElementById('sa-entCount').textContent=entIds.length;
+    // Count users from userIndex
+    const userSnap=await get(ref(db,'userIndex'));
+    const users=userSnap.val()||{};
+    document.getElementById('sa-userCount').textContent=Object.keys(users).length;
+    // Count all claims
+    let totalClaims=0;
+    for(const eid of entIds){
+      const cSnap=await get(ref(db,'enterprises/'+eid+'/claims'));
+      totalClaims+=Object.keys(cSnap.val()||{}).length;
+    }
+    document.getElementById('sa-claimCount').textContent=totalClaims;
+    // Demo status
+    const demoSnap=await get(ref(db,'enterprises/demo-enterprise/enterprise'));
+    document.getElementById('sa-demoStatus').textContent=demoSnap.val()?'✅ Active':'❌ Missing';
+    // Render enterprise table
+    const tbody=document.getElementById('sa-entTable');
+    if(!entIds.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">No enterprises registered</div></td></tr>';return;}
+    const rows=await Promise.all(entIds.map(async eid=>{
+      const entData=data[eid]?.enterprise||{};
+      const empCount=Object.keys(data[eid]?.employees||{}).length;
+      const claimCount=Object.keys(data[eid]?.claims||{}).length;
+      return {eid,entData,empCount,claimCount};
+    }));
+    tbody.innerHTML=rows.map(({eid,entData,empCount,claimCount})=>`<tr>
+      <td><strong>${entData.name||'—'}</strong></td>
+      <td><span style="font-family:monospace;font-size:11px;color:var(--accent2)">${eid.slice(0,14)}...</span></td>
+      <td style="color:var(--muted)">${entData.industry||'—'}</td>
+      <td style="color:var(--muted);font-size:11px">${(entData.createdAt||'').slice(0,10)}</td>
+      <td style="text-align:center">${empCount}</td>
+      <td style="text-align:center">${claimCount}</td>
+      <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="window.saDeleteEnt('${eid}','${(entData.name||'').replace(/'/g,'')}')" style="white-space:nowrap">🗑 Delete</button></td>
+    </tr>`).join('');
+  }catch(e){toast('Superadmin error: '+e.message,'err');}
+};
+
+window.saDeleteEnt=async function(eid,name){
+  if(!confirm('DELETE enterprise: '+name+'. This removes ALL data. Cannot be undone.')) return;
+  await remove(ref(db,'enterprises/'+eid));
+  toast('Deleted: '+name,'ok');
+  window.saRefresh();
+};
+
+window.saReseedDemo=async function(){
+  if(!confirm('Re-seed demo data? This will overwrite existing demo enterprise data.')) return;
+  entId='demo-enterprise';
+  await set(eref('enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
+  await set(eref('employees'),null);
+  await push(eref('employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+  await seedDemo();
+  toast('Demo data re-seeded','ok');
+  window.saRefresh();
+};
+
+window.saWipeDemoData=async function(){
+  if(!confirm('Wipe ONLY the demo enterprise data?')) return;
+  await remove(ref(db,'enterprises/demo-enterprise'));
+  toast('Demo data wiped','ok');
+  window.saRefresh();
+};
+
+window.saWipeAll=async function(){
+  if(!confirm('WIPE ENTIRE DATABASE? Deletes ALL enterprises, users, claims. Cannot be undone.')) return;
+  if(!confirm('Are you 100% sure? This is irreversible.')) return;
+  await set(ref(db),null);
+  toast('Database wiped','ok');
+  window.saRefresh();
+};
 
 console.log('ClaimsIQ v7 — Firebase AI SDK gemini-2.5-flash');
 </script>
