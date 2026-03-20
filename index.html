@@ -900,6 +900,7 @@ textarea{resize:vertical;min-height:80px}
         <div class="topbar-title" id="topbarTitle">Dashboard</div>
       </div>
       <div class="topbar-right">
+        <button onclick="openAIKeyModal()" style="background:none;border:1px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font)" title="Set Gemini API key">⚙ AI Key</button>
         <button class="btn btn-primary btn-sm" onclick="openNewClaim()" id="newClaimBtn">+ New Claim</button>
       </div>
     </div>
@@ -1364,17 +1365,17 @@ textarea{resize:vertical;min-height:80px}
       <button class="modal-close" onclick="closeModal('aiKeyModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="background:#EFF6FF;border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.6">
-        <div style="font-weight:600;color:var(--accent);margin-bottom:6px">How to get a free API key</div>
-        1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a><br>
-        2. Click <strong>Create API key</strong> → select any project<br>
-        3. Copy the key (starts with <code style="background:#E0E7FF;padding:1px 5px;border-radius:4px">AIza</code>)<br>
-        4. Paste it below
+      <div id="aiKeyModalStatus" style="font-size:12px;font-weight:600;margin-bottom:10px;padding:8px 12px;background:#F8FAFC;border-radius:8px;border:1px solid var(--border)">Checking...</div>
+      <div style="background:#EFF6FF;border:1px solid rgba(37,99,235,0.15);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.7">
+        <strong style="color:var(--accent)">Get a free key in 30 seconds:</strong><br>
+        1. Open <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a><br>
+        2. Click <strong>Create API key</strong> → choose any project → Copy<br>
+        3. Paste below — key starts with <code style="background:#E0E7FF;padding:1px 5px;border-radius:4px">AIza</code>
       </div>
       <div class="fg">
         <label>Gemini API Key</label>
-        <input type="text" id="aiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Stored locally in your browser · Never sent to our servers</div>
+        <input type="text" id="aiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:12px">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Saved in your browser only · Never leaves your device</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1406,7 +1407,7 @@ textarea{resize:vertical;min-height:80px}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getDatabase, ref, set, get, push, update, remove, onValue, off } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-ai.js";
+// firebase-ai.js removed — using direct REST API instead
 
 const fbCfg = {
   apiKey:            "AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
@@ -1423,65 +1424,50 @@ const db   = getDatabase(app);
 const auth = getAuth(app);
 
 // ── Gemini — hybrid approach ──
-// Primary: Firebase AI SDK (GoogleAIBackend) — works when Cloud API is enabled
-// Fallback: Direct REST with user-provided key — works immediately
-let _geminiModel = null;
-
-function getGeminiModel() {
-  if (_geminiModel) return _geminiModel;
-  const ai = getAI(app, { backend: new GoogleAIBackend() });
-  _geminiModel = getGenerativeModel(ai, { model: "gemini-2.0-flash" });
-  return _geminiModel;
+// ── Gemini — pure REST, exactly like IPL auction parser ──
+// Uses AI Studio key from localStorage or prompts user to set one
+function getGeminiKey() {
+  return localStorage.getItem('claimsiq_gemini_key') || 'AIzaSyDXb1NxtZoFoQLbeRLgpPrhTSTwMBg7L-E';
 }
 
-// ── callGemini — Firebase AI SDK with REST fallback ──
 async function callGemini(parts, pro=false) {
-  // Convert parts to SDK inlineData format
-  const sdkParts = parts.map(p => {
+  let key = getGeminiKey();
+  if (!key) {
+    // Show modal and bail — user must set key first
+    if (typeof openAIKeyModal === 'function') openAIKeyModal();
+    throw new Error('No Gemini API key set. Click "Set AI Key" to add your key from aistudio.google.com/app/apikey');
+  }
+
+  // Convert parts to REST format
+  const restParts = parts.map(p => {
     if (p.text !== undefined) return { text: p.text };
-    if (p.inline_data) return { inlineData: { mimeType: p.inline_data.mime_type, data: p.inline_data.data } };
-    if (p.inlineData) return p;
+    if (p.inline_data) return { inline_data: p.inline_data };
+    if (p.inlineData) return { inline_data: { mime_type: p.inlineData.mimeType, data: p.inlineData.data } };
     return p;
   });
 
-  // Try Firebase AI SDK first
-  const savedKey = localStorage.getItem('claimsiq_gemini_key') || '';
-  if (!savedKey) {
-    try {
-      const model = getGeminiModel();
-      const result = await model.generateContent({ contents: [{ role: "user", parts: sdkParts }] });
-      return result.response.text();
-    } catch(fbErr) {
-      // If API_KEY_SERVICE_BLOCKED, fall through to REST with user key
-      if (!fbErr.message.includes('BLOCKED') && !fbErr.message.includes('403')) throw fbErr;
-      console.warn('Firebase AI SDK blocked — prompting for AI Studio key');
-    }
-  }
+  const modelName = pro ? 'gemini-1.5-pro-latest' : 'gemini-2.0-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
 
-  // REST fallback — use saved key or prompt for one
-  let key = savedKey;
-  if (!key) {
-    openAIKeyModal();
-    throw new Error('Please set your Gemini API key using the "Set AI Key" button, then try again.');
-  }
-
-  // Direct REST call
-  const model = pro ? 'gemini-1.5-pro-latest' : 'gemini-2.0-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const resp = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ role: 'user', parts: sdkParts }], generationConfig: { temperature: 0.1, maxOutputTokens: 2048 } })
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: restParts }],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
+    })
   });
+
   if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    const msg = e?.error?.message || `HTTP ${resp.status}`;
-    if (msg.includes('API key') || msg.includes('BLOCKED') || resp.status === 403) {
-      localStorage.removeItem('claimsiq_gemini_key');
-      throw new Error('API key invalid or revoked. Please refresh and enter a new key.');
+    const err = await resp.json().catch(() => ({}));
+    const msg = err?.error?.message || `HTTP ${resp.status}`;
+    if (resp.status === 429) throw new Error('Rate limit hit — wait a moment and try again.');
+    if (resp.status === 403 || msg.includes('quota') || msg.includes('BLOCKED')) {
+      throw new Error('API key quota exceeded or blocked. Get a fresh key at aistudio.google.com/app/apikey and set it via the ⚙ AI Key button.');
     }
     throw new Error(msg);
   }
+
   const data = await resp.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error('Empty response from Gemini.');
@@ -1587,6 +1573,9 @@ window.switchAuthTab = typeof switchAuthTab !== "undefined" ? switchAuthTab : un
 window.toggleTravelFields = typeof toggleTravelFields !== "undefined" ? toggleTravelFields : undefined;
 window.updateExportPreview = typeof updateExportPreview !== "undefined" ? updateExportPreview : undefined;
 window.viewClaim = typeof viewClaim !== "undefined" ? viewClaim : undefined;
+
+window.renderGradeList = typeof renderGradeList !== "undefined" ? renderGradeList : undefined;
+window.renderPolicyList = typeof renderPolicyList !== "undefined" ? renderPolicyList : undefined;
 
 // Signal ready
 window._fbAIReady = true;
