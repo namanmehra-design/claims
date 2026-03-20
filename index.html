@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>ClaimsIQ v5 — Enterprise Claims Platform</title>
+<title>ClaimsIQ — Enterprise Claims Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════
@@ -605,70 +605,33 @@ const app = initializeApp(fbCfg);
 const db   = getDatabase(app);
 const auth = getAuth(app);
 
-// ── Gemini — hybrid approach ──
-// Primary: Firebase AI SDK (GoogleAIBackend) — works when Cloud API is enabled
-// Fallback: Direct REST with user-provided key — works immediately
+// ── Firebase AI — lazy init, exactly as in IPL auction ──
 let _geminiModel = null;
-
 function getGeminiModel() {
   if (_geminiModel) return _geminiModel;
-  const ai = getAI(app, { backend: new GoogleAIBackend() });
-  _geminiModel = getGenerativeModel(ai, { model: "gemini-2.0-flash" });
-  return _geminiModel;
+  try {
+    const ai = getAI(app, { backend: new GoogleAIBackend() });
+    _geminiModel = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
+    return _geminiModel;
+  } catch(e) {
+    throw new Error("Firebase AI not ready. Enable it: Firebase Console → Build → AI Logic → Enable Gemini API");
+  }
 }
 
-// ── callGemini — Firebase AI SDK with REST fallback ──
+// ── callGemini — unified interface (matches IPL auction pattern) ──
 async function callGemini(parts, pro=false) {
-  // Convert parts to SDK inlineData format
+  const model = getGeminiModel();
+  // Convert parts to Firebase AI SDK format
   const sdkParts = parts.map(p => {
     if (p.text !== undefined) return { text: p.text };
     if (p.inline_data) return { inlineData: { mimeType: p.inline_data.mime_type, data: p.inline_data.data } };
     if (p.inlineData) return p;
     return p;
   });
-
-  // Try Firebase AI SDK first
-  const savedKey = localStorage.getItem('claimsiq_gemini_key') || '';
-  if (!savedKey) {
-    try {
-      const model = getGeminiModel();
-      const result = await model.generateContent({ contents: [{ role: "user", parts: sdkParts }] });
-      return result.response.text();
-    } catch(fbErr) {
-      // If API_KEY_SERVICE_BLOCKED, fall through to REST with user key
-      if (!fbErr.message.includes('BLOCKED') && !fbErr.message.includes('403')) throw fbErr;
-      console.warn('Firebase AI SDK blocked — prompting for AI Studio key');
-    }
-  }
-
-  // REST fallback — use saved key or prompt for one
-  let key = savedKey;
-  if (!key) {
-    openAIKeyModal();
-    throw new Error('Please set your Gemini API key using the "Set AI Key" button, then try again.');
-  }
-
-  // Direct REST call
-  const model = pro ? 'gemini-1.5-pro-latest' : 'gemini-2.0-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ role: 'user', parts: sdkParts }], generationConfig: { temperature: 0.1, maxOutputTokens: 2048 } })
+  const result = await model.generateContent({
+    contents: [{ role: "user", parts: sdkParts }]
   });
-  if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    const msg = e?.error?.message || `HTTP ${resp.status}`;
-    if (msg.includes('API key') || msg.includes('BLOCKED') || resp.status === 403) {
-      localStorage.removeItem('claimsiq_gemini_key');
-      throw new Error('API key invalid or revoked. Please refresh and enter a new key.');
-    }
-    throw new Error(msg);
-  }
-  const data = await resp.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Empty response from Gemini.');
-  return text;
+  return result.response.text();
 }
 
 // All Firebase calls handled inline via modular SDK
@@ -703,7 +666,59 @@ window._fbAIReady = true;
 window._firebaseReady = true;
 console.log('%c✦ Firebase v12.3.0 + Gemini 2.5 Flash ready', 'color:#059669;font-weight:700');
 
-// ── callGemini + Firebase init handled in module header above ──
+// ══════════════════════════════════════
+//  FIREBASE INIT (compat — for Auth + RTDB)
+//  The modular ES module above already called initializeApp,
+//  so we just get the existing app here.
+// ══════════════════════════════════════
+// Firebase init handled in <script type="module"> above
+
+// ══════════════════════════════════════
+//  GEMINI — Firebase AI SDK ONLY
+//  Uses Firebase project credentials — no personal API key needed.
+//  Enable at: Firebase Console → Build → AI Logic → Enable
+// ══════════════════════════════════════
+
+/**
+ * callGemini — uses Firebase AI SDK exclusively.
+ * The model instances (_fbAIFlash, _fbAIPro) are created in the
+ * <script type="module"> block that loads firebase/ai.
+ *
+ * @param {Array}   parts  [{text:string}] or [{text}, {inline_data:{mime_type,data}}]
+ * @param {boolean} pro    true = gemini-2.5-pro (deep analysis), false = gemini-2.5-flash (fast)
+ * @returns {string} model text response
+ */
+async function callGemini(parts, pro=false) {
+  // Wait up to 15 seconds for the Firebase AI ES module to initialise
+  const maxWait = 150; // 15 seconds
+  for (let i = 0; i < maxWait; i++) {
+    if (window._fbAIReady) break;
+    if (window._fbAIError) throw new Error('Firebase AI failed: ' + window._fbAIError);
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  if (!window._fbAIReady) {
+    throw new Error(
+      'Firebase AI timed out. The Gemini Developer API is enabled but the SDK is taking too long. ' +
+      'Try refreshing the page.'
+    );
+  }
+
+  const model = pro ? window._fbAIPro : window._fbAIFlash;
+
+  // Convert parts to Firebase AI SDK format (inlineData, not inline_data)
+  const sdkParts = parts.map(p => {
+    if (p.text !== undefined) return { text: p.text };
+    if (p.inline_data) return {
+      inlineData: { mimeType: p.inline_data.mime_type, data: p.inline_data.data }
+    };
+    if (p.inlineData) return p; // already correct format
+    return p;
+  });
+
+  const result = await model.generateContent(sdkParts);
+  return result.response.text();
+}
 function extractJSON(text) {
   const m = text.match(/\{[\s\S]*\}/);
   if (!m) throw new Error('No JSON found in: ' + text.slice(0,200));
@@ -1015,8 +1030,8 @@ function regGoToDashboard() {
 // ══════════════════════════════════════
 //  GEMINI SETUP CHECK
 // ══════════════════════════════════════
-// setGeminiKey — see openAIKeyModal() above
-
+// Show a helpful banner if Firebase AI Logic isn't enabled yet
+// Key status indicator — shown in AI panel
 function updateKeyStatus() {
   const els = document.querySelectorAll('.gemini-key-status');
   const ready = !!window._fbAIReady;
@@ -2704,35 +2719,6 @@ async function loadDemoData(){
     <div class="modal-footer">
       <button class="btn btn-glass btn-sm" onclick="closeModal('addPolicyModal')">Cancel</button>
       <button class="btn btn-primary btn-sm" onclick="savePolicy()">Save Policy</button>
-    </div>
-  </div>
-</div>
-
-<!-- AI KEY MODAL -->
-<div class="modal-overlay" id="aiKeyModal">
-  <div class="modal modal-sm">
-    <div class="modal-header">
-      <div class="modal-title">✦ Configure Gemini AI</div>
-      <button class="modal-close" onclick="closeModal('aiKeyModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:#EFF6FF;border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--text2);line-height:1.6">
-        <div style="font-weight:600;color:var(--accent);margin-bottom:6px">How to get a free API key</div>
-        1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a><br>
-        2. Click <strong>Create API key</strong> → select any project<br>
-        3. Copy the key (starts with <code style="background:#E0E7FF;padding:1px 5px;border-radius:4px">AIza</code>)<br>
-        4. Paste it below
-      </div>
-      <div class="fg">
-        <label>Gemini API Key</label>
-        <input type="text" id="aiKeyInput" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Stored locally in your browser · Never sent to our servers</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-glass btn-sm" onclick="closeModal('aiKeyModal')">Cancel</button>
-      <button class="btn btn-glass btn-sm" onclick="document.getElementById('aiKeyInput').value='';saveAIKey()">Clear Key</button>
-      <button class="btn btn-primary btn-sm" onclick="saveAIKey()">Save & Activate</button>
     </div>
   </div>
 </div>
