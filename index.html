@@ -640,16 +640,16 @@ textarea{resize:vertical;min-height:80px}
 
   // Two models — flash for speed, pro for complex analysis
   window._fbAIFlash = getGenerativeModel(ai, {
-    model: 'gemini-2.0-flash',
+    model: 'gemini-2.5-flash-preview-04-17',
     generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
   });
   window._fbAIPro = getGenerativeModel(ai, {
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.5-pro-preview-03-25',
     generationConfig: { temperature: 0.1, maxOutputTokens: 4096 }
   });
 
   window._fbAIReady = true;
-  console.log('%c✦ Firebase AI (Gemini 2.0 Flash) ready via Firebase project', 'color:#2563EB;font-weight:700');
+  console.log('%c✦ Firebase AI (Gemini 2.5 Flash Preview) initialised via Firebase project', 'color:#2563EB;font-weight:700');
 
   // Dispatch event so UI updates immediately
   window.dispatchEvent(new Event('fbAIReady'));
@@ -1161,7 +1161,7 @@ textarea{resize:vertical;min-height:80px}
 
     <!-- ━━━━━━ AI ASSISTANT ━━━━━━ -->
     <div class="page" id="page-aiassistant">
-      <div class="page-header"><div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about your claims data · Firebase Gemini 2.0 · <span class="gemini-key-status" style="cursor:pointer">○ API Key Needed</span></div></div></div>
+      <div class="page-header"><div><div class="page-title">AI Assistant</div><div class="page-sub">Ask anything about your claims data · Firebase Gemini 2.5 · <span class="gemini-key-status" style="cursor:pointer">○ API Key Needed</span></div></div></div>
       <div class="card" style="overflow:hidden">
         <div class="chat-wrap">
           <div class="chat-messages" id="chatMessages">
@@ -1210,7 +1210,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="ai-panel">
         <div class="ai-panel-header">
           <div class="ai-badge">✦ Smart AI Filler</div>
-          <span style="font-size:11px;color:var(--text3);margin-left:4px">Gemini 1.5</span><span class="gemini-key-status" style="font-size:11px;margin-left:auto;cursor:pointer">○ API Key Needed</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:4px">Gemini 2.5</span><span class="gemini-key-status" style="font-size:11px;margin-left:auto;cursor:pointer">○ API Key Needed</span>
           <div style="display:flex;gap:6px;margin-left:auto">
             <button class="btn btn-ai btn-xs" id="aiTabDoc" onclick="switchAITab('doc')" style="border-color:rgba(139,92,246,0.4)">📄 Upload Receipt</button>
             <button class="btn btn-glass btn-xs" id="aiTabText" onclick="switchAITab('text')">✏ Describe It</button>
@@ -1478,20 +1478,22 @@ const db = firebase.database();
  * <script type="module"> block that loads firebase/ai.
  *
  * @param {Array}   parts  [{text:string}] or [{text}, {inline_data:{mime_type,data}}]
- * @param {boolean} pro    true = gemini-1.5-pro, false = gemini-2.0-flash
+ * @param {boolean} pro    true = gemini-2.5-pro (deep analysis), false = gemini-2.5-flash (fast)
  * @returns {string} model text response
  */
 async function callGemini(parts, pro=false) {
-  // Wait up to 8 seconds for the ES module to finish initialising
-  for (let i = 0; i < 80; i++) {
+  // Wait up to 15 seconds for the Firebase AI ES module to initialise
+  const maxWait = 150; // 15 seconds
+  for (let i = 0; i < maxWait; i++) {
     if (window._fbAIReady) break;
+    if (window._fbAIError) throw new Error('Firebase AI failed: ' + window._fbAIError);
     await new Promise(r => setTimeout(r, 100));
   }
 
   if (!window._fbAIReady) {
     throw new Error(
-      'Firebase AI not ready. Make sure Firebase AI Logic is enabled in your project: ' +
-      'Firebase Console → Build → AI Logic → Enable Gemini API'
+      'Firebase AI timed out. The Gemini Developer API is enabled but the SDK is taking too long. ' +
+      'Try refreshing the page.'
     );
   }
 
@@ -1827,10 +1829,10 @@ function updateKeyStatus() {
   const els = document.querySelectorAll('.gemini-key-status');
   const ready = !!window._fbAIReady;
   els.forEach(el => {
-    el.textContent = ready ? '● Gemini 2.0 Ready' : '◌ Connecting...';
+    el.textContent = ready ? '● Gemini 2.5 Ready' : '◌ Connecting...';
     el.style.color = ready ? 'var(--green)' : 'var(--amber)';
     el.title = ready
-      ? 'Firebase AI (Gemini 2.0 Flash) — connected via Firebase project'
+      ? 'Firebase AI (Gemini 2.5 Flash) — connected via Firebase project'
       : 'Connecting to Firebase AI...';
   });
   if (!ready) setTimeout(updateKeyStatus, 1500);
@@ -2034,7 +2036,21 @@ function onAIDocSelected(input){
 
 async function runDocScan(){
   if(!aiDocFile){showAIResult('Please upload a document first.');return;}
-  setAILoading(true,'Reading document with Gemini...');
+  // If SDK still loading, show waiting message and retry
+  if(!window._fbAIReady){
+    setAILoading(true,'Connecting to Firebase AI...');
+    // Wait up to 12s for the module to load
+    for(let i=0;i<120;i++){
+      if(window._fbAIReady) break;
+      await new Promise(r=>setTimeout(r,100));
+    }
+    if(!window._fbAIReady){
+      setAILoading(false);
+      showAIResult('⚠ Firebase AI is still connecting. Please wait a moment and try again.');
+      return;
+    }
+  }
+  setAILoading(true,'Reading document with Gemini 2.5...');
   try{
     const base64=await fileToBase64(aiDocFile);
     const mime=aiDocFile.type==='application/pdf'?'application/pdf':aiDocFile.type||'image/jpeg';
@@ -2054,7 +2070,12 @@ async function runDocScan(){
 async function runAIFill(){
   const prompt=document.getElementById('ai-prompt').value.trim();
   if(!prompt){showAIResult('Please describe your expense first.');return;}
-  setAILoading(true,'Filling form with Gemini...');
+  if(!window._fbAIReady){
+    setAILoading(true,'Connecting to Firebase AI...');
+    for(let i=0;i<120;i++){if(window._fbAIReady)break;await new Promise(r=>setTimeout(r,100));}
+    if(!window._fbAIReady){setAILoading(false);showAIResult('⚠ Firebase AI connecting. Please try again in a moment.');return;}
+  }
+  setAILoading(true,'Filling form with Gemini 2.5...');
   try{
     const text=await callGemini([{text:AI_EXTRACT_PROMPT+'\n\nExtract from this description:\n'+prompt}]);
     const parsed=extractJSON(text);
@@ -2608,6 +2629,10 @@ async function sendChat(){
   input.value='';document.getElementById('chatSuggestions').style.display='none';
   appendChatMsg('user',msg);chatHistory.push({role:'user',text:msg});
   const typingEl=appendChatMsg('ai','...',true);
+  if(!window._fbAIReady){
+    typingEl.querySelector('.chat-bubble').textContent='Connecting to Firebase AI... please wait a moment and try again.';
+    return;
+  }
   const context=buildClaimsContext();
   const systemPrompt=`You are ClaimsIQ AI Assistant — an intelligent enterprise expense claims analyst. You have access to the company's live claims data. Answer questions about claims, spending patterns, risk, approvals, employees, and trends. Be concise, data-driven, and use specific numbers from the data provided. Format numbers with ₹ and commas.
 
