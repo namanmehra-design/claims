@@ -582,9 +582,9 @@ textarea{resize:vertical;min-height:80px}
 
 <!-- Firebase SDKs (compat) -->
 <!-- Firebase compat SDKs (Auth + RTDB) -->
-<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <!-- Gemini AI via @google/generative-ai — loaded as ES module from esm.sh CDN -->
 <!-- This is the correct, working approach for static HTML files -->
@@ -1415,8 +1415,7 @@ textarea{resize:vertical;min-height:80px}
 //  The modular ES module above already called initializeApp,
 //  so we just get the existing app here.
 // ══════════════════════════════════════
-// Firebase compat layer — Auth + Realtime DB
-// App may already exist from the ES module above — getOrCreate pattern
+// Firebase compat init — deferred so compat scripts are guaranteed loaded
 const fbConfig = {
   apiKey:"AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
   authDomain:"claimsiq-fced7.firebaseapp.com",
@@ -1426,9 +1425,39 @@ const fbConfig = {
   messagingSenderId:"592596475191",
   appId:"1:592596475191:web:3e6d165e79aa983e06ceb2"
 };
-try { firebase.initializeApp(fbConfig); } catch(e) { /* app already initialised by ES module */ }
-const auth = firebase.auth();
-const db = firebase.database();
+
+let auth, db;
+
+function initFirebaseCompat() {
+  if (typeof firebase === 'undefined') {
+    // Retry after 100ms if compat scripts not yet loaded
+    setTimeout(initFirebaseCompat, 100);
+    return;
+  }
+  try { firebase.initializeApp(fbConfig); } catch(e) { /* already init */ }
+  auth = firebase.auth();
+  db   = firebase.database();
+  // Kick off auth state listener now that firebase is ready
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      currentUser = user;
+      const snap = await db.ref('employees').orderByChild('email').equalTo(user.email).once('value');
+      const data = snap.val();
+      if (data) { const k = Object.keys(data)[0]; currentProfile = {key:k,...data[k]}; }
+      else { currentProfile = {email:user.email, firstName:(user.displayName||'User').split(' ')[0], lastName:(user.displayName||'').split(' ').slice(1).join(''), grade:'L3', role:'admin', department:''}; }
+      showApp();
+    } else {
+      showAuth();
+    }
+  });
+}
+
+// Run after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initFirebaseCompat);
+} else {
+  initFirebaseCompat();
+}
 
 // ══════════════════════════════════════
 //  GEMINI — Firebase AI SDK ONLY
@@ -1712,14 +1741,14 @@ async function regFinish() {
     const pass  = document.getElementById('rg-pass').value;
 
     // 1. Create Firebase Auth user
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    const cred = await getAuth().createUserWithEmailAndPassword(email, pass);
     await cred.user.updateProfile({ displayName: fname + ' ' + lname });
 
     // 2. Save enterprise
-    await db.ref('enterprise').set(enterpriseData);
+    await getDB().ref('enterprise').set(enterpriseData);
 
     // 3. Save admin employee record
-    await db.ref('employees').push({
+    await getDB().ref('employees').push({
       firstName: fname, lastName: lname, email,
       title: document.getElementById('rg-title').value.trim(),
       phone: document.getElementById('rg-phone').value.trim(),
@@ -1733,7 +1762,7 @@ async function regFinish() {
     // 4. Save approval matrix from grades
     const validGrades = regGrades.filter(g => g.code);
     for (const g of validGrades) {
-      await db.ref('approvalMatrix').push({
+      await getDB().ref('approvalMatrix').push({
         grade: g.code, type: 'all',
         selfLimit: g.selfLimit || 0,
         mgrLimit: g.mgrLimit || 0,
@@ -1746,7 +1775,7 @@ async function regFinish() {
     // 5. Save policies
     for (const p of regPolicies) {
       if (p.max > 0 || p.perClaim > 0) {
-        await db.ref('policies').push({
+        await getDB().ref('policies').push({
           type: p.type, max: p.max, perClaim: p.perClaim,
           receipt: p.receipt, notes: '',
           source: 'onboarding', createdAt: new Date().toISOString(),
@@ -1809,21 +1838,22 @@ let uploadedFiles=[], aiDocFile=null, csvEmployees=[], editingEmpKey=null;
 let enterprise = {name:'My Enterprise',domain:'',industry:'',country:'India',currency:'INR',fiscalYear:'April'};
 let chatHistory = [];
 let selectedExportFmt = 'csv';
+
+// Safe firebase accessors — always use these instead of auth/db directly
+function getAuth() {
+  if (!auth) throw new Error('Firebase not ready yet');
+  return auth;
+}
+function getDB() {
+  if (!db) throw new Error('Firebase not ready yet');
+  return db;
+}
 const ROLES = {employee:'Employee',manager:'Manager',finance:'Finance',admin:'Admin'};
 
 // ══════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════
-auth.onAuthStateChanged(async user=>{
-  if(user){
-    currentUser=user;
-    const snap=await db.ref('employees').orderByChild('email').equalTo(user.email).once('value');
-    const data=snap.val();
-    if(data){const k=Object.keys(data)[0];currentProfile={key:k,...data[k]};}
-    else{currentProfile={email:user.email,firstName:(user.displayName||'User').split(' ')[0],lastName:(user.displayName||'').split(' ').slice(1).join(''),grade:'L3',role:'admin',department:''};}
-    showApp();
-  } else { showAuth(); }
-});
+// auth.onAuthStateChanged moved into initFirebaseCompat()
 
 function showAuth(){
   document.getElementById('authScreen').style.display='flex';
@@ -1854,23 +1884,23 @@ function switchAuthTab(tab,el){
 async function doLogin(){
   const e=document.getElementById('l-email').value.trim(),p=document.getElementById('l-pass').value;
   if(!e||!p){showAuthErr('Please enter email and password.');return;}
-  try{await auth.signInWithEmailAndPassword(e,p);}catch(err){showAuthErr(err.message);}
+  try{await getAuth().signInWithEmailAndPassword(e,p);}catch(err){showAuthErr(err.message);}
 }
 // doRegister moved to wizard — see regFinish()
 async function demoLogin(){
-  try{await auth.signInWithEmailAndPassword('demo@claimsiq.ai','demo123456');}
+  try{await getAuth().signInWithEmailAndPassword('demo@claimsiq.ai','demo123456');}
   catch{
     try{
-      const c=await auth.createUserWithEmailAndPassword('demo@claimsiq.ai','demo123456');
+      const c=await getAuth().createUserWithEmailAndPassword('demo@claimsiq.ai','demo123456');
       await c.user.updateProfile({displayName:'Demo Admin'});
-      await db.ref('employees').push({firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',location:'Mumbai',managerEmail:'',empId:'ADM001',createdAt:new Date().toISOString()});
-      await db.ref('enterprise').set({name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Information Technology',country:'India',currency:'INR',fiscalYear:'April',createdAt:new Date().toISOString()});
+      await getDB().ref('employees').push({firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',location:'Mumbai',managerEmail:'',empId:'ADM001',createdAt:new Date().toISOString()});
+      await getDB().ref('enterprise').set({name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Information Technology',country:'India',currency:'INR',fiscalYear:'April',createdAt:new Date().toISOString()});
       await loadDemoData();
     }catch(e2){showAuthErr('Demo failed: '+e2.message);}
   }
 }
 function showAuthErr(m){const e=document.getElementById('authError');e.textContent=m;e.style.display='block';}
-async function doLogout(){await auth.signOut();allClaims=[];allEmployees=[];matrixRules=[];policies=[];}
+async function doLogout(){await getAuth().signOut();allClaims=[];allEmployees=[];matrixRules=[];policies=[];}
 
 // ══════════════════════════════════════
 //  DATA LOADING
