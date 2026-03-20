@@ -393,7 +393,7 @@ select option{background:#0A0E1A;color:var(--txt);}
             <div style="font-size:13px;color:var(--muted)">Monthly limits per category</div>
             <button class="btn btn-primary btn-sm" onclick="window.openAddPolicy()">+ Add Policy</button>
           </div>
-          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Monthly Max</th><th>Per Claim</th><th>Receipt</th><th></th></tr></thead><tbody id="policyRows"></tbody></table></div></div>
+          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Monthly Max</th><th>Per Claim</th><th>Receipt</th><th>Grade</th><th></th></tr></thead><tbody id="policyRows"></tbody></table></div></div>
         </div>
 
         <div id="tab-engine" style="display:none">
@@ -575,18 +575,74 @@ select option{background:#0A0E1A;color:var(--txt);}
 <!-- POLICY MODAL -->
 <div class="modal-bg" id="mPolicy">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Add Policy</div><button class="modal-close" onclick="window.closeMod('mPolicy')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Add Expense Policy</div><button class="modal-close" onclick="window.closeMod('mPolicy')">✕</button></div>
     <div class="modal-body">
+      <div class="fld">
+        <label>Expense Type</label>
+        <select id="po-t" onchange="window.togglePoOther()" style="margin-bottom:8px">
+          <option value="">— Select type —</option>
+          <optgroup label="Travel">
+            <option value="travel">✈ Travel Domestic</option>
+            <option value="travel-intl">✈ Travel International</option>
+            <option value="train">🚆 Train</option>
+            <option value="parking">🅿 Parking</option>
+            <option value="tolls">🛣 Tolls / Fastag</option>
+          </optgroup>
+          <optgroup label="Accommodation">
+            <option value="accommodation">🏨 Hotel / Accommodation</option>
+          </optgroup>
+          <optgroup label="Food & Lifestyle">
+            <option value="food">🍽 Food & Meals</option>
+          </optgroup>
+          <optgroup label="Communication">
+            <option value="mobile">📱 Mobile / Phone</option>
+            <option value="wifi">📶 WiFi / Broadband / Internet</option>
+          </optgroup>
+          <optgroup label="Vehicle">
+            <option value="fuel">⛽ Fuel / Petrol</option>
+          </optgroup>
+          <optgroup label="Office">
+            <option value="printing">🖨 Printing / Stationery</option>
+          </optgroup>
+          <optgroup label="Benefits">
+            <option value="household">🏠 Household Benefits</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="other">📦 Other (specify below)</option>
+          </optgroup>
+        </select>
+        <input type="text" id="po-t-custom" placeholder="Type custom expense name e.g. Newspaper, Gym, Uniform..." style="display:none">
+      </div>
       <div class="g2">
-        <div class="fld"><label>Type</label><select id="po-t"><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="food">Food</option><option value="mobile">Mobile</option><option value="accommodation">Hotel</option><option value="other">Other</option></select></div>
-        <div class="fld"><label>Monthly Max (₹)</label><input type="number" id="po-m" placeholder="5000"></div>
-        <div class="fld"><label>Per-Claim Max (₹)</label><input type="number" id="po-p" placeholder="2000"></div>
-        <div class="fld"><label>Receipt Required</label><select id="po-r"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="fld"><label>Monthly Max (₹) <span style="font-weight:400;text-transform:none;letter-spacing:0">— 0 = unlimited</span></label><input type="number" id="po-m" placeholder="0" min="0"></div>
+        <div class="fld"><label>Per-Claim Max (₹) <span style="font-weight:400;text-transform:none;letter-spacing:0">— 0 = unlimited</span></label><input type="number" id="po-p" placeholder="0" min="0"></div>
+        <div class="fld"><label>Receipt Required</label>
+          <select id="po-r">
+            <option value="true">Yes — must attach receipt</option>
+            <option value="false">No — no receipt needed</option>
+          </select>
+        </div>
+        <div class="fld"><label>Applies To Grade</label>
+          <select id="po-grade">
+            <option value="ALL">All Grades</option>
+            <option value="L1">L1 only</option>
+            <option value="L2">L2 only</option>
+            <option value="L3">L3 only</option>
+            <option value="L4">L4 only</option>
+            <option value="L5">L5 only</option>
+            <option value="L6">L6 only</option>
+            <option value="L1-L3">L1–L3 (Junior)</option>
+            <option value="L4-L6">L4–L6 (Senior)</option>
+          </select>
+        </div>
+        <div class="fld full"><label>Notes <span style="font-weight:400;text-transform:none;letter-spacing:0">— optional rule description</span></label>
+          <input type="text" id="po-notes" placeholder="e.g. Requires manager pre-approval for amounts above ₹5,000">
+        </div>
       </div>
     </div>
     <div class="modal-ftr">
       <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mPolicy')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="window.savePolicy()">Save</button>
+      <button class="btn btn-primary btn-sm" onclick="window.savePolicy()">Save Policy</button>
     </div>
   </div>
 </div>
@@ -1289,18 +1345,63 @@ window.openAddMatrix=function(){document.getElementById('mMatrix').classList.add
 window.saveMatrix=async function(){await push(eref('approvalMatrix'),{grade:document.getElementById('mx-g').value,type:document.getElementById('mx-t').value,selfLimit:parseFloat(document.getElementById('mx-s').value)||0,mgrLimit:parseFloat(document.getElementById('mx-m').value)||0,financeAbove:parseFloat(document.getElementById('mx-f').value)||0,createdAt:new Date().toISOString()});window.closeMod('mMatrix');toast('Rule added','ok');};
 window.delMatrix=async function(key){if(confirm('Delete?'))await remove(eref('approvalMatrix/'+key));};
 
+// Type label map for display
+const TYPE_LABELS={
+  'travel':'✈ Travel (Domestic)','travel-intl':'✈ Travel (Intl)','train':'🚆 Train',
+  'parking':'🅿 Parking','tolls':'🛣 Tolls','food':'🍽 Food & Meals',
+  'accommodation':'🏨 Hotel','mobile':'📱 Mobile','wifi':'📶 WiFi / Internet',
+  'fuel':'⛽ Fuel','printing':'🖨 Printing / Stationery',
+  'household':'🏠 Household','other':'📦 Other'
+};
+
 function renderPolicies(){
   const tbody=document.getElementById('policyRows');
-  if(!policies.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">No policies</div></td></tr>';return;}
+  if(!policies.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No policies yet — click + Add Policy</div></td></tr>';return;}
   tbody.innerHTML=policies.map(p=>`<tr>
-    <td style="text-transform:capitalize">${p.type}</td>
-    <td>${p.max>0?'₹'+parseFloat(p.max).toLocaleString('en-IN'):'—'}</td>
-    <td>${p.perClaim>0?'₹'+parseFloat(p.perClaim).toLocaleString('en-IN'):'—'}</td>
-    <td><span class="badge ${(p.receipt==='true'||p.receipt===true)?'b-approved':'b-draft'}">${(p.receipt==='true'||p.receipt===true)?'Yes':'No'}</span></td>
+    <td>
+      <div style="font-weight:600;font-size:13px">${TYPE_LABELS[p.type]||p.type}</div>
+      ${p.notes?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${p.notes}</div>`:''}
+    </td>
+    <td>${p.max>0?'₹'+parseFloat(p.max).toLocaleString('en-IN'):'<span style="color:var(--muted)">Unlimited</span>'}</td>
+    <td>${p.perClaim>0?'₹'+parseFloat(p.perClaim).toLocaleString('en-IN'):'<span style="color:var(--muted)">Unlimited</span>'}</td>
+    <td><span class="badge ${(p.receipt==='true'||p.receipt===true)?'b-approved':'b-draft'}">${(p.receipt==='true'||p.receipt===true)?'Required':'No'}</span></td>
+    <td><span class="chip">${p.grade||'ALL'}</span></td>
     <td><button class="btn btn-danger btn-sm" onclick="window.delPolicy('${p.key}')">Del</button></td></tr>`).join('');
 }
-window.openAddPolicy=function(){document.getElementById('mPolicy').classList.add('open');};
-window.savePolicy=async function(){await push(eref('policies'),{type:document.getElementById('po-t').value,max:parseFloat(document.getElementById('po-m').value)||0,perClaim:parseFloat(document.getElementById('po-p').value)||0,receipt:document.getElementById('po-r').value,createdAt:new Date().toISOString()});window.closeMod('mPolicy');toast('Policy added','ok');};
+window.openAddPolicy=function(){
+  document.getElementById('po-t').value='';
+  document.getElementById('po-t-custom').value='';
+  document.getElementById('po-t-custom').style.display='none';
+  document.getElementById('po-m').value='';
+  document.getElementById('po-p').value='';
+  document.getElementById('po-r').value='true';
+  document.getElementById('po-grade').value='ALL';
+  document.getElementById('po-notes').value='';
+  document.getElementById('mPolicy').classList.add('open');
+};
+
+window.togglePoOther=function(){
+  const v=document.getElementById('po-t').value;
+  document.getElementById('po-t-custom').style.display=v==='other'?'block':'none';
+};
+window.savePolicy=async function(){
+  const typeSelect=document.getElementById('po-t').value;
+  if(!typeSelect){toast('Select an expense type','err');return;}
+  const type=typeSelect==='other'
+    ?(document.getElementById('po-t-custom').value.trim()||'other')
+    :typeSelect;
+  await push(eref('policies'),{
+    type,
+    max:parseFloat(document.getElementById('po-m').value)||0,
+    perClaim:parseFloat(document.getElementById('po-p').value)||0,
+    receipt:document.getElementById('po-r').value,
+    grade:document.getElementById('po-grade').value||'ALL',
+    notes:document.getElementById('po-notes').value.trim(),
+    createdAt:new Date().toISOString()
+  });
+  window.closeMod('mPolicy');
+  toast('Policy added for: '+type,'ok');
+};
 window.delPolicy=async function(key){if(confirm('Delete?'))await remove(eref('policies/'+key));};
 
 window.swTab=function(name,el){
