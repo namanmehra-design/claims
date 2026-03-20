@@ -750,7 +750,7 @@ select option{background:#F4F5FA;color:var(--txt);}
     </div>
     <div class="sb-sec">Navigation</div>
     <div id="navList"></div>
-    <div class="sb-footer">
+    <div class="sb-footer" id="sbFooter">
       <button class="btn btn-ghost btn-full btn-sm" onclick="window.doLogout()">↪ Sign Out</button>
     </div>
   </div>
@@ -1414,12 +1414,51 @@ const DEMO_ENT_ID='demo-enterprise';
 onAuthStateChanged(auth,async u=>{
   if(u){
     me=u;
-    // Superadmin — special panel
+    // Superadmin — open panel but ALSO check if they have their own enterprise
     if(u.email===SUPERADMIN_EMAIL){
-      showAuth(); // keep auth hidden
-      document.getElementById('auth-view').classList.remove('active');
-      document.getElementById('app-shell').classList.remove('active');
-      window.openSuperAdmin();
+      // Check if superadmin has a personal enterprise
+      const uidSnap=await get(ref(db,'userIndex/'+u.uid));
+      if(uidSnap.val()?.entId){
+        // Has an enterprise — load it like a normal admin, then also show SA panel toggle
+        entId=uidSnap.val().entId;
+        const snap=await get(eref('employees'));
+        const d=snap.val()||{};
+        const m=Object.entries(d).find(([,v])=>v.email===u.email);
+        if(m) profile={key:m[0],...m[1]};
+        else profile={email:u.email,firstName:'Naman',lastName:'Mehra',grade:'L6',role:'admin'};
+        showApp();
+        // Add a superadmin toggle button to the sidebar
+        const sbFooter=document.getElementById('sbFooter');
+        if(sbFooter&&!document.getElementById('saToggleBtn')){
+          const btn=document.createElement('button');
+          btn.id='saToggleBtn';
+          btn.className='btn btn-ghost btn-full btn-sm';
+          btn.style.marginBottom='6px';
+          btn.textContent='⚡ Platform Console';
+          btn.onclick=()=>{window.openSuperAdmin();};
+          sbFooter.insertBefore(btn,sbFooter.firstChild);
+        }
+      } else {
+        // No enterprise yet — show auth so they can register their company
+        showAuth();
+        // Pre-fill their email
+        document.getElementById('authEmail').value=SUPERADMIN_EMAIL;
+        // Show a helpful message
+        toast('Welcome Naman! Register your company to get started, or use the console to manage the platform.','info');
+        // Add a console access button on the sign-in pane
+        if(!document.getElementById('saDirectBtn')){
+          const btn=document.createElement('button');
+          btn.id='saDirectBtn';
+          btn.className='btn btn-ghost btn-full';
+          btn.style.cssText='margin-top:8px;font-size:13px;border-color:rgba(108,120,212,.3);color:var(--accent)';
+          btn.textContent='⚡ Open Platform Console';
+          btn.onclick=async()=>{
+            await signInWithEmailAndPassword(auth,SUPERADMIN_EMAIL,SUPERADMIN_PASS).catch(()=>{});
+            window.openSuperAdmin();
+          };
+          document.getElementById('paneSignIn').appendChild(btn);
+        }
+      }
       return;
     }
     // Demo user
