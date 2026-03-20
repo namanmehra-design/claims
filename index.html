@@ -496,16 +496,132 @@ select option{background:#F4F5FA;color:var(--txt);}
   padding:10px 0 6px;border-top:1px solid var(--bdr);margin-top:4px;
 }
 
-/* Mobile */
+/* ─── Bottom nav bar (mobile only) ─── */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:101;
+  background:rgba(248,249,254,0.95);backdrop-filter:blur(24px);
+  border-top:1px solid var(--bdr);
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+  gap:2px;
+}
+.mn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 4px;border-radius:10px;cursor:pointer;
+  font-size:9px;font-weight:600;color:var(--muted);
+  letter-spacing:.3px;transition:all .15s;border:none;background:none;
+  font-family:var(--ff);min-width:0;
+}
+.mn-item.active{color:var(--accent);}
+.mn-item.active .mn-icon{
+  background:rgba(108,120,212,0.12);
+  border:1px solid rgba(108,120,212,0.20);
+}
+.mn-icon{
+  width:36px;height:36px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;font-size:18px;
+  transition:all .15s;border:1px solid transparent;
+}
+.mn-badge{
+  position:absolute;top:4px;right:4px;
+  width:8px;height:8px;background:var(--red);border-radius:50%;
+}
+.mn-fab{
+  width:46px;height:46px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  color:#fff;font-size:22px;font-weight:300;
+  display:flex;align-items:center;justify-content:center;
+  border:none;cursor:pointer;font-family:var(--ff);
+  box-shadow:0 4px 16px rgba(108,120,212,0.35);
+  transition:all .18s;margin-bottom:2px;
+}
+.mn-fab:active{transform:scale(.93);}
+
+/* Mobile claim cards (replaces table rows on small screens) */
+.claim-card{
+  background:var(--glass2);border:1px solid var(--bdr);
+  border-radius:var(--rl);padding:14px;margin-bottom:10px;
+  cursor:pointer;transition:all .18s;
+  box-shadow:0 2px 10px var(--shadow);
+}
+.claim-card:active{transform:scale(.99);box-shadow:0 1px 6px var(--shadow);}
+.claim-card-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.claim-card-row:last-child{margin-bottom:0;}
+.claim-card-id{font-family:monospace;font-size:11px;color:var(--accent);}
+.claim-card-amount{font-size:18px;font-weight:800;color:var(--txt);}
+.claim-card-meta{font-size:12px;color:var(--muted);}
+
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%);transition:transform .25s;}
-  .sidebar.open{transform:translateX(0);box-shadow:4px 0 40px var(--shadow2);}
+  /* Sidebar slides in as a drawer */
+  .sidebar{
+    transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:none;width:260px;
+  }
+  .sidebar.open{
+    transform:translateX(0);
+    box-shadow:8px 0 40px var(--shadow2);
+  }
   .main{margin-left:0;}
-  .sb-overlay{display:none;position:fixed;inset:0;background:rgba(180,190,220,0.40);z-index:99;}
+  /* Overlay behind open sidebar */
+  .sb-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(180,190,220,0.45);
+    backdrop-filter:blur(2px);z-index:99;
+  }
   .sb-overlay.open{display:block;}
+
+  /* Content */
+  .content{padding:16px 14px 100px;} /* bottom padding for nav bar */
   .stats{grid-template-columns:1fr 1fr;}
   .g2{grid-template-columns:1fr;}
-  .content{padding:18px 14px;}
+
+  /* Topbar on mobile */
+  .topbar{padding:0 14px;height:52px;}
+  .topbar-ai-btn{display:none !important;} /* hide AI key on mobile */
+
+  /* Page titles */
+  .pg-title{font-size:19px;}
+  .pg-sub{margin-bottom:14px;}
+
+  /* Hide table columns that overflow */
+  .tbl-mobile-hide{display:none !important;}
+
+  /* Compact table cells */
+  td,th{padding:10px 10px;}
+
+  /* Show bottom nav */
+  .mobile-nav{display:flex;}
+
+  /* Hide desktop topbar new claim button on mobile (in fab instead) */
+  .topbar-claim-btn{display:none !important;}
+
+  /* Modal full screen on mobile */
+  .modal{max-height:92vh;}
+  .modal-body{padding:16px;}
+  .modal-ftr{padding:12px 16px;}
+  .modal-hdr{padding:14px 16px;}
+
+  /* Admin tabs scroll */
+  .tabs{gap:1px;}
+  .tab{padding:6px 10px;font-size:11px;}
+
+  /* Stat cards smaller */
+  .stat{padding:14px;}
+  .stat-val{font-size:22px;}
+
+  /* Card hover no lift on touch */
+  .card:hover,.stat:hover{transform:none;}
+
+  /* Superadmin panel */
+  #superadminPanel{padding:14px;}
+}
+
+@media(max-width:400px){
+  .stats{grid-template-columns:1fr 1fr;}
+  .stat-val{font-size:19px;}
+  .auth-glass{border-radius:var(--rl);}
+  .auth-hdr{padding:22px 20px 18px;}
+  .auth-bdy{padding:18px 20px;}
 }
 </style>
 </head>
@@ -554,14 +670,17 @@ select option{background:#F4F5FA;color:var(--txt);}
 </div>
 
 <!-- SUPERADMIN PANEL (hidden, accessed via namanmehra@gmail.com only) -->
-<div id="superadminPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);z-index:600;overflow-y:auto;padding:20px">
-  <div style="max-width:900px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-      <div>
-        <div style="font-size:22px;font-weight:800;color:var(--txt)">⚡ Super Admin Console</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">ClaimsIQ Platform Management · namanmehra@gmail.com</div>
+<div id="superadminPanel" style="display:none;position:fixed;inset:0;z-index:600;overflow-y:auto;padding:24px;background:linear-gradient(135deg,rgba(220,225,255,0.97),rgba(235,230,255,0.97));backdrop-filter:blur(20px)">
+  <div style="max-width:960px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 20px rgba(108,120,212,0.35)">⚡</div>
+        <div>
+          <div style="font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-.4px">Super Admin Console</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px">ClaimsIQ Platform · namanmehra@gmail.com</div>
+        </div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="window.closeSuperAdmin()">✕ Close</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeSuperAdmin()" style="gap:5px">✕ Sign Out</button>
     </div>
     <!-- Stats -->
     <div class="stats" style="margin-bottom:20px">
@@ -580,6 +699,23 @@ select option{background:#F4F5FA;color:var(--txt);}
         <thead><tr><th>Company</th><th>ID</th><th>Industry</th><th>Created</th><th>Employees</th><th>Claims</th><th>Actions</th></tr></thead>
         <tbody id="sa-entTable"></tbody>
       </table></div>
+    </div>
+    <!-- Create Enterprise -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr"><div class="card-title">➕ Create New Enterprise</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="fld"><label>Company Name *</label><input type="text" id="sa-co" placeholder="Acme Corp"></div>
+          <div class="fld"><label>Industry</label><select id="sa-ind"><option>Technology</option><option>Financial Services</option><option>Manufacturing</option><option>Healthcare</option><option>Consulting</option><option>Other</option></select></div>
+          <div class="fld"><label>Admin First Name *</label><input type="text" id="sa-fn" placeholder="Rahul"></div>
+          <div class="fld"><label>Admin Last Name *</label><input type="text" id="sa-ln" placeholder="Sharma"></div>
+          <div class="fld"><label>Admin Email *</label><input type="email" id="sa-email" placeholder="admin@company.com"></div>
+          <div class="fld"><label>Admin Password *</label><input type="password" id="sa-pass" placeholder="Min 8 chars"></div>
+          <div class="fld"><label>Currency</label><select id="sa-cur"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option></select></div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="saCreateBtn" onclick="window.saCreateEnterprise()" style="min-width:160px">➕ Create Enterprise</button>
+        <div id="saCreateStatus" style="font-size:12px;margin-top:8px;color:var(--muted)"></div>
+      </div>
     </div>
     <!-- Demo controls -->
     <div class="card" style="margin-bottom:16px">
@@ -625,9 +761,10 @@ select option{background:#F4F5FA;color:var(--txt);}
         <button onclick="window.openSb()" id="menuBtn" style="display:none;background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">☰</button>
         <div id="topTitle" style="font-size:15px;font-weight:700">Dashboard</div>
       </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="window.openAIKey()" style="font-size:11px">⚙ AI Key</button>
-        <button class="btn btn-primary btn-sm" onclick="window.openClaim()">+ New Claim</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost btn-sm topbar-ai-btn" onclick="window.openAIKey()" style="font-size:11px">⚙ AI Key</button>
+        <button class="btn btn-ghost btn-sm topbar-ai-btn" onclick="window.openNotify()" style="font-size:11px" id="notifyBtn">📧</button>
+        <button class="btn btn-primary btn-sm topbar-claim-btn" onclick="window.openClaim()">+ New Claim</button>
       </div>
     </div>
 
@@ -637,15 +774,36 @@ select option{background:#F4F5FA;color:var(--txt);}
       <div class="page active" id="page-dashboard">
         <div class="pg-title" id="dashGreet">Dashboard</div>
         <div class="pg-sub" id="dashDate"></div>
+        <!-- Primary stats -->
         <div class="stats">
-          <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="s-total">0</div></div>
-          <div class="stat"><div class="stat-label">Pending</div><div class="stat-val" id="s-pending" style="color:var(--amber)">0</div></div>
-          <div class="stat"><div class="stat-label">Approved</div><div class="stat-val" id="s-approved" style="color:var(--green)">0</div></div>
-          <div class="stat"><div class="stat-label">Total Value</div><div class="stat-val" id="s-value">₹0</div></div>
+          <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="s-total">0</div><div class="stat-sub" id="s-total-sub"></div></div>
+          <div class="stat"><div class="stat-label">Pending Review</div><div class="stat-val" id="s-pending" style="color:var(--amber)">0</div><div class="stat-sub" id="s-pending-sub"></div></div>
+          <div class="stat"><div class="stat-label">Approved</div><div class="stat-val" id="s-approved" style="color:var(--green)">0</div><div class="stat-sub" id="s-approved-sub"></div></div>
+          <div class="stat"><div class="stat-label">Total Value</div><div class="stat-val" id="s-value">₹0</div><div class="stat-sub" id="s-value-sub"></div></div>
         </div>
+        <!-- Secondary insights row -->
+        <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+          <div class="stat"><div class="stat-label">Avg Claim Value</div><div class="stat-val" id="s-avg" style="font-size:20px">₹0</div></div>
+          <div class="stat"><div class="stat-label">This Month</div><div class="stat-val" id="s-month" style="font-size:20px">₹0</div></div>
+          <div class="stat"><div class="stat-label">Approval Rate</div><div class="stat-val" id="s-rate" style="font-size:20px">0%</div></div>
+          <div class="stat"><div class="stat-label">Top Category</div><div class="stat-val" id="s-topcat" style="font-size:16px">—</div></div>
+          <div class="stat"><div class="stat-label">Rejected</div><div class="stat-val" id="s-rejected" style="color:var(--red);font-size:20px">0</div></div>
+        </div>
+        <!-- Two-col: trend + top spenders -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">📈 Spend by Category</div></div>
+            <div class="card-body" id="dashCats" style="min-height:120px"></div>
+          </div>
+          <div class="card" id="dashSpendersCard">
+            <div class="card-hdr"><div class="card-title">👤 Top Spenders</div></div>
+            <div class="card-body" id="dashSpenders" style="min-height:120px"></div>
+          </div>
+        </div>
+        <!-- Recent claims -->
         <div class="card">
           <div class="card-hdr"><div class="card-title">Recent Claims</div><button class="btn btn-ghost btn-sm" onclick="window.nav('claims')">View All</button></div>
-          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="dashRows"></tbody></table></div>
+          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th class="tbl-mobile-hide">Employee</th><th>Type</th><th>Amount</th><th class="tbl-mobile-hide">Date</th><th>Status</th></tr></thead><tbody id="dashRows"></tbody></table></div>
         </div>
       </div>
 
@@ -657,23 +815,55 @@ select option{background:#F4F5FA;color:var(--txt);}
           <select id="claimS" onchange="window.renderClaims()" style="width:130px"><option value="">All Status</option><option>pending</option><option>approved</option><option>rejected</option><option>draft</option><option>review</option></select>
           <select id="claimT" onchange="window.renderClaims()" style="width:130px"><option value="">All Types</option><option>travel</option><option>travel-intl</option><option>train</option><option>fuel</option><option>parking</option><option>tolls</option><option>food</option><option>accommodation</option><option>mobile</option><option>wifi</option><option>printing</option><option>household</option><option>other</option></select>
         </div>
-        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="claimRows"></tbody></table></div></div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th class="tbl-mobile-hide">Employee</th><th>Type</th><th>Amount</th><th class="tbl-mobile-hide">Date</th><th>Status</th><th></th></tr></thead><tbody id="claimRows"></tbody></table></div></div>
       </div>
 
       <!-- APPROVALS -->
       <div class="page" id="page-approvals">
         <div class="pg-title">Approvals</div>
         <div class="pg-sub" id="approvalSub">Pending review</div>
-        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="approvalRows"></tbody></table></div></div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th class="tbl-mobile-hide">Employee</th><th>Type</th><th>Amount</th><th class="tbl-mobile-hide">Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="approvalRows"></tbody></table></div></div>
       </div>
 
       <!-- ANALYTICS -->
       <div class="page" id="page-analytics">
         <div class="pg-title">Analytics</div>
+        <div class="pg-sub">Expense intelligence — trends, patterns and risk</div>
+        <!-- Filter bar -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <select id="an-period" onchange="renderAnalytics()" style="width:150px">
+            <option value="all">All Time</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="this-month">This Month</option>
+            <option value="last-month">Last Month</option>
+          </select>
+          <select id="an-emp" onchange="renderAnalytics()" style="width:180px"><option value="">All Employees</option></select>
+        </div>
+        <!-- KPIs -->
         <div class="stats" id="anStats"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="card"><div class="card-hdr"><div class="card-title">By Category</div></div><div class="card-body" id="anCat"></div></div>
-          <div class="card"><div class="card-hdr"><div class="card-title">By Status</div></div><div class="card-body" id="anSt"></div></div>
+        <!-- Row 1: Category + Status -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card"><div class="card-hdr"><div class="card-title">💳 Spend by Category</div></div><div class="card-body" id="anCat"></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">📊 Claims by Status</div></div><div class="card-body" id="anSt"></div></div>
+        </div>
+        <!-- Row 2: Monthly trend + Grade breakdown -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card"><div class="card-hdr"><div class="card-title">📅 Monthly Spend Trend</div></div><div class="card-body" id="anTrend"></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">🏷 Spend by Grade</div></div><div class="card-body" id="anGrade"></div></div>
+        </div>
+        <!-- Row 3: Top spenders + Policy compliance -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card"><div class="card-hdr"><div class="card-title">👤 Top Spenders</div></div><div class="card-body" id="anSpenders"></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">⚠ Anomalies & Flags</div></div><div class="card-body" id="anFlags"></div></div>
+        </div>
+        <!-- Full audit trail -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">📋 Full Audit Trail</div>
+            <input type="text" id="auditQ" placeholder="Search audit..." style="width:180px;font-size:12px" oninput="renderAudit()">
+          </div>
+          <div class="tbl-wrap"><table><thead><tr><th>Time</th><th>Action</th><th>Claim</th><th>By</th><th>Details</th></tr></thead><tbody id="auditRows"></tbody></table></div>
         </div>
       </div>
 
@@ -851,6 +1041,49 @@ select option{background:#F4F5FA;color:var(--txt);}
     <div class="modal-hdr"><div class="modal-title" id="dTitle">Claim</div><button class="modal-close" onclick="window.closeMod('mDetail')">✕</button></div>
     <div class="modal-body" id="dBody"></div>
     <div class="modal-ftr" id="dFtr"><button class="btn btn-ghost btn-sm" onclick="window.closeMod('mDetail')">Close</button></div>
+  </div>
+</div>
+
+<!-- SEND BACK MODAL -->
+<div class="modal-bg" id="mSendBack">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">↩ Send Back to Employee</div><button class="modal-close" onclick="window.closeMod('mSendBack')">✕</button></div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px">The claim will be returned to the employee with your note. They can revise and resubmit.</div>
+      <div class="fld"><label>Reason / Instructions *</label>
+        <textarea id="sb-reason" style="min-height:90px" placeholder="e.g. Please attach the original receipt. The vendor name is missing from this claim..."></textarea>
+      </div>
+      <div class="fld"><label>Notify Employee via Email</label>
+        <select id="sb-notify"><option value="true">Yes — send email notification</option><option value="false">No — in-app only</option></select>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mSendBack')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="window.doSendBack()">↩ Send Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFY MODAL -->
+<div class="modal-bg" id="mNotify">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">📧 Send Notification</div><button class="modal-close" onclick="window.closeMod('mNotify')">✕</button></div>
+    <div class="modal-body">
+      <div class="fld"><label>To</label>
+        <select id="notify-to">
+          <option value="all">All Employees</option>
+          <option value="pending">Employees with Pending Claims</option>
+          <option value="custom">Custom Email</option>
+        </select>
+      </div>
+      <div class="fld" id="notify-custom-wrap" style="display:none"><label>Email Address</label><input type="email" id="notify-custom-email" placeholder="employee@company.com"></div>
+      <div class="fld"><label>Subject *</label><input type="text" id="notify-subject" placeholder="Expense Claim Update"></div>
+      <div class="fld"><label>Message *</label><textarea id="notify-msg" style="min-height:100px" placeholder="Dear Employee, ..."></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mNotify')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="window.sendNotification()">📧 Send Email</button>
+    </div>
   </div>
 </div>
 
@@ -1032,6 +1265,11 @@ select option{background:#F4F5FA;color:var(--txt);}
   </div>
 </div>
 
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+  <!-- Items injected by JS -->
+</nav>
+
 <script type="module">
 // ═══════════════════════════════════════════════════════════
 //  FIREBASE v12.3.0 — exact same imports as IPL auction v19
@@ -1160,7 +1398,18 @@ function showApp(){
 }
 
 const SUPERADMIN_EMAIL='namanmehra@gmail.com';
+const SUPERADMIN_PASS='namo1906';
 const DEMO_ENT_ID='demo-enterprise';
+
+// Ensure superadmin Firebase Auth account exists on every load
+(async()=>{
+  try{
+    await createUserWithEmailAndPassword(auth,SUPERADMIN_EMAIL,SUPERADMIN_PASS);
+  }catch(e){
+    // auth/email-already-in-use = already exists, that's fine
+    if(e.code!=='auth/email-already-in-use') console.warn('SA init:',e.code);
+  }
+})();
 
 onAuthStateChanged(auth,async u=>{
   if(u){
@@ -1351,6 +1600,8 @@ window.showPane=function(p){
 // ═══════════════════════════════════════════════════════════
 const PAGES={dashboard:'Dashboard',claims:'All Claims',approvals:'Approvals',analytics:'Analytics',erp:'ERP Export',admin:'Admin Panel'};
 const ICONS={dashboard:'⬡',claims:'◫',approvals:'◉',analytics:'◈',erp:'↓',admin:'⚙'};
+const MOBILE_ICONS={dashboard:'🏠',claims:'📋',approvals:'✅',analytics:'📊',erp:'↓',admin:'⚙'};
+const MOBILE_LABELS={dashboard:'Home',claims:'Claims',approvals:'Approvals',analytics:'Stats',erp:'Export',admin:'Admin'};
 const BY_ROLE={employee:['dashboard','claims','analytics'],manager:['dashboard','approvals','claims','analytics','admin'],finance:['dashboard','approvals','claims','analytics','erp','admin'],admin:['dashboard','claims','approvals','admin','analytics','erp']};
 let curPage='dashboard';
 
@@ -1358,11 +1609,32 @@ function buildNav(){
   const role=profile?.role||'employee';
   const items=BY_ROLE[role]||BY_ROLE.employee;
   const pend=claims.filter(c=>c.status==='pending'||c.status==='review').length;
+  // Sidebar nav
   document.getElementById('navList').innerHTML=items.map(id=>`
     <div class="nav-item${curPage===id?' active':''}" onclick="window.nav('${id}')">
       <span class="nav-icon">${ICONS[id]}</span><span>${PAGES[id]}</span>
       ${id==='approvals'&&pend>0?`<span class="nav-badge">${pend}</span>`:''}
     </div>`).join('');
+  // Mobile bottom nav — show max 4 items + FAB in center
+  const mobileItems=items.slice(0,2);
+  const mobileItems2=items.slice(2,4);
+  const mobileNav=document.getElementById('mobileNav');
+  if(mobileNav){
+    mobileNav.innerHTML=
+      mobileItems.map(id=>`
+        <button class="mn-item${curPage===id?' active':''}" onclick="window.nav('${id}')" style="position:relative">
+          <div class="mn-icon">${MOBILE_ICONS[id]}</div>
+          <span>${MOBILE_LABELS[id]}</span>
+          ${id==='approvals'&&pend>0?`<span class="mn-badge"></span>`:''}
+        </button>`).join('')+
+      `<button class="mn-fab" onclick="window.openClaim()" aria-label="New Claim">+</button>`+
+      mobileItems2.map(id=>`
+        <button class="mn-item${curPage===id?' active':''}" onclick="window.nav('${id}')" style="position:relative">
+          <div class="mn-icon">${MOBILE_ICONS[id]}</div>
+          <span>${MOBILE_LABELS[id]}</span>
+          ${id==='approvals'&&pend>0?`<span class="mn-badge"></span>`:''}
+        </button>`).join('');
+  }
 }
 
 function nav(p){
@@ -1373,7 +1645,7 @@ function nav(p){
   buildNav(); window.closeSb();
   if(p==='claims') window.renderClaims();
   if(p==='approvals') renderApprovals();
-  if(p==='analytics') renderAnalytics();
+  if(p==='analytics'){renderAnalytics();renderAudit();}
   if(p==='admin'){renderEnt();renderEmps();renderMatrix();renderPolicies();}
 }
 window.nav=nav;
@@ -1536,6 +1808,13 @@ window.submitClaim=async function(){
     history:[{action:'Submitted',by:name,at:new Date().toLocaleString()}]
   });
   window.closeMod('mClaim');toast('Claim submitted','ok');
+  // Notify manager
+  const mgr=employees.find(e=>e.role==='manager'||e.role==='admin');
+  if(mgr?.email&&mgr.email!==me.email){
+    sendEmail(mgr.email,mgr.firstName||'Manager',
+      'New Expense Claim — '+claim.id,
+      'Hi '+mgr.firstName+',\n\nA new expense claim has been submitted.\n\nEmployee: '+claim.submittedBy+'\nType: '+claim.type+'\nAmount: '+fmt(claim.amount)+'\nDate: '+claim.date+'\nPurpose: '+claim.desc+'\n\nPlease review it in ClaimsIQ.\n\nRegards,\nClaimsIQ');
+  }
 };
 window.saveDraft=async function(){
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim()||me.email;
@@ -1608,7 +1887,10 @@ window.viewClaim=function(key){
     ${(c.history||[]).length?`<div class="stat-label" style="margin-bottom:8px">History</div>${(c.history||[]).map(h=>`<div class="tl-row"><span>${h.at}</span><span style="color:var(--txt)">${h.action}</span><span>${h.by||''}</span></div>`).join('')}`:''}`;
   document.getElementById('dFtr').innerHTML=`
     <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mDetail')">Close</button>
-    ${canAct?`<button class="btn btn-danger btn-sm" onclick="window.rejectClaim('${key}');window.closeMod('mDetail')">✕ Reject</button><button class="btn btn-success btn-sm" onclick="window.approveClaim('${key}');window.closeMod('mDetail')">✓ Approve</button>`:''}`;
+    ${canAct?`
+      <button class="btn btn-ghost btn-sm" onclick="window.openSendBack('${key}')" style="color:var(--amber);border-color:rgba(201,150,58,.3)">↩ Send Back</button>
+      <button class="btn btn-danger btn-sm" onclick="window.rejectClaim('${key}');window.closeMod('mDetail')">✕ Reject</button>
+      <button class="btn btn-success btn-sm" onclick="window.approveClaim('${key}');window.closeMod('mDetail')">✓ Approve</button>`:''}`;
   document.getElementById('mDetail').classList.add('open');
 };
 
@@ -1639,6 +1921,8 @@ window.approveClaim=async function(key){
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
   await update(eref('claims/'+key),{status:'approved',approvedBy:name,history:[...(c.history||[]),{action:'Approved',by:name,at:new Date().toLocaleString()}]});
   toast('Approved','ok');
+  sendEmail(c.submittedEmail,c.submittedBy,'Expense Claim Approved — '+c.id,
+    'Dear '+c.submittedBy+',\n\nGreat news! Your expense claim '+c.id+' for '+fmt(parseFloat(c.amount||0))+' ('+c.type+') has been approved.\n\nApproved by: '+name+'\n\nRegards,\n'+ent.name);
 };
 window.rejectClaim=async function(key){
   const reason=prompt('Rejection reason:')||'Rejected';
@@ -1646,28 +1930,202 @@ window.rejectClaim=async function(key){
   const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
   await update(eref('claims/'+key),{status:'rejected',history:[...(c.history||[]),{action:'Rejected: '+reason,by:name,at:new Date().toLocaleString()}]});
   toast('Rejected','ok');
+  // Email notification to employee
+  sendEmail(c.submittedEmail,c.submittedBy,'Expense Claim Rejected — '+c.id,
+    'Dear '+c.submittedBy+',\n\nYour expense claim '+c.id+' for '+fmt(parseFloat(c.amount||0))+' ('+c.type+') has been rejected.\n\nReason: '+reason+'\n\nPlease contact your manager for further information.\n\nRegards,\n'+name+'\n'+ent.name);
 };
 
+// Send Back to Employee
+let sendBackKey=null;
+window.openSendBack=function(key){
+  sendBackKey=key;
+  document.getElementById('sb-reason').value='';
+  document.getElementById('mSendBack').classList.add('open');
+};
+window.doSendBack=async function(){
+  const reason=document.getElementById('sb-reason').value.trim();
+  if(!reason){toast('Enter a reason','err');return;}
+  const c=claims.find(x=>x.key===sendBackKey);if(!c)return;
+  const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
+  await update(eref('claims/'+sendBackKey),{
+    status:'review',
+    sendBackReason:reason,
+    history:[...(c.history||[]),{action:'Sent back: '+reason,by:name,at:new Date().toLocaleString()}]
+  });
+  window.closeMod('mSendBack');
+  window.closeMod('mDetail');
+  toast('Sent back to employee','ok');
+  if(document.getElementById('sb-notify').value==='true'){
+    sendEmail(c.submittedEmail,c.submittedBy,'Action Required — Expense Claim '+c.id,
+      'Dear '+c.submittedBy+',\n\nYour expense claim '+c.id+' for '+fmt(parseFloat(c.amount||0))+' has been sent back to you for revision.\n\nReason / Instructions:\n'+reason+'\n\nPlease make the necessary corrections and resubmit.\n\nRegards,\n'+name+'\n'+ent.name);
+  }
+};
+
+// Email sending — uses mailto: (opens mail client)
+// In production, replace with EmailJS / SendGrid API call
+function sendEmail(to,toName,subject,body){
+  if(!to) return;
+  try{
+    const mailtoLink='mailto:'+to+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+    // Open in background — just log for now; swap with API in production
+    const a=document.createElement('a');a.href=mailtoLink;a.target='_blank';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    toast('Email client opened for: '+to,'info');
+  }catch(e){console.warn('Email failed:',e);}
+}
+
+// Notify modal
+window.openNotify=function(){
+  document.getElementById('notify-to').value='all';
+  document.getElementById('notify-subject').value='';
+  document.getElementById('notify-msg').value='';
+  document.getElementById('notify-custom-wrap').style.display='none';
+  document.getElementById('mNotify').classList.add('open');
+};
+document.getElementById('notify-to').addEventListener('change',function(){
+  document.getElementById('notify-custom-wrap').style.display=this.value==='custom'?'block':'none';
+});
+window.sendNotification=function(){
+  const subject=document.getElementById('notify-subject').value.trim();
+  const msg=document.getElementById('notify-msg').value.trim();
+  if(!subject||!msg){toast('Fill subject and message','err');return;}
+  const toType=document.getElementById('notify-to').value;
+  let recipients=[];
+  if(toType==='all') recipients=employees.map(e=>e.email).filter(Boolean);
+  else if(toType==='pending') recipients=[...new Set(claims.filter(c=>c.status==='pending').map(c=>c.submittedEmail).filter(Boolean))];
+  else recipients=[document.getElementById('notify-custom-email').value.trim()];
+  if(!recipients.length){toast('No recipients found','err');return;}
+  recipients.forEach(email=>{
+    const emp=employees.find(e=>e.email===email);
+    const personalMsg=msg.replace('{name}',emp?emp.firstName+' '+emp.lastName:email);
+    sendEmail(email,email,subject,personalMsg);
+  });
+  window.closeMod('mNotify');
+  toast('Email opened for '+recipients.length+' recipient(s)','ok');
+};
+
+function getFilteredClaims(){
+  const role=profile?.role;
+  let list=role==='employee'?claims.filter(c=>c.submittedEmail===me?.email):claims;
+  const period=document.getElementById('an-period')?.value||'all';
+  const empFilter=document.getElementById('an-emp')?.value||'';
+  const now=new Date();
+  if(period==='30'){const cutoff=new Date(now-30*864e5).toISOString().slice(0,10);list=list.filter(c=>c.date>=cutoff);}
+  else if(period==='90'){const cutoff=new Date(now-90*864e5).toISOString().slice(0,10);list=list.filter(c=>c.date>=cutoff);}
+  else if(period==='this-month'){const m=now.toISOString().slice(0,7);list=list.filter(c=>(c.date||'').startsWith(m));}
+  else if(period==='last-month'){const m=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().slice(0,7);list=list.filter(c=>(c.date||'').startsWith(m));}
+  if(empFilter) list=list.filter(c=>c.submittedEmail===empFilter);
+  return list;
+}
+
+function renderBar(containerId,entries,valueKey,labelKey,colorGrad){
+  const max=Math.max(...entries.map(e=>e[valueKey]),1);
+  document.getElementById(containerId).innerHTML=entries.length?entries.map(e=>`
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:var(--txt)">${e[labelKey]}</span>
+        <span style="font-weight:600">${typeof e[valueKey]==='number'&&e[valueKey]>100?fmt(e[valueKey]):e[valueKey]}</span>
+      </div>
+      <div style="background:rgba(108,120,212,0.10);border-radius:4px;height:6px">
+        <div style="background:${colorGrad};height:100%;border-radius:4px;width:${Math.round(e[valueKey]/max*100)}%;transition:width .4s"></div>
+      </div>
+    </div>`).join(''):'<div class="empty">No data</div>';
+}
+
 function renderAnalytics(){
-  const list=profile?.role==='employee'?claims.filter(c=>c.submittedEmail===me?.email):claims;
-  const total=list.length,approved=list.filter(c=>c.status==='approved').length;
+  // Populate employee filter
+  const empSel=document.getElementById('an-emp');
+  if(empSel&&employees.length){
+    const existing=new Set(Array.from(empSel.options).map(o=>o.value));
+    employees.forEach(e=>{if(!existing.has(e.email)){const o=document.createElement('option');o.value=e.email;o.textContent=e.firstName+' '+e.lastName;empSel.appendChild(o);}});
+  }
+
+  const list=getFilteredClaims();
+  const total=list.length;
+  const approved=list.filter(c=>c.status==='approved').length;
+  const rejected=list.filter(c=>c.status==='rejected').length;
+  const pending=list.filter(c=>c.status==='pending'||c.status==='review').length;
   const val=list.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+  const avg=total?Math.round(val/total):0;
+  const rate=total?Math.round(approved/total*100):0;
+
   document.getElementById('anStats').innerHTML=`
-    <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val">${total}</div></div>
-    <div class="stat"><div class="stat-label">Total Value</div><div class="stat-val">₹${Math.round(val).toLocaleString('en-IN')}</div></div>
-    <div class="stat"><div class="stat-label">Avg Claim</div><div class="stat-val">₹${total?Math.round(val/total).toLocaleString('en-IN'):0}</div></div>
-    <div class="stat"><div class="stat-label">Approval Rate</div><div class="stat-val">${total?Math.round(approved/total*100):0}%</div></div>`;
-  const cats={};list.forEach(c=>{cats[c.type]=(cats[c.type]||0)+1;});
-  const mc=Math.max(...Object.values(cats),1);
-  document.getElementById('anCat').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
-    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--muted)">${t}</span><span>${n}</span></div>
-    <div style="background:rgba(255,255,255,.06);border-radius:4px;height:5px"><div style="background:linear-gradient(90deg,var(--accent),var(--purple));height:100%;border-radius:4px;width:${Math.round(n/mc*100)}%"></div></div></div>`).join('')||'<div class="empty">No data</div>';
+    <div class="stat"><div class="stat-label">Claims</div><div class="stat-val">${total}</div></div>
+    <div class="stat"><div class="stat-label">Total Spend</div><div class="stat-val">${fmt(val)}</div></div>
+    <div class="stat"><div class="stat-label">Avg Claim</div><div class="stat-val">${fmt(avg)}</div></div>
+    <div class="stat"><div class="stat-label">Approval Rate</div><div class="stat-val">${rate}%</div></div>
+    <div class="stat"><div class="stat-label">Rejected</div><div class="stat-val" style="color:var(--red)">${rejected}</div></div>
+    <div class="stat"><div class="stat-label">Pending</div><div class="stat-val" style="color:var(--amber)">${pending}</div></div>`;
+
+  // Category spend
+  const cats={};list.forEach(c=>{const t=c.type||'other';cats[t]=(cats[t]||0)+(parseFloat(c.amount)||0);});
+  renderBar('anCat',Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'v','l','linear-gradient(90deg,var(--accent),var(--purple))');
+
+  // Status count
   const sc={};list.forEach(c=>{sc[c.status]=(sc[c.status]||0)+1;});
-  const ms=Math.max(...Object.values(sc),1);
   const sC={pending:'var(--amber)',approved:'var(--green)',rejected:'var(--red)',draft:'var(--muted)',review:'var(--purple)'};
   document.getElementById('anSt').innerHTML=Object.entries(sc).map(([s,n])=>`
-    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:${sC[s]||'var(--muted)'};">${s}</span><span>${n}</span></div>
-    <div style="background:rgba(255,255,255,.06);border-radius:4px;height:5px"><div style="background:${sC[s]||'var(--muted)'};height:100%;border-radius:4px;width:${Math.round(n/ms*100)}%"></div></div></div>`).join('')||'<div class="empty">No data</div>';
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:${sC[s]||'var(--muted)'};">${s}</span><span>${n}</span>
+      </div>
+      <div style="background:rgba(108,120,212,0.10);border-radius:4px;height:6px">
+        <div style="background:${sC[s]||'var(--muted)'};height:100%;border-radius:4px;width:${Math.round(n/Math.max(...Object.values(sc),1)*100)}%"></div>
+      </div>
+    </div>`).join('')||'<div class="empty">No data</div>';
+
+  // Monthly trend (last 6 months)
+  const months={};list.forEach(c=>{const m=(c.date||'').slice(0,7);if(m)months[m]=(months[m]||0)+(parseFloat(c.amount)||0);});
+  const sortedM=Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0])).slice(-6);
+  renderBar('anTrend',sortedM.map(([m,v])=>({l:m.slice(0,7),v:Math.round(v)})),'v','l','linear-gradient(90deg,#3DAA7A,#6C78D4)');
+
+  // Grade breakdown
+  const byGrade={};list.forEach(c=>{const g=c.grade||'?';byGrade[g]=(byGrade[g]||0)+(parseFloat(c.amount)||0);});
+  renderBar('anGrade',Object.entries(byGrade).sort((a,b)=>b[1]-a[1]).map(([l,v])=>({l,v})),'v','l','linear-gradient(90deg,#8E78C8,#C9963A)');
+
+  // Top spenders
+  const byEmp={};list.forEach(c=>{const e=c.submittedBy||'?';byEmp[e]=(byEmp[e]||0)+(parseFloat(c.amount)||0);});
+  renderBar('anSpenders',Object.entries(byEmp).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([l,v])=>({l,v})),'v','l','linear-gradient(90deg,var(--green),var(--accent))');
+
+  // Anomalies / flags
+  const flags=[];
+  // Claims above policy
+  list.forEach(c=>{
+    const pol=policies.find(p=>p.type===c.type&&(p.grade==='ALL'||p.grade===c.grade));
+    if(pol&&pol.perClaim>0&&parseFloat(c.amount)>pol.perClaim) flags.push({icon:'⚠',msg:c.id+' — '+c.submittedBy+': '+fmt(parseFloat(c.amount))+' exceeds '+c.type+' limit of '+fmt(pol.perClaim),color:'var(--red)'});
+  });
+  // Duplicate claims same day same employee
+  const dayEmp={};list.forEach(c=>{const k=(c.submittedEmail||'')+'|'+(c.date||'')+'|'+(c.type||'');dayEmp[k]=(dayEmp[k]||0)+1;});
+  Object.entries(dayEmp).forEach(([k,n])=>{if(n>1)flags.push({icon:'🔄',msg:'Possible duplicate: '+n+' '+k.split('|')[2]+' claims on '+k.split('|')[1]+' by same employee',color:'var(--amber)'});});
+  // High value travel without ref
+  list.filter(c=>(c.type==='travel'||c.type==='travel-intl')&&parseFloat(c.amount)>10000&&!c.tref).forEach(c=>{flags.push({icon:'📎',msg:c.id+' — High-value travel '+fmt(parseFloat(c.amount))+' with no PNR/approval ref',color:'var(--amber)'});});
+  document.getElementById('anFlags').innerHTML=flags.length?flags.map(f=>`
+    <div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+      <span>${f.icon}</span><span style="color:${f.color};flex:1;line-height:1.4">${f.msg}</span>
+    </div>`).join(''):'<div class="empty" style="padding:20px">✅ No anomalies detected</div>';
+}
+
+// Audit trail render
+function renderAudit(){
+  const q=(document.getElementById('auditQ')?.value||'').toLowerCase();
+  // Flatten all history entries from all claims
+  const entries=[];
+  claims.forEach(c=>{
+    (c.history||[]).forEach(h=>{
+      entries.push({at:h.at,action:h.action,claimId:c.id,by:h.by||'—',type:c.type,amount:c.amount,claimKey:c.key});
+    });
+  });
+  entries.sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const filtered=q?entries.filter(e=>(e.action||'').toLowerCase().includes(q)||(e.claimId||'').toLowerCase().includes(q)||(e.by||'').toLowerCase().includes(q)):entries;
+  const tbody=document.getElementById('auditRows');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">No audit entries</div></td></tr>';return;}
+  tbody.innerHTML=filtered.slice(0,100).map(e=>`<tr onclick="window.viewClaim('${e.claimKey}')">
+    <td style="color:var(--muted);font-size:11px;white-space:nowrap">${e.at}</td>
+    <td><span style="font-size:12px">${e.action}</span></td>
+    <td><span class="mono">${e.claimId||'—'}</span></td>
+    <td style="color:var(--muted)">${e.by}</td>
+    <td style="color:var(--muted)">${e.type||''} ${e.amount?fmt(parseFloat(e.amount)):''}</td>
+  </tr>`).join('');
 }
 
 window.doExport=function(){
@@ -1931,6 +2389,85 @@ window.openSuperAdmin=async function(){
 window.closeSuperAdmin=async function(){
   document.getElementById('superadminPanel').style.display='none';
   await signOut(auth);
+};
+
+window.saCreateEnterprise=async function(){
+  const company=document.getElementById('sa-co').value.trim();
+  const fn=document.getElementById('sa-fn').value.trim();
+  const ln=document.getElementById('sa-ln').value.trim();
+  const email=document.getElementById('sa-email').value.trim();
+  const pass=document.getElementById('sa-pass').value;
+  const industry=document.getElementById('sa-ind').value;
+  const currency=document.getElementById('sa-cur').value;
+  if(!company||!fn||!email||!pass){
+    document.getElementById('saCreateStatus').textContent='⚠ Fill all required fields';
+    document.getElementById('saCreateStatus').style.color='var(--red)';
+    return;
+  }
+  if(pass.length<8){
+    document.getElementById('saCreateStatus').textContent='⚠ Password min 8 characters';
+    document.getElementById('saCreateStatus').style.color='var(--red)';
+    return;
+  }
+  const btn=document.getElementById('saCreateBtn');
+  btn.disabled=true;btn.textContent='Creating...';
+  document.getElementById('saCreateStatus').textContent='Setting up enterprise...';
+  document.getElementById('saCreateStatus').style.color='var(--muted)';
+  try{
+    // Create auth account for the new admin
+    // We need to sign out and back in after — use secondary app trick
+    let uid;
+    try{
+      // Try creating — if exists, fetch uid via sign-in
+      const c=await createUserWithEmailAndPassword(auth,email,pass);
+      await updateProfile(c.user,{displayName:fn+' '+ln});
+      uid=c.user.uid;
+    }catch(e){
+      if(e.code==='auth/email-already-in-use'){
+        // Check if they already have an enterprise
+        const testCred=await signInWithEmailAndPassword(auth,email,pass).catch(()=>null);
+        if(testCred){
+          uid=testCred.user.uid;
+          const existing=await get(ref(db,'userIndex/'+uid));
+          if(existing.val()?.entId){
+            document.getElementById('saCreateStatus').textContent='⚠ This email already has an enterprise';
+            document.getElementById('saCreateStatus').style.color='var(--red)';
+            btn.disabled=false;btn.textContent='➕ Create Enterprise';
+            // Sign back in as superadmin
+            await signInWithEmailAndPassword(auth,SUPERADMIN_EMAIL,SUPERADMIN_PASS);
+            return;
+          }
+        } else {
+          throw new Error('Email already in use with a different password');
+        }
+      } else { throw e; }
+    }
+    // Generate new enterprise ID and write data
+    const newEntRef=push(ref(db,'enterprises'));
+    const newEntId=newEntRef.key;
+    const code=company.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4)+Math.random().toString(36).slice(2,6).toUpperCase();
+    await set(ref(db,'userIndex/'+uid),{entId:newEntId,email:email});
+    // Write enterprise data directly using full path (entId is local to superadmin scope)
+    const ePath='enterprises/'+newEntId;
+    await set(ref(db,ePath+'/enterprise'),{name:company,industry,currency,country:'India',domain:'',inviteCode:code,createdAt:new Date().toISOString()});
+    await push(ref(db,ePath+'/employees'),{firstName:fn,lastName:ln,email,grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+    const grades=['L1','L2','L3','L4','L5','L6'];
+    const limits=[{s:0,m:3000,f:15000},{s:0,m:8000,f:30000},{s:2000,m:15000,f:60000},{s:5000,m:30000,f:150000},{s:10000,m:75000,f:300000},{s:25000,m:200000,f:1000000}];
+    for(let i=0;i<grades.length;i++) await push(ref(db,ePath+'/approvalMatrix'),{grade:grades[i],type:'all',selfLimit:limits[i].s,mgrLimit:limits[i].m,financeAbove:limits[i].f,createdAt:new Date().toISOString()});
+    // Sign back in as superadmin
+    await signInWithEmailAndPassword(auth,SUPERADMIN_EMAIL,SUPERADMIN_PASS);
+    document.getElementById('saCreateStatus').textContent='✅ Enterprise created! Invite code: '+code;
+    document.getElementById('saCreateStatus').style.color='var(--green)';
+    // Clear form
+    ['sa-co','sa-fn','sa-ln','sa-email','sa-pass'].forEach(id=>document.getElementById(id).value='');
+    window.saRefresh();
+  }catch(e){
+    document.getElementById('saCreateStatus').textContent='❌ '+e.message;
+    document.getElementById('saCreateStatus').style.color='var(--red)';
+    // Try to sign back in as superadmin if something went wrong
+    try{await signInWithEmailAndPassword(auth,SUPERADMIN_EMAIL,SUPERADMIN_PASS);}catch(_){}
+  }
+  btn.disabled=false;btn.textContent='➕ Create Enterprise';
 };
 
 window.saRefresh=async function(){
