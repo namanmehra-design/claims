@@ -1133,45 +1133,27 @@ textarea{resize:vertical;min-height:80px}
     </div>
     <div class="modal-body">
 
-      <!-- GEMINI EXPENSE PARSER -->
-      <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1.5px solid rgba(99,102,241,0.2);border-radius:14px;padding:16px;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#4F46E5,#7C3AED);display:flex;align-items:center;justify-content:center;color:white;font-size:13px;flex-shrink:0">✦</div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:#312E81">Gemini Expense Parser</div>
-            <div style="font-size:11px;color:#6366F1">Drop a receipt or describe — AI fills every field instantly</div>
-          </div>
-          <span class="gemini-key-status" style="font-size:11px;cursor:pointer;color:var(--green)">● AI Ready</span>
-        </div>
-
-        <!-- Multi-file drop zone -->
-        <div id="aiDropZone"
-          style="border:2px dashed rgba(99,102,241,0.35);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.7);margin-bottom:10px"
+      <!-- AI RECEIPT PARSER -->
+      <div style="background:#F8FAFF;border:1px solid #C7D2FE;border-radius:12px;padding:14px;margin-bottom:18px">
+        <div style="font-size:12px;font-weight:700;color:#4338CA;margin-bottom:10px">✦ AI Receipt Parser — upload a receipt or describe your expense</div>
+        <div style="border:2px dashed #C7D2FE;border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:white;margin-bottom:8px"
+          id="aiDropZone"
           onclick="document.getElementById('ai-doc-input').click()"
-          ondragover="event.preventDefault();this.style.borderColor='#4F46E5';this.style.background='#EEF2FF'"
-          ondragleave="this.style.borderColor='';this.style.background=''"
-          ondrop="onAIDrop(event);this.style.borderColor='';this.style.background=''">
-          <div style="font-size:24px;margin-bottom:6px">📎</div>
-          <div style="font-size:13px;font-weight:600;color:#4338CA" id="aiDocLabel">Drop receipt, invoice, or ticket here</div>
-          <div style="font-size:11px;color:#818CF8;margin-top:3px">JPG · PNG · PDF · Up to 4 files · Drag & drop or click · AI auto-fills every field</div>
+          ondragover="event.preventDefault();this.style.borderColor='#4F46E5'"
+          ondragleave="this.style.borderColor='#C7D2FE'"
+          ondrop="onAIDrop(event)">
+          <div style="font-size:20px;margin-bottom:4px">📎</div>
+          <div style="font-size:13px;color:#4338CA;font-weight:600" id="aiDocLabel">Drop receipt / invoice here, or click to browse</div>
+          <div style="font-size:11px;color:#818CF8;margin-top:2px">JPG · PNG · PDF · Gemini reads and fills every field</div>
         </div>
         <input type="file" id="ai-doc-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple onchange="onAIDocSelected(this)">
-        <div id="aiDocPreview" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-
-        <!-- Text fallback -->
+        <div id="aiDocPreview" style="margin-bottom:6px"></div>
         <div style="display:flex;gap:8px">
-          <input type="text" id="ai-prompt"
-            placeholder="Or describe: 'Ola from office to airport 15 March ₹1200'"
-            style="flex:1;border-radius:8px;font-size:12px;padding:9px 12px;border-color:rgba(99,102,241,0.25)"
-            onkeydown="if(event.key==='Enter')runAIFill()">
-          <button class="btn btn-sm" onclick="runAIFill()"
-            style="background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:8px;white-space:nowrap;font-size:12px">
-            <span id="ai-btn-text">✦ Parse</span>
-          </button>
+          <input type="text" id="ai-prompt" placeholder="Or describe: e.g. Ola airport 15 March ₹1200" style="flex:1;font-size:13px" onkeydown="if(event.key==='Enter')runAIFill()">
+          <button onclick="runAIFill()" style="background:#4F46E5;color:white;border:none;padding:0 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--font);white-space:nowrap"><span id="ai-btn-text">✦ Parse</span></button>
         </div>
-
-        <div class="ai-thinking" id="aiThinking" style="margin-top:10px"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="aiThinkLabel">Gemini is reading...</span></div>
-        <div class="ai-result" id="aiResult" style="margin-top:8px"></div>
+        <div class="ai-thinking" id="aiThinking" style="margin-top:8px"><div class="dot-pulse"><span></span><span></span><span></span></div><span id="aiThinkLabel">Reading with Gemini...</span></div>
+        <div class="ai-result" id="aiResult" style="margin-top:6px"></div>
       </div>
 
       <!-- CLAIM FORM -->
@@ -1535,6 +1517,76 @@ onAuthStateChanged(auth, async user => {
 
 
 
+
+
+// ── Expose all functions to window (required for module scope) ──
+window.addFileChip = typeof addFileChip !== "undefined" ? addFileChip : undefined;
+window.addGradeRow = typeof addGradeRow !== "undefined" ? addGradeRow : undefined;
+window.applyAnalyzedMatrix = typeof applyAnalyzedMatrix !== "undefined" ? applyAnalyzedMatrix : undefined;
+window.applyAnalyzedPolicies = typeof applyAnalyzedPolicies !== "undefined" ? applyAnalyzedPolicies : undefined;
+window.approveClaim = typeof approveClaim !== "undefined" ? approveClaim : undefined;
+window.closeModal = typeof closeModal !== "undefined" ? closeModal : undefined;
+window.closeSidebar = typeof closeSidebar !== "undefined" ? closeSidebar : undefined;
+window.copyInviteCode = typeof copyInviteCode !== "undefined" ? copyInviteCode : undefined;
+window.delMatrix = typeof delMatrix !== "undefined" ? delMatrix : undefined;
+window.delPolicy = typeof delPolicy !== "undefined" ? delPolicy : undefined;
+window.deleteEmployee = typeof deleteEmployee !== "undefined" ? deleteEmployee : undefined;
+window.demoLogin = typeof demoLogin !== "undefined" ? demoLogin : undefined;
+window.doExport = typeof doExport !== "undefined" ? doExport : undefined;
+window.doLogin = typeof doLogin !== "undefined" ? doLogin : undefined;
+window.doLogout = typeof doLogout !== "undefined" ? doLogout : undefined;
+window.editEmployee = typeof editEmployee !== "undefined" ? editEmployee : undefined;
+window.filterClaims = typeof filterClaims !== "undefined" ? filterClaims : undefined;
+window.filterStatus = typeof filterStatus !== "undefined" ? filterStatus : undefined;
+window.filterType = typeof filterType !== "undefined" ? filterType : undefined;
+window.handleFiles = typeof handleFiles !== "undefined" ? handleFiles : undefined;
+window.importEmployees = typeof importEmployees !== "undefined" ? importEmployees : undefined;
+window.loadGradeTemplate = typeof loadGradeTemplate !== "undefined" ? loadGradeTemplate : undefined;
+window.loadPolicyTemplate = typeof loadPolicyTemplate !== "undefined" ? loadPolicyTemplate : undefined;
+window.navigate = typeof navigate !== "undefined" ? navigate : undefined;
+window.onAIDocSelected = typeof onAIDocSelected !== "undefined" ? onAIDocSelected : undefined;
+window.onAIDrop = typeof onAIDrop !== "undefined" ? onAIDrop : undefined;
+window.onPolicyFileDrop = typeof onPolicyFileDrop !== "undefined" ? onPolicyFileDrop : undefined;
+window.onPolicyFileSelected = typeof onPolicyFileSelected !== "undefined" ? onPolicyFileSelected : undefined;
+window.openAIKeyModal = typeof openAIKeyModal !== "undefined" ? openAIKeyModal : undefined;
+window.openAddEmployee = typeof openAddEmployee !== "undefined" ? openAddEmployee : undefined;
+window.openAddMatrix = typeof openAddMatrix !== "undefined" ? openAddMatrix : undefined;
+window.openAddPolicy = typeof openAddPolicy !== "undefined" ? openAddPolicy : undefined;
+window.openEditEnterprise = typeof openEditEnterprise !== "undefined" ? openEditEnterprise : undefined;
+window.openImport = typeof openImport !== "undefined" ? openImport : undefined;
+window.openNewClaim = typeof openNewClaim !== "undefined" ? openNewClaim : undefined;
+window.openSidebar = typeof openSidebar !== "undefined" ? openSidebar : undefined;
+window.parseEmpFile = typeof parseEmpFile !== "undefined" ? parseEmpFile : undefined;
+window.parseEmpFileFromDrop = typeof parseEmpFileFromDrop !== "undefined" ? parseEmpFileFromDrop : undefined;
+window.parseEmpFromPaste = typeof parseEmpFromPaste !== "undefined" ? parseEmpFromPaste : undefined;
+window.refreshClaims = typeof refreshClaims !== "undefined" ? refreshClaims : undefined;
+window.regBack = typeof regBack !== "undefined" ? regBack : undefined;
+window.regNext = typeof regNext !== "undefined" ? regNext : undefined;
+window.rejectClaim = typeof rejectClaim !== "undefined" ? rejectClaim : undefined;
+window.removeAIFile = typeof removeAIFile !== "undefined" ? removeAIFile : undefined;
+window.removeGrade = typeof removeGrade !== "undefined" ? removeGrade : undefined;
+window.runAIFill = typeof runAIFill !== "undefined" ? runAIFill : undefined;
+window.runDocScan = typeof runDocScan !== "undefined" ? runDocScan : undefined;
+window.runLiveValidation = typeof runLiveValidation !== "undefined" ? runLiveValidation : undefined;
+window.runPolicyAnalyzer = typeof runPolicyAnalyzer !== "undefined" ? runPolicyAnalyzer : undefined;
+window.saveAIKey = typeof saveAIKey !== "undefined" ? saveAIKey : undefined;
+window.saveDraft = typeof saveDraft !== "undefined" ? saveDraft : undefined;
+window.saveEmployee = typeof saveEmployee !== "undefined" ? saveEmployee : undefined;
+window.saveEnterprise = typeof saveEnterprise !== "undefined" ? saveEnterprise : undefined;
+window.saveMatrixRule = typeof saveMatrixRule !== "undefined" ? saveMatrixRule : undefined;
+window.savePolicy = typeof savePolicy !== "undefined" ? savePolicy : undefined;
+window.selectExportFmt = typeof selectExportFmt !== "undefined" ? selectExportFmt : undefined;
+window.sendChatSuggestion = typeof sendChatSuggestion !== "undefined" ? sendChatSuggestion : undefined;
+window.setGeminiKey = typeof setGeminiKey !== "undefined" ? setGeminiKey : undefined;
+window.showAuthFromReg = typeof showAuthFromReg !== "undefined" ? showAuthFromReg : undefined;
+window.showRegWizard = typeof showRegWizard !== "undefined" ? showRegWizard : undefined;
+window.submitClaim = typeof submitClaim !== "undefined" ? submitClaim : undefined;
+window.switchAITab = typeof switchAITab !== "undefined" ? switchAITab : undefined;
+window.switchAdminTab = typeof switchAdminTab !== "undefined" ? switchAdminTab : undefined;
+window.switchAuthTab = typeof switchAuthTab !== "undefined" ? switchAuthTab : undefined;
+window.toggleTravelFields = typeof toggleTravelFields !== "undefined" ? toggleTravelFields : undefined;
+window.updateExportPreview = typeof updateExportPreview !== "undefined" ? updateExportPreview : undefined;
+window.viewClaim = typeof viewClaim !== "undefined" ? viewClaim : undefined;
 
 // Signal ready
 window._fbAIReady = true;
