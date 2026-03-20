@@ -2,273 +2,283 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ClaimsIQ — Enterprise Claims Platform</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>ClaimsIQ — Enterprise</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F4F6FA;--bg2:#FFFFFF;--bg3:#F1F5F9;
-  --sur:rgba(0,0,0,0.03);--sur2:rgba(0,0,0,0.06);
-  --bdr:#E2E8F0;--bdr-hi:#CBD5E1;
-  --txt:#0F172A;--muted:#64748B;--muted2:#94A3B8;
-  --accent:#2563EB;--accent2:#3B82F6;--accent-dim:rgba(37,99,235,0.08);
-  --green:#059669;--green-dim:rgba(5,150,105,0.08);
-  --red:#DC2626;--red-dim:rgba(220,38,38,0.08);
-  --amber:#D97706;--amber-dim:rgba(217,119,6,0.08);
-  --purple:#7C3AED;
-  --r:8px;--rl:12px;--rxl:16px;
-  --fb:'Inter',sans-serif;
+  --bg:#0A0E1A;
+  --glass:rgba(255,255,255,0.06);
+  --glass2:rgba(255,255,255,0.10);
+  --glass3:rgba(255,255,255,0.15);
+  --bdr:rgba(255,255,255,0.09);
+  --bdr2:rgba(255,255,255,0.16);
+  --txt:#F1F5FF;--muted:#8899B8;--muted2:#4A5568;
+  --accent:#6366F1;--accent2:#818CF8;--accent-dim:rgba(99,102,241,0.15);
+  --green:#10B981;--green-dim:rgba(16,185,129,0.12);
+  --red:#F87171;--red-dim:rgba(248,113,113,0.12);
+  --amber:#FBBF24;--amber-dim:rgba(251,191,36,0.12);
+  --purple:#A78BFA;
+  --r:10px;--rl:14px;--rxl:20px;
+  --ff:'Inter',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:var(--fb);background:var(--bg);color:var(--txt);min-height:100vh;-webkit-tap-highlight-color:transparent;}
+html{background:var(--bg);}
+body{
+  font-family:var(--ff);background:var(--bg);color:var(--txt);min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 0%,rgba(99,102,241,.18) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%,rgba(167,139,250,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 40% at 50% 50%,rgba(16,185,129,.05) 0%,transparent 60%);
+  -webkit-tap-highlight-color:transparent;
+}
 ::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-thumb{background:var(--bdr-hi);border-radius:2px;}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px;}
 
 /* Toast */
-#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--txt);color:white;border-radius:50px;padding:10px 20px;font-size:.84rem;font-weight:500;display:flex;align-items:center;gap:8px;z-index:9999;transition:transform .3s cubic-bezier(.34,1.4,.64,1);max-width:90vw;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:rgba(20,25,40,.95);backdrop-filter:blur(20px);border:1px solid var(--bdr2);border-radius:50px;padding:10px 20px;font-size:.83rem;font-weight:500;display:flex;align-items:center;gap:8px;z-index:9999;transition:transform .32s cubic-bezier(.34,1.4,.64,1);max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.4);}
 #toast.show{transform:translateX(-50%) translateY(0);}
-#toast.ok{background:var(--green);}
-#toast.err{background:var(--red);}
-#toast.info{background:var(--accent);}
+#toast.ok{border-color:rgba(16,185,129,.4);color:var(--green);}
+#toast.err{border-color:rgba(248,113,113,.4);color:var(--red);}
+#toast.info{border-color:rgba(99,102,241,.4);color:var(--accent2);}
 
 /* Auth */
-#auth-view{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:200;background:var(--bg);overflow-y:auto;}
+#auth-view{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:200;overflow-y:auto;}
 #auth-view.active{display:flex;}
-.auth-card{width:100%;max-width:380px;background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rxl);overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.08);}
-.auth-hdr{padding:28px 28px 22px;border-bottom:1px solid var(--bdr);text-align:center;}
-.auth-logo{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin:0 auto 12px;}
+.auth-wrap{width:100%;max-width:400px;}
+.auth-glass{background:var(--glass);backdrop-filter:blur(32px);border:1px solid var(--bdr2);border-radius:var(--rxl);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);}
+.auth-hdr{padding:28px 28px 22px;border-bottom:1px solid var(--bdr);background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(167,139,250,.06));text-align:center;}
+.auth-logo{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;margin:0 auto 12px;box-shadow:0 8px 32px rgba(99,102,241,.4);}
 .auth-bdy{padding:24px 28px;}
 
-/* App shell */
-#app-shell{display:none;flex-direction:column;min-height:100vh;}
+/* App */
+#app-shell{display:none;min-height:100vh;}
 #app-shell.active{display:flex;}
+.sidebar{width:230px;background:rgba(10,14,26,.8);backdrop-filter:blur(32px);border-right:1px solid var(--bdr);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;}
+.main{margin-left:230px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:58px;background:rgba(10,14,26,.7);backdrop-filter:blur(24px);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:50;}
+.content{flex:1;padding:28px 24px;max-width:1100px;width:100%;}
 
-/* Layout */
-.layout{display:flex;flex:1;}
-.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;}
-.main{margin-left:220px;flex:1;min-height:100vh;display:flex;flex-direction:column;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:56px;background:var(--bg2);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:50;}
-.content{flex:1;padding:24px 20px;max-width:1100px;width:100%;}
-
-/* Sidebar */
-.sb-brand{display:flex;align-items:center;gap:10px;padding:16px 16px 12px;}
-.sb-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white;flex-shrink:0;}
-.sb-name{font-size:15px;font-weight:700;color:var(--txt);}
-.sb-ent{font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);border-radius:4px;padding:2px 6px;margin:0 16px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sb-user{margin:0 10px 8px;padding:8px;background:var(--sur);border-radius:var(--r);display:flex;align-items:center;gap:8px;}
-.sb-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;}
-.sb-uname{font-size:12px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Sidebar items */
+.sb-brand{display:flex;align-items:center;gap:10px;padding:18px 16px 12px;}
+.sb-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;box-shadow:0 4px 16px rgba(99,102,241,.35);}
+.sb-title{font-size:15px;font-weight:700;color:var(--txt);}
+.sb-ent{margin:0 12px 6px;padding:7px 10px;background:var(--accent-dim);border:1px solid rgba(99,102,241,.2);border-radius:var(--r);font-size:11px;font-weight:600;color:var(--accent2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-user{margin:0 10px 10px;padding:9px 10px;background:var(--glass);border:1px solid var(--bdr);border-radius:var(--r);display:flex;align-items:center;gap:8px;}
+.sb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;}
+.sb-uname{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sb-role{font-size:10px;color:var(--muted);}
-.sb-section{font-size:10px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;padding:10px 16px 4px;}
+.sb-sec{font-size:9px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;padding:10px 16px 4px;}
 .nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;margin:1px 8px;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);transition:all .15s;}
-.nav-item:hover{background:var(--sur);color:var(--txt);}
-.nav-item.active{background:var(--accent-dim);color:var(--accent);font-weight:600;}
+.nav-item:hover{background:var(--glass2);color:var(--txt);}
+.nav-item.active{background:var(--accent-dim);color:var(--accent2);border:1px solid rgba(99,102,241,.2);}
 .nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
-.nav-badge{background:var(--red);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:99px;margin-left:auto;}
+.nav-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;margin-left:auto;}
 .sb-footer{margin-top:auto;padding:10px 8px;}
 
 /* Pages */
-.page{display:none;}.page.active{display:block;}
-.page-title{font-size:20px;font-weight:700;color:var(--txt);margin-bottom:2px;}
-.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.page{display:none;}.page.active{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.pg-title{font-size:22px;font-weight:800;color:var(--txt);letter-spacing:-.5px;margin-bottom:2px;}
+.pg-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
 
-/* Cards */
-.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rl);margin-bottom:16px;}
-.card-hdr{padding:14px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+/* Glass cards */
+.card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--bdr);border-radius:var(--rl);margin-bottom:16px;transition:border-color .2s;}
+.card:hover{border-color:var(--bdr2);}
+.card-hdr{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
 .card-title{font-size:14px;font-weight:600;color:var(--txt);}
-.card-body{padding:16px;}
+.card-body{padding:18px;}
 
-/* Stats grid */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
-.stat{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rl);padding:16px;}
-.stat-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
-.stat-val{font-size:24px;font-weight:700;color:var(--txt);}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+.stat{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--bdr);border-radius:var(--rl);padding:18px;transition:all .2s;}
+.stat:hover{border-color:var(--bdr2);background:var(--glass2);}
+.stat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.stat-val{font-size:26px;font-weight:800;color:var(--txt);letter-spacing:-.5px;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px;}
 
 /* Table */
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th{text-align:left;padding:9px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted2);background:var(--bg3);border-bottom:1px solid var(--bdr);}
-td{padding:11px 12px;border-bottom:1px solid var(--bdr);color:var(--txt);}
+th{text-align:left;padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted2);background:rgba(255,255,255,.02);border-bottom:1px solid var(--bdr);}
+td{padding:12px 14px;border-bottom:1px solid var(--bdr);color:var(--txt);}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:var(--sur);}
-tr{cursor:pointer;}
+tr:hover td{background:var(--glass);}
+tr{cursor:pointer;transition:background .1s;}
 
 /* Badges */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;}
-.b-pending{background:var(--amber-dim);color:var(--amber);}
-.b-approved{background:var(--green-dim);color:var(--green);}
-.b-rejected{background:var(--red-dim);color:var(--red);}
-.b-draft{background:var(--sur2);color:var(--muted);}
-.b-review{background:rgba(124,58,237,0.08);color:var(--purple);}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;}
+.b-pending{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(251,191,36,.2);}
+.b-approved{background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+.b-rejected{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,113,113,.2);}
+.b-draft{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--bdr);}
+.b-review{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2);}
 
 /* Forms */
-.fld{margin-bottom:13px;}
-.fld label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
-input,select,textarea{width:100%;padding:10px 12px;background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:var(--fb);font-size:.9rem;outline:none;transition:border-color .15s,box-shadow .15s;}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
+.fld{margin-bottom:14px;}
+.fld label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;}
+input,select,textarea{width:100%;padding:10px 13px;background:rgba(255,255,255,.06);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:var(--ff);font-size:.9rem;outline:none;transition:all .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:rgba(99,102,241,.08);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
 input::placeholder,textarea::placeholder{color:var(--muted2);}
-select option{background:white;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+select option{background:#0A0E1A;color:var(--txt);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .full{grid-column:1/-1;}
 
 /* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border:none;border-radius:var(--r);font-family:var(--fb);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r);font-family:var(--ff);font-size:.87rem;font-weight:600;cursor:pointer;transition:all .15s;}
 .btn:active{transform:scale(.97);}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.btn-primary{background:var(--accent);color:white;}.btn-primary:hover:not(:disabled){background:#1D4ED8;}
-.btn-success{background:var(--green);color:white;}.btn-success:hover{background:#047857;}
-.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,.2);}.btn-danger:hover{background:rgba(220,38,38,.15);}
-.btn-ghost{background:var(--sur);color:var(--muted);border:1px solid var(--bdr);}.btn-ghost:hover{background:var(--sur2);color:var(--txt);}
-.btn-sm{padding:6px 12px;font-size:.8rem;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.3);}
+.btn-primary:hover:not(:disabled){filter:brightness(1.12);box-shadow:0 6px 24px rgba(99,102,241,.45);}
+.btn-success{background:linear-gradient(135deg,#059669,var(--green));color:#fff;}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,113,113,.25);}
+.btn-danger:hover{background:rgba(248,113,113,.2);}
+.btn-ghost{background:var(--glass);color:var(--muted);border:1px solid var(--bdr);}
+.btn-ghost:hover{background:var(--glass2);color:var(--txt);}
+.btn-sm{padding:6px 13px;font-size:.8rem;}
 .btn-full{width:100%;}
-.btn-ai{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;}.btn-ai:hover{filter:brightness(1.1);}
+.btn-ai{background:linear-gradient(135deg,#4F46E5,#7C3AED);color:#fff;box-shadow:0 4px 20px rgba(79,70,229,.35);}
+.btn-ai:hover:not(:disabled){filter:brightness(1.1);box-shadow:0 6px 28px rgba(79,70,229,.5);}
 
 /* Modal */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:500;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px);}
-.modal-bg.open{display:flex;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:500;align-items:flex-end;justify-content:center;padding:0;}
+.modal-bg.open{display:flex;animation:fadeIn .15s ease;}
 @media(min-width:640px){.modal-bg{align-items:center;padding:20px;}}
-.modal{background:var(--bg2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease;}
+.modal{background:rgba(12,16,28,.95);backdrop-filter:blur(40px);border:1px solid var(--bdr2);border-radius:var(--rxl) var(--rxl) 0 0;width:100%;max-height:94vh;overflow-y:auto;animation:slideUp .22s cubic-bezier(.34,1.2,.64,1);}
 @media(min-width:640px){.modal{border-radius:var(--rxl);max-width:560px;}}
-.modal-lg{max-width:680px;}
-@keyframes slideUp{from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:var(--bg2);z-index:2;}
-.modal-title{font-size:15px;font-weight:700;color:var(--txt);}
-.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px;}
-.modal-close:hover{background:var(--sur2);}
-.modal-body{padding:20px;}
-.modal-ftr{padding:14px 20px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--bg2);}
+.modal-lg{max-width:660px;}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:rgba(12,16,28,.98);z-index:2;backdrop-filter:blur(20px);}
+.modal-title{font-size:15px;font-weight:700;}
+.modal-close{background:var(--glass);border:1px solid var(--bdr);font-size:16px;cursor:pointer;color:var(--muted);padding:3px 8px;border-radius:6px;transition:all .15s;}
+.modal-close:hover{background:var(--glass2);color:var(--txt);}
+.modal-body{padding:22px;}
+.modal-ftr{padding:16px 22px;border-top:1px solid var(--bdr);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:rgba(12,16,28,.98);backdrop-filter:blur(20px);}
 
 /* AI Parser */
-.ai-section{background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1px solid rgba(99,102,241,.2);border-radius:var(--rl);padding:14px;margin-bottom:16px;}
-.ai-drop{border:2px dashed rgba(99,102,241,.35);border-radius:var(--r);padding:18px;text-align:center;cursor:pointer;background:rgba(255,255,255,.7);transition:all .2s;margin-bottom:8px;}
-.ai-drop:hover,.ai-drop.over{border-color:#4F46E5;background:#EEF2FF;}
-.ai-status{font-size:12px;padding:8px 12px;border-radius:var(--r);margin-top:8px;display:none;}
-.ai-status.parsing{display:block;background:#EEF2FF;color:#4338CA;}
-.ai-status.done{display:block;background:var(--green-dim);color:var(--green);}
-.ai-status.fail{display:block;background:var(--red-dim);color:var(--red);}
+.ai-section{background:linear-gradient(135deg,rgba(79,70,229,.12),rgba(124,58,237,.08));border:1px solid rgba(99,102,241,.25);border-radius:var(--rl);padding:16px;margin-bottom:18px;}
+.ai-drop{border:2px dashed rgba(99,102,241,.3);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;background:rgba(79,70,229,.05);transition:all .2s;margin-bottom:10px;}
+.ai-drop:hover,.ai-drop.over{border-color:var(--accent);background:rgba(99,102,241,.12);}
+.ai-status{font-size:12px;padding:9px 13px;border-radius:var(--r);margin-top:8px;display:none;}
+.ai-status.parsing{display:flex;align-items:center;gap:8px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--accent2);}
+.ai-status.done{display:block;background:var(--green-dim);border:1px solid rgba(16,185,129,.2);color:var(--green);}
+.ai-status.fail{display:block;background:var(--red-dim);border:1px solid rgba(248,113,113,.2);color:var(--red);}
+.ai-spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(99,102,241,.3);border-top-color:var(--accent2);animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-/* Approval action buttons */
-.action-row{display:flex;gap:6px;}
-
-/* Admin tabs */
-.tabs{display:flex;gap:2px;background:var(--bg3);border-radius:var(--r);padding:3px;margin-bottom:16px;overflow-x:auto;}
-.tab{padding:7px 14px;border-radius:6px;border:none;background:none;font-family:var(--fb);font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
-.tab.active{background:var(--bg2);color:var(--txt);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+/* Tabs */
+.tabs{display:flex;gap:2px;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:var(--r);padding:3px;margin-bottom:18px;overflow-x:auto;}
+.tab{padding:7px 15px;border-radius:7px;border:none;background:none;font-family:var(--ff);font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.tab.active{background:var(--glass2);color:var(--txt);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.tab:hover:not(.active){color:var(--txt);}
 
 /* Upload zone */
-.upload-zone{border:2px dashed var(--bdr-hi);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all .2s;}
+.upload-zone{border:2px dashed var(--bdr);border-radius:var(--r);padding:18px;text-align:center;cursor:pointer;transition:all .2s;}
 .upload-zone:hover{border-color:var(--accent);background:var(--accent-dim);}
 
 /* Alert */
 .alert{padding:10px 14px;border-radius:var(--r);font-size:13px;margin-bottom:12px;}
-.alert-info{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(37,99,235,.15);}
-.alert-warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(217,119,6,.15);}
-.alert-err{background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,.15);}
-
-/* Progress dots */
-.dots{display:flex;gap:4px;align-items:center;}
-.dots span{width:5px;height:5px;border-radius:50%;background:currentColor;animation:dot .8s infinite alternate;}
-.dots span:nth-child(2){animation-delay:.2s;}
-.dots span:nth-child(3){animation-delay:.4s;}
-@keyframes dot{to{opacity:.2;transform:scale(.7);}}
+.alert-info{background:var(--accent-dim);color:var(--accent2);border:1px solid rgba(99,102,241,.2);}
+.alert-warn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(251,191,36,.2);}
 
 /* Misc */
 .empty{text-align:center;padding:40px 20px;color:var(--muted);}
-.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;background:var(--sur2);color:var(--muted);}
-.mono{font-family:'JetBrains Mono',monospace;font-size:11px;}
-.tl-row{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:12px;}
+.chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--bdr);}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent2);}
+.tl-row{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:var(--muted);}
 .tl-row:last-child{border:none;}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted2);font-size:11px;margin:12px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr);}
+
+/* Register pane */
+.reg-section-label{font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;padding:10px 0 6px;border-top:1px solid var(--bdr);margin-top:4px;}
 
 /* Mobile */
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);transition:transform .25s;}
-  .sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.12);}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 40px rgba(0,0,0,.5);}
   .main{margin-left:0;}
-  .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99;}
+  .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
   .sb-overlay.open{display:block;}
   .stats{grid-template-columns:1fr 1fr;}
-  .grid2{grid-template-columns:1fr;}
+  .g2{grid-template-columns:1fr;}
+  .content{padding:18px 14px;}
 }
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
 <div id="toast"><span id="tmsg"></span></div>
 
-<!-- AUTH VIEW -->
+<!-- AUTH -->
 <div id="auth-view">
-  <div class="auth-card">
-    <div class="auth-hdr">
-      <div class="auth-logo">C</div>
-      <div style="font-size:20px;font-weight:800;color:var(--txt)">ClaimsIQ</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px">Enterprise Claims Platform</div>
-    </div>
-    <div class="auth-bdy" id="signInPane">
-      <div class="fld"><label>Email</label><input type="email" id="authEmail" placeholder="you@company.com" autocomplete="email"></div>
-      <div class="fld"><label>Password</label><input type="password" id="authPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')window.handleAuth()"></div>
-      <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="window.handleAuth()">Sign In</button>
-      <button class="btn btn-ghost btn-full" style="margin-bottom:8px" onclick="window.demoLogin()">🚀 Launch Demo</button>
-      <div style="text-align:center"><span style="font-size:12px;color:var(--muted2)">New company? </span><button onclick="window.showRegister()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">Register Enterprise →</button></div>
-    </div>
-    <!-- REGISTER PANE -->
-    <div class="auth-bdy" id="registerPane" style="display:none">
-      <div style="font-size:13px;font-weight:600;color:var(--txt);margin-bottom:14px">Set up your company on ClaimsIQ</div>
-      <div class="fld"><label>Company Name *</label><input type="text" id="rg-company" placeholder="Acme Technologies Pvt Ltd"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fld"><label>Industry</label><select id="rg-industry"><option value="">Select</option><option>Technology</option><option>Financial Services</option><option>Manufacturing</option><option>Healthcare</option><option>Consulting</option><option>Retail</option><option>Other</option></select></div>
-        <div class="fld"><label>Currency</label><select id="rg-currency"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option><option value="AED">AED</option></select></div>
+  <div class="auth-wrap">
+    <div class="auth-glass">
+      <div class="auth-hdr">
+        <div class="auth-logo">C</div>
+        <div style="font-size:22px;font-weight:800;letter-spacing:-.5px">ClaimsIQ</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Enterprise Claims Platform</div>
       </div>
-      <div style="border-top:1px solid var(--bdr);padding-top:12px;margin-top:4px;margin-bottom:12px;font-size:12px;font-weight:600;color:var(--muted)">Admin Account</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="fld"><label>First Name *</label><input type="text" id="rg-fname" placeholder="Naman"></div>
-        <div class="fld"><label>Last Name *</label><input type="text" id="rg-lname" placeholder="Sharma"></div>
+      <!-- SIGN IN -->
+      <div class="auth-bdy" id="paneSignIn">
+        <div class="fld"><label>Email</label><input type="email" id="authEmail" placeholder="you@company.com" autocomplete="email"></div>
+        <div class="fld"><label>Password</label><input type="password" id="authPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')window.handleAuth()"></div>
+        <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="window.handleAuth()">Sign In</button>
+        <button class="btn btn-ghost btn-full" style="margin-bottom:12px" onclick="window.demoLogin()">🚀 Launch Demo</button>
+        <div class="divider">New here?</div>
+        <button onclick="window.showPane('register')" class="btn btn-ghost btn-full" style="font-size:13px">Register Enterprise →</button>
       </div>
-      <div class="fld"><label>Work Email *</label><input type="email" id="rg-email" placeholder="you@company.com"></div>
-      <div class="fld"><label>Password *</label><input type="password" id="rg-pass" placeholder="Min 8 characters"></div>
-      <button class="btn btn-primary btn-full" style="margin-bottom:8px" onclick="window.registerEnterprise()">Create Enterprise Account</button>
-      <div style="text-align:center"><button onclick="window.showSignIn()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">← Back to Sign In</button></div>
+      <!-- REGISTER -->
+      <div class="auth-bdy" id="paneRegister" style="display:none">
+        <div class="reg-section-label" style="border:none;padding-top:0">Company</div>
+        <div class="fld"><label>Company Name *</label><input type="text" id="rg-company" placeholder="Acme Technologies Pvt Ltd"></div>
+        <div class="g2">
+          <div class="fld"><label>Industry</label><select id="rg-industry"><option>Technology</option><option>Financial Services</option><option>Manufacturing</option><option>Healthcare</option><option>Consulting</option><option>Other</option></select></div>
+          <div class="fld"><label>Currency</label><select id="rg-currency"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option></select></div>
+        </div>
+        <div class="reg-section-label">Admin Account</div>
+        <div class="g2">
+          <div class="fld"><label>First Name *</label><input type="text" id="rg-fname" placeholder="Naman"></div>
+          <div class="fld"><label>Last Name *</label><input type="text" id="rg-lname" placeholder="Sharma"></div>
+        </div>
+        <div class="fld"><label>Work Email *</label><input type="email" id="rg-email" placeholder="you@company.com"></div>
+        <div class="fld"><label>Password *</label><input type="password" id="rg-pass" placeholder="Min 8 characters"></div>
+        <button class="btn btn-primary btn-full" style="margin-bottom:10px" onclick="window.doRegister()">Create Enterprise</button>
+        <button onclick="window.showPane('signin')" class="btn btn-ghost btn-full" style="font-size:13px">← Back to Sign In</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- APP SHELL -->
 <div id="app-shell">
-
-  <div class="sb-overlay" id="sbOverlay" onclick="window.closeSidebar()"></div>
-
-  <!-- SIDEBAR -->
+  <div class="sb-overlay" id="sbOverlay" onclick="window.closeSb()"></div>
   <div class="sidebar" id="sidebar">
     <div class="sb-brand">
       <div class="sb-logo">C</div>
-      <div class="sb-name">ClaimsIQ</div>
+      <div class="sb-title">ClaimsIQ</div>
     </div>
     <div class="sb-ent" id="sbEnt">My Enterprise</div>
     <div class="sb-user">
       <div class="sb-av" id="sbAv">?</div>
-      <div style="min-width:0">
-        <div class="sb-uname" id="sbName">User</div>
-        <div class="sb-role" id="sbRoleLabel">—</div>
-      </div>
+      <div style="min-width:0"><div class="sb-uname" id="sbName">—</div><div class="sb-role" id="sbRole">—</div></div>
     </div>
-    <div class="sb-section">Navigation</div>
-    <div id="navItems"></div>
+    <div class="sb-sec">Navigation</div>
+    <div id="navList"></div>
     <div class="sb-footer">
       <button class="btn btn-ghost btn-full btn-sm" onclick="window.doLogout()">↪ Sign Out</button>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:10px">
-        <button onclick="window.openSidebar()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);display:none" id="menuBtn">☰</button>
-        <div id="topTitle" style="font-size:15px;font-weight:700;color:var(--txt)">Dashboard</div>
+        <button onclick="window.openSb()" id="menuBtn" style="display:none;background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">☰</button>
+        <div id="topTitle" style="font-size:15px;font-weight:700">Dashboard</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;gap:8px">
         <button class="btn btn-ghost btn-sm" onclick="window.openAIKey()" style="font-size:11px">⚙ AI Key</button>
-        <button class="btn btn-primary btn-sm" onclick="window.openNewClaim()">+ New Claim</button>
+        <button class="btn btn-primary btn-sm" onclick="window.openClaim()">+ New Claim</button>
       </div>
     </div>
 
@@ -276,154 +286,132 @@ select option{background:white;}
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div class="page-title" id="dashWelcome">Dashboard</div>
-        <div class="page-sub" id="dashDate"></div>
+        <div class="pg-title" id="dashGreet">Dashboard</div>
+        <div class="pg-sub" id="dashDate"></div>
         <div class="stats">
-          <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="st-total">0</div></div>
-          <div class="stat"><div class="stat-label">Pending</div><div class="stat-val" id="st-pending">0</div></div>
-          <div class="stat"><div class="stat-label">Approved</div><div class="stat-val" id="st-approved">0</div></div>
-          <div class="stat"><div class="stat-label">Total Value</div><div class="stat-val" id="st-value">₹0</div></div>
+          <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="s-total">0</div></div>
+          <div class="stat"><div class="stat-label">Pending</div><div class="stat-val" id="s-pending" style="color:var(--amber)">0</div></div>
+          <div class="stat"><div class="stat-label">Approved</div><div class="stat-val" id="s-approved" style="color:var(--green)">0</div></div>
+          <div class="stat"><div class="stat-label">Total Value</div><div class="stat-val" id="s-value">₹0</div></div>
         </div>
         <div class="card">
-          <div class="card-hdr"><div class="card-title">Recent Claims</div></div>
-          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="dashTbody"><tr><td colspan="6"><div class="empty">No claims yet</div></td></tr></tbody></table></div>
+          <div class="card-hdr"><div class="card-title">Recent Claims</div><button class="btn btn-ghost btn-sm" onclick="window.nav('claims')">View All</button></div>
+          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="dashRows"></tbody></table></div>
         </div>
       </div>
 
-      <!-- ALL CLAIMS -->
+      <!-- CLAIMS -->
       <div class="page" id="page-claims">
-        <div class="page-title">All Claims</div>
-        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-          <input type="text" id="claimSearch" placeholder="Search..." style="max-width:220px" oninput="window.filterClaims()">
-          <select id="claimStatusFilter" onchange="window.filterClaims()" style="width:130px"><option value="">All Status</option><option>pending</option><option>approved</option><option>rejected</option><option>draft</option><option>review</option></select>
-          <select id="claimTypeFilter" onchange="window.filterClaims()" style="width:130px"><option value="">All Types</option><option>travel</option><option>fuel</option><option>food</option><option>mobile</option><option>accommodation</option><option>other</option></select>
+        <div class="pg-title">All Claims</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <input id="claimQ" placeholder="Search..." style="max-width:200px" oninput="window.renderClaims()">
+          <select id="claimS" onchange="window.renderClaims()" style="width:130px"><option value="">All Status</option><option>pending</option><option>approved</option><option>rejected</option><option>draft</option><option>review</option></select>
+          <select id="claimT" onchange="window.renderClaims()" style="width:130px"><option value="">All Types</option><option>travel</option><option>fuel</option><option>food</option><option>mobile</option><option>accommodation</option><option>other</option></select>
         </div>
-        <div class="card">
-          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="claimsTbody"></tbody></table></div>
-        </div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="claimRows"></tbody></table></div></div>
       </div>
 
       <!-- APPROVALS -->
       <div class="page" id="page-approvals">
-        <div class="page-title">Approval Queue</div>
-        <div class="page-sub" id="approvalSub">Claims pending review</div>
-        <div class="card">
-          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="approvalTbody"></tbody></table></div>
-        </div>
+        <div class="pg-title">Approvals</div>
+        <div class="pg-sub" id="approvalSub">Pending review</div>
+        <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Employee</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="approvalRows"></tbody></table></div></div>
       </div>
 
       <!-- ANALYTICS -->
       <div class="page" id="page-analytics">
-        <div class="page-title">Analytics</div>
-        <div class="stats" id="analyticsStats"></div>
+        <div class="pg-title">Analytics</div>
+        <div class="stats" id="anStats"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="card"><div class="card-hdr"><div class="card-title">By Category</div></div><div class="card-body" id="anCats"></div></div>
-          <div class="card"><div class="card-hdr"><div class="card-title">By Status</div></div><div class="card-body" id="anStatus"></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">By Category</div></div><div class="card-body" id="anCat"></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-title">By Status</div></div><div class="card-body" id="anSt"></div></div>
         </div>
       </div>
 
-      <!-- ERP EXPORT -->
+      <!-- ERP -->
       <div class="page" id="page-erp">
-        <div class="page-title">ERP Export</div>
-        <div class="card" style="max-width:500px">
-          <div class="card-body">
-            <div class="fld"><label>Format</label>
-              <select id="erpFmt"><option value="csv">CSV (Excel)</option><option value="json">JSON (API)</option><option value="xml">XML (SAP)</option></select>
-            </div>
-            <div class="grid2">
-              <div class="fld"><label>Date From</label><input type="date" id="erpFrom"></div>
-              <div class="fld"><label>Date To</label><input type="date" id="erpTo"></div>
-            </div>
-            <div class="fld"><label>Include</label>
-              <div style="display:flex;gap:12px;padding-top:4px">
-                <label style="display:flex;align-items:center;gap:5px;font-size:13px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="erpApproved" checked style="width:auto"> Approved</label>
-                <label style="display:flex;align-items:center;gap:5px;font-size:13px;text-transform:none;letter-spacing:0;cursor:pointer"><input type="checkbox" id="erpPending" style="width:auto"> Pending</label>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-full" onclick="window.doExport()">↓ Export</button>
+        <div class="pg-title">ERP Export</div>
+        <div class="card" style="max-width:480px"><div class="card-body">
+          <div class="fld"><label>Format</label><select id="erpFmt"><option value="csv">CSV (Excel)</option><option value="json">JSON</option><option value="xml">XML (SAP)</option></select></div>
+          <div class="g2">
+            <div class="fld"><label>From</label><input type="date" id="erpFrom"></div>
+            <div class="fld"><label>To</label><input type="date" id="erpTo"></div>
           </div>
-        </div>
+          <div class="fld"><label>Include</label>
+            <div style="display:flex;gap:14px;padding-top:5px">
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;text-transform:none;letter-spacing:0;cursor:pointer;font-weight:400"><input type="checkbox" id="erpA" checked style="width:auto"> Approved</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:13px;text-transform:none;letter-spacing:0;cursor:pointer;font-weight:400"><input type="checkbox" id="erpP" style="width:auto"> Pending</label>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="window.doExport()">↓ Export</button>
+        </div></div>
       </div>
 
       <!-- ADMIN -->
       <div class="page" id="page-admin">
-        <div class="page-title">Admin Panel</div>
+        <div class="pg-title">Admin Panel</div>
         <div class="tabs">
-          <button class="tab active" onclick="window.switchTab('enterprise',this)">🏢 Enterprise</button>
-          <button class="tab" onclick="window.switchTab('employees',this)">👥 Employees</button>
-          <button class="tab" onclick="window.switchTab('matrix',this)">🔧 Approval Matrix</button>
-          <button class="tab" onclick="window.switchTab('policies',this)">📋 Policies</button>
-          <button class="tab" onclick="window.switchTab('aiengine',this)">✦ Policy Engine</button>
+          <button class="tab active" onclick="window.swTab('enterprise',this)">🏢 Enterprise</button>
+          <button class="tab" onclick="window.swTab('employees',this)">👥 Employees</button>
+          <button class="tab" onclick="window.swTab('matrix',this)">🔧 Matrix</button>
+          <button class="tab" onclick="window.swTab('policies',this)">📋 Policies</button>
+          <button class="tab" onclick="window.swTab('engine',this)">✦ Policy Engine</button>
         </div>
 
-        <!-- Enterprise tab -->
         <div id="tab-enterprise">
-          <div class="card" style="max-width:500px">
-            <div class="card-hdr"><div class="card-title">Enterprise Details</div><button class="btn btn-ghost btn-sm" onclick="window.openEditEnt()">Edit</button></div>
-            <div class="card-body">
-              <div class="grid2">
-                <div><div class="stat-label">Company</div><div id="entName" style="font-weight:600;margin-top:3px">—</div></div>
-                <div><div class="stat-label">Domain</div><div id="entDomain" style="margin-top:3px">—</div></div>
-                <div><div class="stat-label">Industry</div><div id="entIndustry" style="margin-top:3px">—</div></div>
-                <div><div class="stat-label">Currency</div><div id="entCurrency" style="margin-top:3px">INR</div></div>
-                <div><div class="stat-label">Country</div><div id="entCountry" style="margin-top:3px">—</div></div>
-                <div><div class="stat-label">Invite Code</div><div id="entCode" style="font-family:monospace;font-weight:700;color:var(--accent);margin-top:3px">—</div></div>
-              </div>
-            </div>
-          </div>
+          <div class="card" style="max-width:500px"><div class="card-hdr"><div class="card-title">Enterprise</div><button class="btn btn-ghost btn-sm" onclick="window.openEditEnt()">Edit</button></div>
+          <div class="card-body"><div class="g2">
+            <div><div class="stat-label">Company</div><div id="eN" style="margin-top:3px;font-weight:600">—</div></div>
+            <div><div class="stat-label">Domain</div><div id="eD" style="margin-top:3px;color:var(--muted)">—</div></div>
+            <div><div class="stat-label">Industry</div><div id="eI" style="margin-top:3px;color:var(--muted)">—</div></div>
+            <div><div class="stat-label">Currency</div><div id="eC" style="margin-top:3px;color:var(--muted)">INR</div></div>
+            <div><div class="stat-label">Invite Code</div><div id="eCode" style="margin-top:3px;font-family:monospace;font-weight:700;color:var(--accent2)">—</div></div>
+          </div></div></div>
         </div>
 
-        <!-- Employees tab -->
         <div id="tab-employees" style="display:none">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div id="empCount" style="font-size:13px;color:var(--muted)">0 employees</div>
+            <div id="empCnt" style="font-size:13px;color:var(--muted)">0 employees</div>
             <div style="display:flex;gap:8px">
               <button class="btn btn-ghost btn-sm" onclick="window.openImport()">↑ Import</button>
               <button class="btn btn-primary btn-sm" onclick="window.openAddEmp()">+ Add</button>
             </div>
           </div>
-          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Grade</th><th>Dept</th><th>Role</th><th></th></tr></thead><tbody id="empTbody"></tbody></table></div></div>
+          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Grade</th><th>Dept</th><th>Role</th><th></th></tr></thead><tbody id="empRows"></tbody></table></div></div>
         </div>
 
-        <!-- Matrix tab -->
         <div id="tab-matrix" style="display:none">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="font-size:13px;color:var(--muted)">Approval limits by grade</div>
             <button class="btn btn-primary btn-sm" onclick="window.openAddMatrix()">+ Add Rule</button>
           </div>
-          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Grade</th><th>Type</th><th>Self (₹)</th><th>Manager (₹)</th><th>Finance (₹)</th><th></th></tr></thead><tbody id="matrixTbody"></tbody></table></div></div>
+          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Grade</th><th>Type</th><th>Self (₹)</th><th>Manager (₹)</th><th>Finance (₹)</th><th></th></tr></thead><tbody id="matrixRows"></tbody></table></div></div>
         </div>
 
-        <!-- Policies tab -->
         <div id="tab-policies" style="display:none">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div style="font-size:13px;color:var(--muted)">Monthly limits per category</div>
             <button class="btn btn-primary btn-sm" onclick="window.openAddPolicy()">+ Add Policy</button>
           </div>
-          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Monthly Max</th><th>Per Claim</th><th>Receipt</th><th></th></tr></thead><tbody id="policyTbody"></tbody></table></div></div>
+          <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Type</th><th>Monthly Max</th><th>Per Claim</th><th>Receipt</th><th></th></tr></thead><tbody id="policyRows"></tbody></table></div></div>
         </div>
 
-        <!-- AI Policy Engine tab -->
-        <div id="tab-aiengine" style="display:none">
-          <div class="card">
-            <div class="card-hdr"><div class="card-title">✦ Gemini Policy Engine</div></div>
-            <div class="card-body">
-              <div class="upload-zone" onclick="document.getElementById('policyFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="window.policyDrop(event)">
-                <div style="font-size:24px;margin-bottom:6px">📋</div>
-                <div style="font-size:13px;font-weight:600;color:var(--txt)" id="policyFileLabel">Drop policy document or click to upload</div>
-                <div style="font-size:11px;color:var(--muted);margin-top:2px">PDF · Image · TXT — or paste text below</div>
-              </div>
-              <input type="file" id="policyFile" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="window.policyFileSelected(this)">
-              <div class="fld" style="margin-top:12px"><label>Or paste policy text</label>
-                <textarea id="policyText" style="min-height:100px" placeholder="e.g. L1: Fuel ₹2,000/month. L2: Fuel ₹3,000. Travel >₹10,000 needs manager approval..."></textarea>
-              </div>
-              <button class="btn btn-ai btn-full" id="policyBtn" onclick="window.runPolicyEngine()">✦ Analyze & Apply Rules with Gemini</button>
-              <div class="ai-status" id="policyStatus"></div>
-              <div id="policyResult" style="margin-top:12px"></div>
+        <div id="tab-engine" style="display:none">
+          <div class="card"><div class="card-hdr"><div class="card-title">✦ Gemini Policy Engine</div></div><div class="card-body">
+            <div class="upload-zone" onclick="document.getElementById('polFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="window.polDrop(event)">
+              <div style="font-size:24px;margin-bottom:6px">📋</div>
+              <div style="font-size:13px;font-weight:600;color:var(--txt)" id="polLabel">Drop policy document or click</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">PDF · Image · TXT — or paste below</div>
             </div>
-          </div>
+            <input type="file" id="polFile" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.txt" onchange="window.polFileSet(this)">
+            <div class="fld" style="margin-top:12px"><label>Or paste policy text</label>
+              <textarea id="polText" style="min-height:90px" placeholder="e.g. L1: Fuel ₹2,000/month. L2: Fuel ₹3,000. Travel >₹10,000 needs manager approval..."></textarea>
+            </div>
+            <button class="btn btn-ai btn-full" id="polBtn" onclick="window.runEngine()">✦ Analyze & Apply Rules with Gemini</button>
+            <div class="ai-status" id="polStatus"></div>
+            <div id="polResult" style="margin-top:12px"></div>
+          </div></div>
         </div>
-
       </div><!-- /page-admin -->
 
     </div><!-- /content -->
@@ -432,31 +420,26 @@ select option{background:white;}
 
 <!-- MODALS -->
 
-<!-- NEW CLAIM -->
-<div class="modal-bg" id="claimModal">
+<!-- CLAIM MODAL -->
+<div class="modal-bg" id="mClaim">
   <div class="modal modal-lg">
-    <div class="modal-hdr">
-      <div class="modal-title">Submit Expense Claim</div>
-      <button class="modal-close" onclick="window.closeModal('claimModal')">✕</button>
-    </div>
+    <div class="modal-hdr"><div class="modal-title">Submit Expense Claim</div><button class="modal-close" onclick="window.closeMod('mClaim')">✕</button></div>
     <div class="modal-body">
-      <!-- AI Parser -->
       <div class="ai-section">
-        <div style="font-size:12px;font-weight:700;color:#4338CA;margin-bottom:8px">✦ AI Receipt Parser</div>
-        <div class="ai-drop" id="receiptDrop" onclick="document.getElementById('receiptFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="window.receiptDrop(event)">
-          <div style="font-size:20px;margin-bottom:4px">📎</div>
-          <div style="font-size:13px;font-weight:600;color:#4338CA" id="receiptLabel">Drop receipt or click to upload</div>
-          <div style="font-size:11px;color:#818CF8;margin-top:2px">JPG · PNG · PDF — Gemini reads and fills every field</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span>✦</span> AI Receipt Parser — Gemini reads your receipt and fills everything</div>
+        <div class="ai-drop" id="rcDrop" onclick="document.getElementById('rcFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="window.rcDrop(event)">
+          <div style="font-size:22px;margin-bottom:5px">📎</div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent2)" id="rcLabel">Drop receipt / invoice here, or click to upload</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">JPG · PNG · PDF · Gemini reads all fields automatically</div>
         </div>
-        <input type="file" id="receiptFile" style="display:none" accept=".jpg,.jpeg,.png,.pdf" multiple onchange="window.receiptSelected(this)">
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <input type="text" id="receiptText" placeholder="Or describe: e.g. Ola to airport 15 March ₹1200" style="flex:1;font-size:12px" onkeydown="if(event.key==='Enter')window.parseReceiptText()">
-          <button class="btn btn-ai btn-sm" id="parseBtn" onclick="window.parseReceiptText()">✦ Parse</button>
+        <input type="file" id="rcFile" style="display:none" accept=".jpg,.jpeg,.png,.pdf" multiple onchange="window.rcSelected(this)">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="rcText" placeholder='Or describe: "Ola airport 15 March ₹1200"' style="flex:1;font-size:12px" onkeydown="if(event.key==='Enter')window.parseText()">
+          <button class="btn btn-ai btn-sm" id="rcBtn" onclick="window.parseText()">✦ Parse</button>
         </div>
-        <div class="ai-status" id="receiptStatus"></div>
+        <div class="ai-status" id="rcStatus"></div>
       </div>
-      <!-- Form -->
-      <div class="grid2">
+      <div class="g2">
         <div class="fld"><label>Type *</label>
           <select id="nc-type" onchange="window.toggleTravel()">
             <option value="">Select type</option>
@@ -471,170 +454,170 @@ select option{background:white;}
         </div>
         <div class="fld"><label>Date *</label><input type="date" id="nc-date"></div>
         <div class="fld"><label>Amount (₹) *</label><input type="number" id="nc-amount" placeholder="0.00"></div>
-        <div class="fld"><label>Vendor / Merchant</label><input type="text" id="nc-vendor" placeholder="e.g. Ola, IRCTC, Hotel name"></div>
-        <div class="fld full"><label>Description / Purpose *</label><textarea id="nc-desc" placeholder="Business reason for this expense..." style="min-height:70px"></textarea></div>
-        <div class="fld"><label>Project Code</label><input type="text" id="nc-project" placeholder="PRJ-001"></div>
-        <div class="fld"><label>Tax Amount (₹)</label><input type="number" id="nc-tax" placeholder="0"></div>
+        <div class="fld"><label>Vendor</label><input type="text" id="nc-vendor" placeholder="Ola, IRCTC, Hotel..."></div>
+        <div class="fld full"><label>Purpose / Description *</label><textarea id="nc-desc" style="min-height:68px" placeholder="Business reason..."></textarea></div>
+        <div class="fld"><label>Project Code</label><input type="text" id="nc-project"></div>
+        <div class="fld"><label>Tax (₹)</label><input type="number" id="nc-tax" placeholder="0"></div>
       </div>
       <div id="travelFields" style="display:none;border-top:1px solid var(--bdr);padding-top:14px;margin-top:4px">
-        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Travel Details</div>
-        <div class="grid2">
-          <div class="fld"><label>From City</label><input type="text" id="nc-origin" placeholder="Mumbai"></div>
-          <div class="fld"><label>To City</label><input type="text" id="nc-dest" placeholder="Delhi"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Travel Details</div>
+        <div class="g2">
+          <div class="fld"><label>From</label><input type="text" id="nc-origin" placeholder="Mumbai"></div>
+          <div class="fld"><label>To</label><input type="text" id="nc-dest" placeholder="Delhi"></div>
           <div class="fld"><label>Travel From</label><input type="date" id="nc-tfrom"></div>
           <div class="fld"><label>Travel To</label><input type="date" id="nc-tto"></div>
           <div class="fld"><label>Mode</label><select id="nc-mode"><option>Flight</option><option>Train</option><option>Bus</option><option>Cab / Taxi</option><option>Own Vehicle</option></select></div>
-          <div class="fld"><label>Approval Ref</label><input type="text" id="nc-tref" placeholder="TA-2025-001"></div>
+          <div class="fld"><label>Ref / PNR</label><input type="text" id="nc-tref"></div>
         </div>
       </div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('claimModal')">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mClaim')">Cancel</button>
       <button class="btn btn-ghost btn-sm" onclick="window.saveDraft()">Save Draft</button>
       <button class="btn btn-primary btn-sm" onclick="window.submitClaim()">Submit Claim</button>
     </div>
   </div>
 </div>
 
-<!-- CLAIM DETAIL -->
-<div class="modal-bg" id="detailModal">
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="mDetail">
   <div class="modal modal-lg">
-    <div class="modal-hdr"><div class="modal-title" id="detailTitle">Claim</div><button class="modal-close" onclick="window.closeModal('detailModal')">✕</button></div>
-    <div class="modal-body" id="detailBody"></div>
-    <div class="modal-ftr" id="detailFtr"><button class="btn btn-ghost btn-sm" onclick="window.closeModal('detailModal')">Close</button></div>
+    <div class="modal-hdr"><div class="modal-title" id="dTitle">Claim</div><button class="modal-close" onclick="window.closeMod('mDetail')">✕</button></div>
+    <div class="modal-body" id="dBody"></div>
+    <div class="modal-ftr" id="dFtr"><button class="btn btn-ghost btn-sm" onclick="window.closeMod('mDetail')">Close</button></div>
   </div>
 </div>
 
-<!-- ADD/EDIT EMPLOYEE -->
-<div class="modal-bg" id="empModal">
+<!-- EMPLOYEE MODAL -->
+<div class="modal-bg" id="mEmp">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title" id="empModalTitle">Add Employee</div><button class="modal-close" onclick="window.closeModal('empModal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title" id="empMTitle">Add Employee</div><button class="modal-close" onclick="window.closeMod('mEmp')">✕</button></div>
     <div class="modal-body">
-      <div class="grid2">
-        <div class="fld"><label>First Name</label><input type="text" id="em-fname" placeholder="Rahul"></div>
-        <div class="fld"><label>Last Name</label><input type="text" id="em-lname" placeholder="Sharma"></div>
-        <div class="fld full"><label>Email</label><input type="email" id="em-email" placeholder="rahul@company.com"></div>
-        <div class="fld"><label>Employee ID</label><input type="text" id="em-empid" placeholder="EMP001"></div>
+      <div class="g2">
+        <div class="fld"><label>First Name</label><input type="text" id="em-fn" placeholder="Rahul"></div>
+        <div class="fld"><label>Last Name</label><input type="text" id="em-ln" placeholder="Sharma"></div>
+        <div class="fld full"><label>Email</label><input type="email" id="em-email"></div>
+        <div class="fld"><label>Employee ID</label><input type="text" id="em-id" placeholder="EMP001"></div>
         <div class="fld"><label>Grade</label><select id="em-grade"><option>L1</option><option>L2</option><option selected>L3</option><option>L4</option><option>L5</option><option>L6</option></select></div>
-        <div class="fld"><label>Department</label><input type="text" id="em-dept" placeholder="Finance"></div>
-        <div class="fld full"><label>Manager Email</label><input type="email" id="em-mgr" placeholder="manager@company.com"></div>
+        <div class="fld"><label>Department</label><input type="text" id="em-dept"></div>
+        <div class="fld full"><label>Manager Email</label><input type="email" id="em-mgr"></div>
         <div class="fld"><label>Role</label><select id="em-role"><option value="employee">Employee</option><option value="manager">Manager</option><option value="finance">Finance</option><option value="admin">Admin</option></select></div>
-        <div class="fld"><label>Location</label><input type="text" id="em-loc" placeholder="Mumbai"></div>
+        <div class="fld"><label>Location</label><input type="text" id="em-loc"></div>
       </div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('empModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="window.saveEmployee()">Save</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mEmp')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="window.saveEmp()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- IMPORT EMPLOYEES -->
-<div class="modal-bg" id="importModal">
+<!-- IMPORT MODAL -->
+<div class="modal-bg" id="mImport">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Import Employees</div><button class="modal-close" onclick="window.closeModal('importModal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Import Employees</div><button class="modal-close" onclick="window.closeMod('mImport')">✕</button></div>
     <div class="modal-body">
       <div class="upload-zone" onclick="document.getElementById('empFile').click()">
-        <div style="font-size:20px;margin-bottom:6px">📊</div>
-        <div style="font-size:13px;font-weight:600">Upload CSV or text file</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">.csv · .txt — Gemini parses any format</div>
+        <div style="font-size:20px;margin-bottom:5px">📊</div>
+        <div style="font-size:13px;font-weight:600">Upload CSV / TXT</div>
       </div>
-      <input type="file" id="empFile" style="display:none" accept=".csv,.txt,.xlsx" onchange="window.empFileSelected(this)">
-      <div style="margin:10px 0 4px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase">Or paste data</div>
-      <textarea id="empPaste" style="min-height:80px;font-size:12px" placeholder="Name, Email, Grade, Department&#10;Rahul Sharma, rahul@co.in, L3, Finance"></textarea>
-      <div class="ai-status" id="importStatus"></div>
-      <div id="importPreview" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+      <input type="file" id="empFile" style="display:none" accept=".csv,.txt" onchange="window.empFileSet(this)">
+      <div style="margin:10px 0 4px;font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px">Or paste employee data</div>
+      <textarea id="empPaste" style="min-height:80px;font-size:12px" placeholder="Name, Email, Grade&#10;Rahul, rahul@co.in, L3"></textarea>
+      <div class="ai-status" id="impStatus"></div>
+      <div id="impPreview" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('importModal')">Cancel</button>
-      <button class="btn btn-ai btn-sm" onclick="window.parseEmpWithAI()">✦ Parse with Gemini</button>
-      <button class="btn btn-primary btn-sm" id="importBtn" disabled onclick="window.importEmployees()">Import</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mImport')">Cancel</button>
+      <button class="btn btn-ai btn-sm" onclick="window.parseImport()">✦ Parse with Gemini</button>
+      <button class="btn btn-primary btn-sm" id="impBtn" disabled onclick="window.doImport()">Import</button>
     </div>
   </div>
 </div>
 
-<!-- ADD MATRIX RULE -->
-<div class="modal-bg" id="matrixModal">
+<!-- MATRIX MODAL -->
+<div class="modal-bg" id="mMatrix">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Add Approval Rule</div><button class="modal-close" onclick="window.closeModal('matrixModal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Add Approval Rule</div><button class="modal-close" onclick="window.closeMod('mMatrix')">✕</button></div>
     <div class="modal-body">
-      <div class="grid2">
-        <div class="fld"><label>Grade</label><select id="mx-grade"><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option><option value="ALL">All Grades</option></select></div>
-        <div class="fld"><label>Claim Type</label><select id="mx-type"><option value="all">All Types</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="food">Food</option><option value="mobile">Mobile</option><option value="accommodation">Hotel</option></select></div>
-        <div class="fld"><label>Self Approve (₹)</label><input type="number" id="mx-self" placeholder="1000"></div>
-        <div class="fld"><label>Manager Limit (₹)</label><input type="number" id="mx-mgr" placeholder="10000"></div>
-        <div class="fld full"><label>Finance Required Above (₹)</label><input type="number" id="mx-fin" placeholder="50000"></div>
+      <div class="g2">
+        <div class="fld"><label>Grade</label><select id="mx-g"><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option><option value="ALL">All</option></select></div>
+        <div class="fld"><label>Type</label><select id="mx-t"><option value="all">All</option><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="food">Food</option><option value="mobile">Mobile</option><option value="accommodation">Hotel</option></select></div>
+        <div class="fld"><label>Self Approve (₹)</label><input type="number" id="mx-s" placeholder="1000"></div>
+        <div class="fld"><label>Manager Limit (₹)</label><input type="number" id="mx-m" placeholder="10000"></div>
+        <div class="fld full"><label>Finance Above (₹)</label><input type="number" id="mx-f" placeholder="50000"></div>
       </div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('matrixModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="window.saveMatrix()">Save Rule</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mMatrix')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="window.saveMatrix()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- ADD POLICY -->
-<div class="modal-bg" id="policyModal">
+<!-- POLICY MODAL -->
+<div class="modal-bg" id="mPolicy">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Add Policy</div><button class="modal-close" onclick="window.closeModal('policyModal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Add Policy</div><button class="modal-close" onclick="window.closeMod('mPolicy')">✕</button></div>
     <div class="modal-body">
-      <div class="grid2">
-        <div class="fld"><label>Type</label><select id="po-type"><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="food">Food</option><option value="mobile">Mobile</option><option value="accommodation">Hotel</option><option value="other">Other</option></select></div>
-        <div class="fld"><label>Monthly Max (₹)</label><input type="number" id="po-max" placeholder="5000"></div>
-        <div class="fld"><label>Per-Claim Max (₹)</label><input type="number" id="po-per" placeholder="2000"></div>
-        <div class="fld"><label>Receipt Required</label><select id="po-receipt"><option value="true">Yes</option><option value="false">No</option></select></div>
+      <div class="g2">
+        <div class="fld"><label>Type</label><select id="po-t"><option value="travel">Travel</option><option value="fuel">Fuel</option><option value="food">Food</option><option value="mobile">Mobile</option><option value="accommodation">Hotel</option><option value="other">Other</option></select></div>
+        <div class="fld"><label>Monthly Max (₹)</label><input type="number" id="po-m" placeholder="5000"></div>
+        <div class="fld"><label>Per-Claim Max (₹)</label><input type="number" id="po-p" placeholder="2000"></div>
+        <div class="fld"><label>Receipt Required</label><select id="po-r"><option value="true">Yes</option><option value="false">No</option></select></div>
       </div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('policyModal')">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mPolicy')">Cancel</button>
       <button class="btn btn-primary btn-sm" onclick="window.savePolicy()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- EDIT ENTERPRISE -->
-<div class="modal-bg" id="entModal">
+<!-- ENTERPRISE EDIT MODAL -->
+<div class="modal-bg" id="mEnt">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">Edit Enterprise</div><button class="modal-close" onclick="window.closeModal('entModal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">Edit Enterprise</div><button class="modal-close" onclick="window.closeMod('mEnt')">✕</button></div>
     <div class="modal-body">
-      <div class="grid2">
-        <div class="fld full"><label>Company Name</label><input type="text" id="en-name"></div>
-        <div class="fld"><label>Domain</label><input type="text" id="en-domain"></div>
-        <div class="fld"><label>Industry</label><input type="text" id="en-industry"></div>
-        <div class="fld"><label>Currency</label><select id="en-currency"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option></select></div>
-        <div class="fld"><label>Country</label><input type="text" id="en-country"></div>
+      <div class="g2">
+        <div class="fld full"><label>Company Name</label><input type="text" id="en-n"></div>
+        <div class="fld"><label>Domain</label><input type="text" id="en-d"></div>
+        <div class="fld"><label>Industry</label><input type="text" id="en-i"></div>
+        <div class="fld"><label>Currency</label><select id="en-c"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option></select></div>
+        <div class="fld"><label>Country</label><input type="text" id="en-co"></div>
       </div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('entModal')">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="window.saveEnterprise()">Save</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mEnt')">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="window.saveEnt()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- AI KEY -->
-<div class="modal-bg" id="aiKeyModal">
+<!-- AI KEY MODAL -->
+<div class="modal-bg" id="mAIKey">
   <div class="modal">
-    <div class="modal-hdr"><div class="modal-title">⚙ Gemini API Key</div><button class="modal-close" onclick="window.closeModal('aiKeyModal')">✕</button></div>
+    <div class="modal-hdr"><div class="modal-title">⚙ Gemini API Key</div><button class="modal-close" onclick="window.closeMod('mAIKey')">✕</button></div>
     <div class="modal-body">
-      <div class="alert alert-info" style="margin-bottom:14px">
-        Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a> — select "My First Project" → Create key → paste below.
-      </div>
-      <div class="fld"><label>API Key</label><input type="text" id="aiKeyInput" placeholder="AIzaSy..." style="font-family:monospace;font-size:12px"></div>
-      <div id="aiKeyStatus" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+      <div class="alert alert-info" style="margin-bottom:14px;font-size:12px">Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent2);font-weight:600">aistudio.google.com/app/apikey</a> — select "My First Project" → Create key → paste below.</div>
+      <div class="fld"><label>API Key</label><input type="text" id="aiKeyIn" placeholder="AIzaSy..." style="font-family:monospace;font-size:12px"></div>
+      <div id="aiKeySt" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
     </div>
     <div class="modal-ftr">
-      <button class="btn btn-ghost btn-sm" onclick="window.closeModal('aiKeyModal')">Cancel</button>
+      <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mAIKey')">Cancel</button>
       <button class="btn btn-primary btn-sm" onclick="window.saveAIKey()">Save Key</button>
     </div>
   </div>
 </div>
 
 <script type="module">
+// ═══════════════════════════════════════════════════════════
+//  FIREBASE v12.3.0 — exact same imports as IPL auction v19
+// ═══════════════════════════════════════════════════════════
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import{getDatabase,ref,set,get,push,update,remove,onValue}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
-import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,signOut}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 import{getAI,getGenerativeModel,GoogleAIBackend}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-ai.js";
+import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,updateProfile,signOut}from"https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
 const cfg={
   apiKey:"AIzaSyDgdrK_sm31FwmGFMGwO80Iyts1uHJ-AhM",
@@ -645,247 +628,45 @@ const cfg={
   messagingSenderId:"592596475191",
   appId:"1:592596475191:web:3e6d165e79aa983e06ceb2"
 };
-
 const app=initializeApp(cfg);
 const db=getDatabase(app);
 const auth=getAuth(app);
 
-// ── State ──
-let currentUser=null,currentProfile=null;
-let allClaims=[],allEmployees=[],matrixRules=[],policies=[];
-let enterprise={name:'My Enterprise',domain:'',industry:'',country:'India',currency:'INR'};
-let editingEmpKey=null,pendingImportEmps=[];
-let policyFileObj=null;
-let receiptFiles=[];
-
-// ── Toast ──
-function toast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  document.getElementById('tmsg').textContent=msg;
-  t.className=`show ${type}`;
-  clearTimeout(t._t);
-  t._t=setTimeout(()=>t.classList.remove('show'),4000);
-}
-
-// ── Auth show/hide (IPL pattern exactly) ──
-function showAuth(){
-  document.getElementById('auth-view').classList.add('active');
-  document.getElementById('app-shell').classList.remove('active');
-}
-function showApp(){
-  document.getElementById('auth-view').classList.remove('active');
-  document.getElementById('app-shell').classList.add('active');
-  const name=`${currentProfile.firstName||''} ${currentProfile.lastName||''}`.trim()||currentUser.email;
-  const init=name.split(' ').map(n=>n[0]||'').join('').toUpperCase().slice(0,2)||'U';
-  document.getElementById('sbAv').textContent=init;
-  document.getElementById('sbName').textContent=name;
-  document.getElementById('sbRoleLabel').textContent=(currentProfile.role||'employee').charAt(0).toUpperCase()+(currentProfile.role||'employee').slice(1);
-  const d=new Date();
-  document.getElementById('dashWelcome').textContent='Welcome back, '+(currentProfile.firstName||'there');
-  document.getElementById('dashDate').textContent=d.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  // Show menu button on mobile
-  if(window.innerWidth<=768) document.getElementById('menuBtn').style.display='block';
-  buildNav();
-  loadData();
-  navigate('dashboard');
-}
-
-// ── Auth state (IPL pattern exactly) ──
-onAuthStateChanged(auth,async u=>{
-  if(u){
-    currentUser=u;
-    const snap=await get(ref(db,'employees'));
-    const d=snap.val()||{};
-    const match=Object.entries(d).find(([,v])=>v.email===u.email);
-    if(match) currentProfile={key:match[0],...match[1]};
-    else currentProfile={email:u.email,firstName:(u.displayName||'User').split(' ')[0],lastName:'',grade:'L6',role:'admin',department:''};
-    showApp();
-  } else {
-    showAuth();
-  }
-});
-
-// ── Login ──
-window.handleAuth=function(){
-  const email=document.getElementById('authEmail').value.trim();
-  const pass=document.getElementById('authPass').value;
-  if(!email||!pass){toast('Enter your email and password.','err');return;}
-  signInWithEmailAndPassword(auth,email,pass)
-    .catch(e=>toast(e.message,'err'));
-};
-
-window.demoLogin=async function(){
+// ═══════════════════════════════════════════════════════════
+//  GEMINI — Firebase AI Logic, lazy init, gemini-2.5-flash
+//  Exact same pattern as IPL auction v19 lines 888-898
+// ═══════════════════════════════════════════════════════════
+let _model=null;
+function getModel(){
+  if(_model) return _model;
   try{
-    await signInWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
-  }catch{
-    try{
-      const c=await createUserWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
-      await updateProfile(c.user,{displayName:'Demo Admin'});
-      await set(ref(db,'enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
-      await push(ref(db,'employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',location:'Mumbai',empId:'ADM001',createdAt:new Date().toISOString()});
-      await loadDemo();
-    }catch(e2){toast('Demo failed: '+e2.message,'err');}
+    const ai=getAI(app,{backend:new GoogleAIBackend()});
+    _model=getGenerativeModel(ai,{model:"gemini-2.5-flash"});
+    return _model;
+  }catch(e){
+    throw new Error("Firebase AI Logic not enabled. Go to Firebase Console → Build → AI Logic → Enable.");
   }
-};
-
-window.doLogout=function(){signOut(auth);};
-
-window.showRegister=function(){
-  document.getElementById('signInPane').style.display='none';
-  document.getElementById('registerPane').style.display='block';
-};
-window.showSignIn=function(){
-  document.getElementById('registerPane').style.display='none';
-  document.getElementById('signInPane').style.display='block';
-};
-window.registerEnterprise=async function(){
-  const company=document.getElementById('rg-company').value.trim();
-  const fname=document.getElementById('rg-fname').value.trim();
-  const lname=document.getElementById('rg-lname').value.trim();
-  const email=document.getElementById('rg-email').value.trim();
-  const pass=document.getElementById('rg-pass').value;
-  if(!company||!fname||!email||!pass){toast('Fill in all required fields','err');return;}
-  if(pass.length<8){toast('Password must be at least 8 characters','err');return;}
-  try{
-    const cred=await createUserWithEmailAndPassword(auth,email,pass);
-    await updateProfile(cred.user,{displayName:fname+' '+lname});
-    const inviteCode=company.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4)+Math.random().toString(36).slice(2,6).toUpperCase();
-    await set(ref(db,'enterprise'),{
-      name:company,
-      industry:document.getElementById('rg-industry').value,
-      currency:document.getElementById('rg-currency').value,
-      country:'India',domain:'',
-      inviteCode,
-      createdAt:new Date().toISOString()
-    });
-    await push(ref(db,'employees'),{
-      firstName:fname,lastName:lname,email,
-      grade:'L6',department:'Administration',
-      role:'admin',empId:'ADM001',
-      location:'',managerEmail:'',
-      createdAt:new Date().toISOString()
-    });
-    // Seed default approval matrix
-    const grades=[
-      {grade:'L1',selfLimit:0,mgrLimit:3000,financeAbove:15000},
-      {grade:'L2',selfLimit:0,mgrLimit:8000,financeAbove:30000},
-      {grade:'L3',selfLimit:2000,mgrLimit:15000,financeAbove:60000},
-      {grade:'L4',selfLimit:5000,mgrLimit:30000,financeAbove:150000},
-      {grade:'L5',selfLimit:10000,mgrLimit:75000,financeAbove:300000},
-      {grade:'L6',selfLimit:25000,mgrLimit:200000,financeAbove:1000000},
-    ];
-    for(const g of grades) await push(ref(db,'approvalMatrix'),{...g,type:'all',createdAt:new Date().toISOString()});
-    toast('Enterprise created! Welcome '+fname,'ok');
-  }catch(e){toast(e.message,'err');}
-};
-
-// ── Navigation ──
-const PAGES={dashboard:'Dashboard',claims:'All Claims',approvals:'Approvals',analytics:'Analytics',erp:'ERP Export',admin:'Admin Panel'};
-const NAV_BY_ROLE={
-  employee:['dashboard','claims','analytics'],
-  manager:['dashboard','approvals','claims','analytics','admin'],
-  finance:['dashboard','approvals','claims','analytics','erp','admin'],
-  admin:['dashboard','claims','approvals','admin','analytics','erp'],
-};
-const PAGE_ICONS={dashboard:'⬡',claims:'◫',approvals:'◉',analytics:'◈',erp:'↓',admin:'⚙'};
-let currentPage='dashboard';
-
-function buildNav(){
-  const role=currentProfile?.role||'employee';
-  const items=NAV_BY_ROLE[role]||NAV_BY_ROLE.employee;
-  const pending=allClaims.filter(c=>c.status==='pending'||c.status==='review').length;
-  document.getElementById('navItems').innerHTML=items.map(id=>`
-    <div class="nav-item${currentPage===id?' active':''}" onclick="window.navigate('${id}')">
-      <span class="nav-icon">${PAGE_ICONS[id]}</span>
-      <span>${PAGES[id]}</span>
-      ${id==='approvals'&&pending>0?`<span class="nav-badge">${pending}</span>`:''}
-    </div>`).join('');
 }
 
-window.navigate=function(page){
-  currentPage=page;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const el=document.getElementById('page-'+page);
-  if(el) el.classList.add('active');
-  document.getElementById('topTitle').textContent=PAGES[page]||page;
-  buildNav();
-  window.closeSidebar();
-  if(page==='claims') renderClaims();
-  if(page==='approvals') renderApprovals();
-  if(page==='analytics') renderAnalytics();
-  if(page==='admin'){renderEnterprise();renderEmployees();renderMatrix();renderPolicies();}
-};
-
-window.openSidebar=function(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sbOverlay').classList.add('open');
-};
-window.closeSidebar=function(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sbOverlay').classList.remove('open');
-};
-
-// ── Load data ──
-function loadData(){
-  onValue(ref(db,'enterprise'),snap=>{
-    if(snap.val()){enterprise={...enterprise,...snap.val()};renderEnterprise();document.getElementById('sbEnt').textContent=enterprise.name;}
-  });
-  onValue(ref(db,'claims'),snap=>{
-    allClaims=[];
-    const d=snap.val()||{};
-    Object.entries(d).forEach(([k,v])=>allClaims.push({key:k,...v}));
-    allClaims.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-    renderDashboard();renderClaims();renderApprovals();renderAnalytics();buildNav();
-  });
-  onValue(ref(db,'employees'),snap=>{
-    allEmployees=[];
-    const d=snap.val()||{};
-    Object.entries(d).forEach(([k,v])=>allEmployees.push({key:k,...v}));
-    renderEmployees();
-  });
-  onValue(ref(db,'approvalMatrix'),snap=>{
-    matrixRules=[];
-    const d=snap.val()||{};
-    Object.entries(d).forEach(([k,v])=>matrixRules.push({key:k,...v}));
-    renderMatrix();
-  });
-  onValue(ref(db,'policies'),snap=>{
-    policies=[];
-    const d=snap.val()||{};
-    Object.entries(d).forEach(([k,v])=>policies.push({key:k,...v}));
-    renderPolicies();
-  });
-}
-
-// ── Gemini via Firebase AI SDK (IPL auction pattern — lazy init) ──
-let _geminiFlash=null,_geminiPro=null;
-function getGeminiModel(pro=false){
-  if(pro){
-    if(!_geminiPro){const ai=getAI(app,{backend:new GoogleAIBackend()});_geminiPro=getGenerativeModel(ai,{model:'gemini-2.0-flash'});}
-    return _geminiPro;
-  }
-  if(!_geminiFlash){const ai=getAI(app,{backend:new GoogleAIBackend()});_geminiFlash=getGenerativeModel(ai,{model:'gemini-2.0-flash'});}
-  return _geminiFlash;
-}
-
-async function callGemini(parts,pro=false){
-  const model=getGeminiModel(pro);
+async function callGemini(parts){
+  const m=getModel();
+  // Convert inlineData parts (IPL pattern exactly)
   const sdkParts=parts.map(p=>{
     if(p.text!==undefined) return{text:p.text};
-    if(p.inlineData) return p;
+    if(p.inlineData) return{inlineData:{data:p.inlineData.data,mimeType:p.inlineData.mimeType}};
     return p;
   });
-  const result=await model.generateContent({contents:[{role:'user',parts:sdkParts}]});
+  const result=await m.generateContent({contents:[{role:"user",parts:sdkParts}]});
   return result.response.text();
 }
 
-function extractJSON(text){
+function cleanJSON(text){
   const m=text.replace(/```json\n?/g,'').replace(/```\n?/g,'').match(/\{[\s\S]*\}/);
-  if(!m) throw new Error('No JSON in response');
+  if(!m) throw new Error("No JSON found in response");
   return JSON.parse(m[0]);
 }
 
-function fileToB64(file){
+async function toB64(file){
   return new Promise((res,rej)=>{
     const r=new FileReader();
     r.onload=e=>res(e.target.result.split(',')[1]);
@@ -894,190 +675,289 @@ function fileToB64(file){
   });
 }
 
-// ── Receipt Parser ──
-window.receiptDrop=function(e){
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let me=null,profile=null;
+let claims=[],employees=[],matrix=[],policies=[];
+let ent={name:'My Enterprise',domain:'',industry:'',country:'India',currency:'INR',inviteCode:''};
+let editEmpKey=null,pendingImport=[];
+let polFile=null,rcFiles=[];
+
+// ═══════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  document.getElementById('tmsg').textContent=msg;
+  t.className=`show ${type}`;
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),4200);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AUTH — IPL pattern exactly
+// ═══════════════════════════════════════════════════════════
+function showAuth(){document.getElementById('auth-view').classList.add('active');document.getElementById('app-shell').classList.remove('active');}
+function showApp(){
+  document.getElementById('auth-view').classList.remove('active');
+  document.getElementById('app-shell').classList.add('active');
+  const name=`${profile.firstName||''} ${profile.lastName||''}`.trim()||me.email;
+  document.getElementById('sbAv').textContent=name.split(' ').map(n=>n[0]||'').join('').toUpperCase().slice(0,2);
+  document.getElementById('sbName').textContent=name;
+  document.getElementById('sbRole').textContent=(profile.role||'employee').charAt(0).toUpperCase()+(profile.role||'employee').slice(1);
+  const d=new Date();
+  document.getElementById('dashGreet').textContent='Welcome, '+(profile.firstName||'there');
+  document.getElementById('dashDate').textContent=d.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  if(window.innerWidth<=768) document.getElementById('menuBtn').style.display='block';
+  buildNav(); loadData(); nav('dashboard');
+}
+
+onAuthStateChanged(auth,async u=>{
+  if(u){
+    me=u;
+    const snap=await get(ref(db,'employees'));
+    const d=snap.val()||{};
+    const m=Object.entries(d).find(([,v])=>v.email===u.email);
+    if(m) profile={key:m[0],...m[1]};
+    else profile={email:u.email,firstName:(u.displayName||'User').split(' ')[0],lastName:'',grade:'L6',role:'admin'};
+    showApp();
+  }else{showAuth();}
+});
+
+window.handleAuth=function(){
+  const e=document.getElementById('authEmail').value.trim();
+  const p=document.getElementById('authPass').value;
+  if(!e||!p){toast('Enter email and password','err');return;}
+  signInWithEmailAndPassword(auth,e,p).catch(err=>toast(err.message,'err'));
+};
+
+window.demoLogin=async function(){
+  try{await signInWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');}
+  catch{
+    try{
+      const c=await createUserWithEmailAndPassword(auth,'demo@claimsiq.ai','demo123456');
+      await updateProfile(c.user,{displayName:'Demo Admin'});
+      await set(ref(db,'enterprise'),{name:'Acme Technologies Pvt Ltd',domain:'acmetech.in',industry:'Technology',country:'India',currency:'INR',inviteCode:'ACME9K4X',createdAt:new Date().toISOString()});
+      await push(ref(db,'employees'),{firstName:'Demo',lastName:'Admin',email:'demo@claimsiq.ai',grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+      await seedDemo();
+    }catch(e2){toast('Demo error: '+e2.message,'err');}
+  }
+};
+
+window.doRegister=async function(){
+  const company=document.getElementById('rg-company').value.trim();
+  const fn=document.getElementById('rg-fname').value.trim();
+  const ln=document.getElementById('rg-lname').value.trim();
+  const email=document.getElementById('rg-email').value.trim();
+  const pass=document.getElementById('rg-pass').value;
+  if(!company||!fn||!email||!pass){toast('Fill all required fields','err');return;}
+  if(pass.length<8){toast('Password min 8 chars','err');return;}
+  try{
+    const c=await createUserWithEmailAndPassword(auth,email,pass);
+    await updateProfile(c.user,{displayName:fn+' '+ln});
+    const code=company.replace(/[^A-Z0-9]/gi,'').toUpperCase().slice(0,4)+Math.random().toString(36).slice(2,6).toUpperCase();
+    await set(ref(db,'enterprise'),{name:company,industry:document.getElementById('rg-industry').value,currency:document.getElementById('rg-currency').value,country:'India',domain:'',inviteCode:code,createdAt:new Date().toISOString()});
+    await push(ref(db,'employees'),{firstName:fn,lastName:ln,email,grade:'L6',department:'Administration',role:'admin',empId:'ADM001',createdAt:new Date().toISOString()});
+    const grades=['L1','L2','L3','L4','L5','L6'];
+    const limits=[{s:0,m:3000,f:15000},{s:0,m:8000,f:30000},{s:2000,m:15000,f:60000},{s:5000,m:30000,f:150000},{s:10000,m:75000,f:300000},{s:25000,m:200000,f:1000000}];
+    for(let i=0;i<grades.length;i++) await push(ref(db,'approvalMatrix'),{grade:grades[i],type:'all',selfLimit:limits[i].s,mgrLimit:limits[i].m,financeAbove:limits[i].f,createdAt:new Date().toISOString()});
+    toast('Enterprise created! Welcome '+fn,'ok');
+  }catch(e){toast(e.message,'err');}
+};
+
+window.doLogout=function(){signOut(auth);};
+window.showPane=function(p){
+  document.getElementById('paneSignIn').style.display=p==='signin'?'block':'none';
+  document.getElementById('paneRegister').style.display=p==='register'?'block':'none';
+};
+
+// ═══════════════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════════════
+const PAGES={dashboard:'Dashboard',claims:'All Claims',approvals:'Approvals',analytics:'Analytics',erp:'ERP Export',admin:'Admin Panel'};
+const ICONS={dashboard:'⬡',claims:'◫',approvals:'◉',analytics:'◈',erp:'↓',admin:'⚙'};
+const BY_ROLE={employee:['dashboard','claims','analytics'],manager:['dashboard','approvals','claims','analytics','admin'],finance:['dashboard','approvals','claims','analytics','erp','admin'],admin:['dashboard','claims','approvals','admin','analytics','erp']};
+let curPage='dashboard';
+
+function buildNav(){
+  const role=profile?.role||'employee';
+  const items=BY_ROLE[role]||BY_ROLE.employee;
+  const pend=claims.filter(c=>c.status==='pending'||c.status==='review').length;
+  document.getElementById('navList').innerHTML=items.map(id=>`
+    <div class="nav-item${curPage===id?' active':''}" onclick="window.nav('${id}')">
+      <span class="nav-icon">${ICONS[id]}</span><span>${PAGES[id]}</span>
+      ${id==='approvals'&&pend>0?`<span class="nav-badge">${pend}</span>`:''}
+    </div>`).join('');
+}
+
+function nav(p){
+  curPage=p;
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p)?.classList.add('active');
+  document.getElementById('topTitle').textContent=PAGES[p]||p;
+  buildNav(); window.closeSb();
+  if(p==='claims') window.renderClaims();
+  if(p==='approvals') renderApprovals();
+  if(p==='analytics') renderAnalytics();
+  if(p==='admin'){renderEnt();renderEmps();renderMatrix();renderPolicies();}
+}
+window.nav=nav;
+window.openSb=function(){document.getElementById('sidebar').classList.add('open');document.getElementById('sbOverlay').classList.add('open');};
+window.closeSb=function(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOverlay').classList.remove('open');};
+
+// ═══════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════
+function loadData(){
+  onValue(ref(db,'enterprise'),s=>{if(s.val()){ent={...ent,...s.val()};document.getElementById('sbEnt').textContent=ent.name;renderEnt();}});
+  onValue(ref(db,'claims'),s=>{
+    claims=[];const d=s.val()||{};
+    Object.entries(d).forEach(([k,v])=>claims.push({key:k,...v}));
+    claims.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    renderDash();window.renderClaims();renderApprovals();renderAnalytics();buildNav();
+  });
+  onValue(ref(db,'employees'),s=>{employees=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>employees.push({key:k,...v}));renderEmps();});
+  onValue(ref(db,'approvalMatrix'),s=>{matrix=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>matrix.push({key:k,...v}));renderMatrix();});
+  onValue(ref(db,'policies'),s=>{policies=[];const d=s.val()||{};Object.entries(d).forEach(([k,v])=>policies.push({key:k,...v}));renderPolicies();});
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RECEIPT PARSER — IPL parseWithGemini pattern
+// ═══════════════════════════════════════════════════════════
+window.rcDrop=function(e){
   e.preventDefault();
-  document.getElementById('receiptDrop').classList.remove('over');
-  window.receiptSelectedFiles(Array.from(e.dataTransfer.files));
+  document.getElementById('rcDrop').classList.remove('over');
+  handleRcFiles(Array.from(e.dataTransfer.files));
 };
-window.receiptSelected=function(input){
-  window.receiptSelectedFiles(Array.from(input.files));
-  input.value='';
-};
-window.receiptSelectedFiles=async function(files){
-  if(!files.length) return;
-  receiptFiles=files.slice(0,4);
-  document.getElementById('receiptLabel').textContent=`${receiptFiles.length} file(s) selected — parsing...`;
-  await parseReceipts();
-};
+window.rcSelected=function(input){handleRcFiles(Array.from(input.files));input.value='';};
+
+function handleRcFiles(files){
+  rcFiles=files.filter(f=>['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type)).slice(0,4);
+  if(!rcFiles.length) return;
+  document.getElementById('rcLabel').textContent=`${rcFiles.length} file(s) ready — parsing with Gemini...`;
+  parseReceipts();
+}
 
 async function parseReceipts(){
-  const st=document.getElementById('receiptStatus');
-  const btn=document.getElementById('parseBtn');
+  const st=document.getElementById('rcStatus');
+  const btn=document.getElementById('rcBtn');
   st.className='ai-status parsing';
-  st.textContent='🤖 Gemini is reading your receipt...';
+  st.innerHTML='<div class="ai-spin"></div> Gemini is reading your receipt...';
   btn.disabled=true;
   try{
-    const imageParts=await Promise.all(receiptFiles.map(async f=>({
-      inlineData:{data:await fileToB64(f),mimeType:f.type||'image/jpeg'}
+    // IPL pattern: convert images to inlineData parts first, then append text prompt
+    const imageParts=await Promise.all(rcFiles.map(async f=>({
+      inlineData:{data:await toB64(f),mimeType:f.type||'image/jpeg'}
     })));
-    const PROMPT=`You are an expense data extractor. Analyze these receipt/invoice image(s) and return ONLY valid JSON:
-{
-  "type": "travel|fuel|food|mobile|accommodation|other",
-  "amount": <number>,
-  "date": "YYYY-MM-DD",
-  "vendor": "<name>",
-  "desc": "<business purpose>",
-  "tax": <number or null>,
-  "origin": "<city or null>",
-  "dest": "<city or null>",
-  "travelFrom": "YYYY-MM-DD or null",
-  "travelTo": "YYYY-MM-DD or null",
-  "mode": "<Flight|Train|Bus|Cab or null>",
-  "tref": "<PNR or null>"
-}
+    const PROMPT=`Extract expense data from this receipt/invoice and return ONLY valid JSON:
+{"type":"travel|fuel|food|mobile|accommodation|other","amount":<number>,"date":"YYYY-MM-DD","vendor":"<name>","desc":"<business purpose>","tax":<number or null>,"origin":<city or null>,"dest":<city or null>,"travelFrom":<date or null>,"travelTo":<date or null>,"mode":<mode or null>,"tref":<ref or null>}
 Return ONLY the JSON object.`;
     const text=await callGemini([...imageParts,{text:PROMPT}]);
-    const p=extractJSON(text);
-    fillClaimForm(p);
+    const p=cleanJSON(text);
+    fillForm(p);
     st.className='ai-status done';
-    st.textContent=`✅ Filled from receipt — review fields below`;
+    st.textContent='✅ Receipt parsed — review fields below';
   }catch(e){
     st.className='ai-status fail';
-    st.textContent=`❌ ${e.message}`;
+    st.textContent='❌ '+e.message;
   }
   btn.disabled=false;
 }
 
-window.parseReceiptText=async function(){
-  const txt=document.getElementById('receiptText').value.trim();
+window.parseText=async function(){
+  const txt=document.getElementById('rcText').value.trim();
   if(!txt) return;
-  const st=document.getElementById('receiptStatus');
-  const btn=document.getElementById('parseBtn');
+  const st=document.getElementById('rcStatus');
+  const btn=document.getElementById('rcBtn');
   st.className='ai-status parsing';
-  st.textContent='🤖 Parsing description...';
+  st.innerHTML='<div class="ai-spin"></div> Parsing description...';
   btn.disabled=true;
   try{
-    const PROMPT=`Extract expense data from this description and return ONLY valid JSON:
+    const PROMPT=`Extract expense from description, return ONLY JSON:
 {"type":"travel|fuel|food|mobile|accommodation|other","amount":<number>,"date":"YYYY-MM-DD or null","vendor":"<name or null>","desc":"<purpose>","tax":null,"origin":null,"dest":null,"travelFrom":null,"travelTo":null,"mode":null,"tref":null}
-Description: "${txt}"
-Return ONLY JSON.`;
+Description: "${txt}"`;
     const text=await callGemini([{text:PROMPT}]);
-    const p=extractJSON(text);
-    fillClaimForm(p);
-    st.className='ai-status done';
-    st.textContent='✅ Form filled from description';
-  }catch(e){
-    st.className='ai-status fail';
-    st.textContent=`❌ ${e.message}`;
-  }
+    fillForm(cleanJSON(text));
+    st.className='ai-status done';st.textContent='✅ Filled from description';
+  }catch(e){st.className='ai-status fail';st.textContent='❌ '+e.message;}
   btn.disabled=false;
 };
 
-function fillClaimForm(p){
+function fillForm(p){
   const s=(id,v)=>{const e=document.getElementById(id);if(e&&v!=null&&v!=='')e.value=v;};
-  s('nc-type',p.type);
-  s('nc-amount',p.amount);
+  s('nc-type',p.type);s('nc-amount',p.amount);
   s('nc-date',p.date||new Date().toISOString().slice(0,10));
-  s('nc-vendor',p.vendor);
-  s('nc-desc',p.desc);
-  s('nc-tax',p.tax);
-  s('nc-origin',p.origin);
-  s('nc-dest',p.dest);
-  s('nc-tfrom',p.travelFrom);
-  s('nc-tto',p.travelTo);
-  s('nc-tref',p.tref);
-  if(p.mode){const sel=document.getElementById('nc-mode');if(sel){const o=Array.from(sel.options).find(x=>x.value.toLowerCase().includes((p.mode||'').toLowerCase().split('/')[0].toLowerCase().trim()));if(o)sel.value=o.value;}}
+  s('nc-vendor',p.vendor);s('nc-desc',p.desc);s('nc-tax',p.tax);
+  s('nc-origin',p.origin);s('nc-dest',p.dest);
+  s('nc-tfrom',p.travelFrom);s('nc-tto',p.travelTo);s('nc-tref',p.tref);
+  if(p.mode){const sel=document.getElementById('nc-mode');if(sel){const o=Array.from(sel.options).find(x=>x.value.toLowerCase().includes(p.mode.toLowerCase().split('/')[0].trim().toLowerCase()));if(o)sel.value=o.value;}}
   window.toggleTravel();
 }
 
-// ── New Claim ──
-window.openNewClaim=function(){
-  // Reset form
+// ═══════════════════════════════════════════════════════════
+//  CLAIM CRUD
+// ═══════════════════════════════════════════════════════════
+window.openClaim=function(){
   ['nc-type','nc-amount','nc-vendor','nc-desc','nc-project','nc-tax','nc-origin','nc-dest','nc-tref'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['nc-tfrom','nc-tto'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('nc-date').value=new Date().toISOString().slice(0,10);
   document.getElementById('travelFields').style.display='none';
-  document.getElementById('receiptStatus').className='ai-status';
-  document.getElementById('receiptLabel').textContent='Drop receipt or click to upload';
-  document.getElementById('receiptText').value='';
-  receiptFiles=[];
-  document.getElementById('claimModal').classList.add('open');
+  document.getElementById('rcStatus').className='ai-status';
+  document.getElementById('rcLabel').textContent='Drop receipt / invoice here, or click to upload';
+  document.getElementById('rcText').value='';
+  rcFiles=[];
+  document.getElementById('mClaim').classList.add('open');
 };
-
 window.toggleTravel=function(){
   const t=document.getElementById('nc-type').value;
   document.getElementById('travelFields').style.display=(t==='travel'||t==='travel-intl')?'block':'none';
 };
-
 window.submitClaim=async function(){
   const type=document.getElementById('nc-type').value;
   const amount=document.getElementById('nc-amount').value;
   const desc=document.getElementById('nc-desc').value;
-  if(!type||!amount||!desc){toast('Fill in Type, Amount and Description','err');return;}
-  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim()||currentUser.email;
-  const claim={
+  if(!type||!amount||!desc){toast('Fill Type, Amount and Purpose','err');return;}
+  const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim()||me.email;
+  await push(ref(db,'claims'),{
     id:'CLM-'+Date.now().toString(16).toUpperCase().slice(-8),
-    type,amount:parseFloat(amount),
-    date:document.getElementById('nc-date').value,
-    vendor:document.getElementById('nc-vendor').value,
-    desc,
+    type,amount:parseFloat(amount),date:document.getElementById('nc-date').value,
+    vendor:document.getElementById('nc-vendor').value,desc,
     project:document.getElementById('nc-project').value,
     tax:parseFloat(document.getElementById('nc-tax').value)||0,
-    origin:document.getElementById('nc-origin').value,
-    dest:document.getElementById('nc-dest').value,
-    travelFrom:document.getElementById('nc-tfrom').value,
-    travelTo:document.getElementById('nc-tto').value,
-    tref:document.getElementById('nc-tref').value,
-    mode:document.getElementById('nc-mode').value,
-    status:'pending',
-    submittedBy:name,
-    submittedEmail:currentUser.email,
-    grade:currentProfile?.grade||'L3',
-    managerEmail:currentProfile?.managerEmail||'',
+    origin:document.getElementById('nc-origin').value,dest:document.getElementById('nc-dest').value,
+    travelFrom:document.getElementById('nc-tfrom').value,travelTo:document.getElementById('nc-tto').value,
+    tref:document.getElementById('nc-tref').value,mode:document.getElementById('nc-mode').value,
+    status:'pending',submittedBy:name,submittedEmail:me.email,
+    grade:profile?.grade||'L3',managerEmail:profile?.managerEmail||'',
     createdAt:new Date().toISOString(),
     history:[{action:'Submitted',by:name,at:new Date().toLocaleString()}]
-  };
-  await push(ref(db,'claims'),claim);
-  window.closeModal('claimModal');
-  toast('Claim submitted: '+claim.id,'ok');
+  });
+  window.closeMod('mClaim');toast('Claim submitted','ok');
 };
-
 window.saveDraft=async function(){
-  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim()||currentUser.email;
-  const claim={
-    id:'CLM-'+Date.now().toString(16).toUpperCase().slice(-8),
-    type:document.getElementById('nc-type').value||'other',
-    amount:parseFloat(document.getElementById('nc-amount').value)||0,
-    date:document.getElementById('nc-date').value,
-    vendor:document.getElementById('nc-vendor').value,
-    desc:document.getElementById('nc-desc').value||'Draft',
-    status:'draft',
-    submittedBy:name,
-    submittedEmail:currentUser.email,
-    grade:currentProfile?.grade||'L3',
-    createdAt:new Date().toISOString(),
-  };
-  await push(ref(db,'claims'),claim);
-  window.closeModal('claimModal');
-  toast('Draft saved','ok');
+  const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim()||me.email;
+  await push(ref(db,'claims'),{id:'CLM-'+Date.now().toString(16).toUpperCase().slice(-8),type:document.getElementById('nc-type').value||'other',amount:parseFloat(document.getElementById('nc-amount').value)||0,date:document.getElementById('nc-date').value,desc:document.getElementById('nc-desc').value||'Draft',status:'draft',submittedBy:name,submittedEmail:me.email,grade:profile?.grade||'L3',createdAt:new Date().toISOString()});
+  window.closeMod('mClaim');toast('Draft saved','ok');
 };
 
-// ── Render Dashboard ──
-function renderDashboard(){
-  const role=currentProfile?.role;
-  const my=role==='employee'?allClaims.filter(c=>c.submittedEmail===currentUser?.email):allClaims;
-  document.getElementById('st-total').textContent=my.length;
-  document.getElementById('st-pending').textContent=my.filter(c=>c.status==='pending'||c.status==='review').length;
-  document.getElementById('st-approved').textContent=my.filter(c=>c.status==='approved').length;
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function renderDash(){
+  const role=profile?.role;
+  const my=role==='employee'?claims.filter(c=>c.submittedEmail===me?.email):claims;
+  document.getElementById('s-total').textContent=my.length;
+  document.getElementById('s-pending').textContent=my.filter(c=>c.status==='pending'||c.status==='review').length;
+  document.getElementById('s-approved').textContent=my.filter(c=>c.status==='approved').length;
   const val=my.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-  document.getElementById('st-value').textContent='₹'+(val>=1000?Math.round(val/1000)+'K':Math.round(val));
-  const tbody=document.getElementById('dashTbody');
-  const recent=my.slice(0,8);
-  if(!recent.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No claims yet — click + New Claim</div></td></tr>';return;}
-  tbody.innerHTML=recent.map(c=>`<tr onclick="window.viewClaim('${c.key}')">
+  document.getElementById('s-value').textContent='₹'+(val>=100000?Math.round(val/1000)+'K':Math.round(val).toLocaleString('en-IN'));
+  const tbody=document.getElementById('dashRows');
+  const rows=my.slice(0,8);
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No claims yet</div></td></tr>';return;}
+  tbody.innerHTML=rows.map(c=>`<tr onclick="window.viewClaim('${c.key}')">
     <td><span class="mono">${c.id||'—'}</span></td>
-    <td>${c.submittedBy||'—'}</td>
+    <td style="color:var(--muted)">${c.submittedBy||'—'}</td>
     <td><span class="chip">${c.type||'—'}</span></td>
     <td style="font-weight:600">₹${(parseFloat(c.amount)||0).toLocaleString('en-IN')}</td>
     <td style="color:var(--muted)">${c.date||'—'}</td>
@@ -1085,74 +965,67 @@ function renderDashboard(){
   </tr>`).join('');
 }
 
-// ── Render Claims ──
-window.filterClaims=function(){renderClaims();};
-function renderClaims(){
-  const role=currentProfile?.role;
-  let list=role==='employee'?allClaims.filter(c=>c.submittedEmail===currentUser?.email):allClaims;
-  const q=(document.getElementById('claimSearch')?.value||'').toLowerCase();
-  const st=document.getElementById('claimStatusFilter')?.value||'';
-  const tp=document.getElementById('claimTypeFilter')?.value||'';
+window.renderClaims=function(){
+  const role=profile?.role;
+  let list=role==='employee'?claims.filter(c=>c.submittedEmail===me?.email):claims;
+  const q=(document.getElementById('claimQ')?.value||'').toLowerCase();
+  const s=document.getElementById('claimS')?.value||'';
+  const t=document.getElementById('claimT')?.value||'';
   if(q) list=list.filter(c=>(c.id||'').toLowerCase().includes(q)||(c.desc||'').toLowerCase().includes(q)||(c.submittedBy||'').toLowerCase().includes(q));
-  if(st) list=list.filter(c=>c.status===st);
-  if(tp) list=list.filter(c=>c.type===tp);
-  const tbody=document.getElementById('claimsTbody');
+  if(s) list=list.filter(c=>c.status===s);
+  if(t) list=list.filter(c=>c.type===t);
+  const tbody=document.getElementById('claimRows');
   if(!list.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">No claims found</div></td></tr>';return;}
   tbody.innerHTML=list.map(c=>`<tr onclick="window.viewClaim('${c.key}')">
     <td><span class="mono">${c.id||'—'}</span></td>
-    <td>${c.submittedBy||'—'}</td>
+    <td style="color:var(--muted)">${c.submittedBy||'—'}</td>
     <td><span class="chip">${c.type||'—'}</span></td>
     <td style="font-weight:600">₹${(parseFloat(c.amount)||0).toLocaleString('en-IN')}</td>
     <td style="color:var(--muted)">${c.date||'—'}</td>
     <td><span class="badge b-${c.status||'draft'}">${c.status||'draft'}</span></td>
     <td onclick="event.stopPropagation()"><button class="btn btn-ghost btn-sm" onclick="window.viewClaim('${c.key}')">View</button></td>
   </tr>`).join('');
-}
-
-// ── View Claim ──
-window.viewClaim=function(key){
-  const c=allClaims.find(x=>x.key===key);
-  if(!c) return;
-  document.getElementById('detailTitle').textContent=c.id||'Claim';
-  const role=currentProfile?.role;
-  const canAct=(role==='admin'||role==='manager'||role==='finance')&&(c.status==='pending'||c.status==='review');
-  document.getElementById('detailBody').innerHTML=`
-    <div class="grid2" style="margin-bottom:16px">
-      <div><div class="stat-label">Status</div><div style="margin-top:3px"><span class="badge b-${c.status}">${c.status}</span></div></div>
-      <div><div class="stat-label">Amount</div><div style="font-size:20px;font-weight:700;margin-top:2px">₹${(parseFloat(c.amount)||0).toLocaleString('en-IN')}</div></div>
-      <div><div class="stat-label">Type</div><div style="margin-top:3px"><span class="chip">${c.type||'—'}</span></div></div>
-      <div><div class="stat-label">Date</div><div style="margin-top:3px;color:var(--muted)">${c.date||'—'}</div></div>
-      ${c.vendor?`<div><div class="stat-label">Vendor</div><div style="margin-top:3px">${c.vendor}</div></div>`:''}
-      ${c.project?`<div><div class="stat-label">Project</div><div style="margin-top:3px">${c.project}</div></div>`:''}
-      <div style="grid-column:1/-1"><div class="stat-label">Purpose</div><div style="margin-top:3px;color:var(--muted);line-height:1.5">${c.desc||'—'}</div></div>
-      ${c.origin&&c.dest?`<div style="grid-column:1/-1"><div class="stat-label">Route</div><div style="margin-top:3px">${c.origin} → ${c.dest} · ${c.mode||''} ${c.tref?'· '+c.tref:''}</div></div>`:''}
-    </div>
-    ${(c.history||[]).length?`<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">History</div>
-    ${(c.history||[]).map(h=>`<div class="tl-row"><span style="color:var(--muted);flex-shrink:0">${h.at}</span><span>${h.action}</span><span style="color:var(--muted)">${h.by||''}</span></div>`).join('')}`:''}`;
-  document.getElementById('detailFtr').innerHTML=`
-    <button class="btn btn-ghost btn-sm" onclick="window.closeModal('detailModal')">Close</button>
-    ${canAct?`<button class="btn btn-danger btn-sm" onclick="window.rejectClaim('${key}');window.closeModal('detailModal')">✕ Reject</button>
-    <button class="btn btn-success btn-sm" onclick="window.approveClaim('${key}');window.closeModal('detailModal')">✓ Approve</button>`:''}`;
-  document.getElementById('detailModal').classList.add('open');
 };
 
-// ── Approvals ──
+window.viewClaim=function(key){
+  const c=claims.find(x=>x.key===key);if(!c)return;
+  document.getElementById('dTitle').textContent=c.id||'Claim';
+  const role=profile?.role;
+  const canAct=(role==='admin'||role==='manager'||role==='finance')&&(c.status==='pending'||c.status==='review');
+  document.getElementById('dBody').innerHTML=`
+    <div class="g2" style="margin-bottom:16px">
+      <div><div class="stat-label">Status</div><div style="margin-top:4px"><span class="badge b-${c.status}">${c.status}</span></div></div>
+      <div><div class="stat-label">Amount</div><div style="font-size:22px;font-weight:800;margin-top:2px">₹${(parseFloat(c.amount)||0).toLocaleString('en-IN')}</div></div>
+      <div><div class="stat-label">Type</div><div style="margin-top:4px"><span class="chip">${c.type||'—'}</span></div></div>
+      <div><div class="stat-label">Date</div><div style="margin-top:4px;color:var(--muted)">${c.date||'—'}</div></div>
+      ${c.vendor?`<div><div class="stat-label">Vendor</div><div style="margin-top:4px">${c.vendor}</div></div>`:''}
+      ${c.project?`<div><div class="stat-label">Project</div><div style="margin-top:4px">${c.project}</div></div>`:''}
+      <div style="grid-column:1/-1"><div class="stat-label">Purpose</div><div style="margin-top:4px;color:var(--muted);line-height:1.6">${c.desc||'—'}</div></div>
+      ${c.origin&&c.dest?`<div style="grid-column:1/-1"><div class="stat-label">Route</div><div style="margin-top:4px">${c.origin} → ${c.dest} · ${c.mode||''} ${c.tref?'· '+c.tref:''}</div></div>`:''}
+    </div>
+    ${(c.history||[]).length?`<div class="stat-label" style="margin-bottom:8px">History</div>${(c.history||[]).map(h=>`<div class="tl-row"><span>${h.at}</span><span style="color:var(--txt)">${h.action}</span><span>${h.by||''}</span></div>`).join('')}`:''}`;
+  document.getElementById('dFtr').innerHTML=`
+    <button class="btn btn-ghost btn-sm" onclick="window.closeMod('mDetail')">Close</button>
+    ${canAct?`<button class="btn btn-danger btn-sm" onclick="window.rejectClaim('${key}');window.closeMod('mDetail')">✕ Reject</button><button class="btn btn-success btn-sm" onclick="window.approveClaim('${key}');window.closeMod('mDetail')">✓ Approve</button>`:''}`;
+  document.getElementById('mDetail').classList.add('open');
+};
+
 function renderApprovals(){
-  const role=currentProfile?.role;
-  let list=allClaims.filter(c=>c.status==='pending'||c.status==='review');
-  if(role==='manager') list=list.filter(c=>c.managerEmail===currentUser?.email);
+  const role=profile?.role;
+  let list=claims.filter(c=>c.status==='pending'||c.status==='review');
+  if(role==='manager') list=list.filter(c=>c.managerEmail===me?.email);
   document.getElementById('approvalSub').textContent=`${list.length} claim${list.length!==1?'s':''} pending`;
-  const tbody=document.getElementById('approvalTbody');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">✅ No pending approvals</div></td></tr>';return;}
-  const canAct=(role==='admin'||role==='manager'||role==='finance');
+  const tbody=document.getElementById('approvalRows');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">✅ All clear</div></td></tr>';return;}
+  const canAct=role==='admin'||role==='manager'||role==='finance';
   tbody.innerHTML=list.map(c=>`<tr onclick="window.viewClaim('${c.key}')">
     <td><span class="mono">${c.id||'—'}</span></td>
-    <td>${c.submittedBy||'—'}</td>
+    <td style="color:var(--muted)">${c.submittedBy||'—'}</td>
     <td><span class="chip">${c.type||'—'}</span></td>
     <td style="font-weight:600">₹${(parseFloat(c.amount)||0).toLocaleString('en-IN')}</td>
     <td style="color:var(--muted)">${c.date||'—'}</td>
     <td><span class="badge b-${c.status}">${c.status}</span></td>
-    <td onclick="event.stopPropagation()">${canAct?`<div class="action-row">
+    <td onclick="event.stopPropagation()">${canAct?`<div style="display:flex;gap:5px">
       <button class="btn btn-success btn-sm" onclick="window.approveClaim('${c.key}')">✓</button>
       <button class="btn btn-danger btn-sm" onclick="window.rejectClaim('${c.key}')">✕</button>
     </div>`:'—'}</td>
@@ -1160,328 +1033,247 @@ function renderApprovals(){
 }
 
 window.approveClaim=async function(key){
-  const c=allClaims.find(x=>x.key===key);if(!c)return;
-  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim();
-  await update(ref(db,'claims/'+key),{status:'approved',approvedBy:name,approvedAt:new Date().toISOString(),history:[...(c.history||[]),{action:'Approved',by:name,at:new Date().toLocaleString()}]});
-  toast('Approved: '+c.id,'ok');
+  const c=claims.find(x=>x.key===key);if(!c)return;
+  const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
+  await update(ref(db,'claims/'+key),{status:'approved',approvedBy:name,history:[...(c.history||[]),{action:'Approved',by:name,at:new Date().toLocaleString()}]});
+  toast('Approved','ok');
 };
-
 window.rejectClaim=async function(key){
-  const reason=prompt('Reason for rejection:')||'Rejected';
-  const c=allClaims.find(x=>x.key===key);if(!c)return;
-  const name=`${currentProfile?.firstName||''} ${currentProfile?.lastName||''}`.trim();
-  await update(ref(db,'claims/'+key),{status:'rejected',rejectionReason:reason,history:[...(c.history||[]),{action:'Rejected: '+reason,by:name,at:new Date().toLocaleString()}]});
-  toast('Rejected: '+c.id,'ok');
+  const reason=prompt('Rejection reason:')||'Rejected';
+  const c=claims.find(x=>x.key===key);if(!c)return;
+  const name=`${profile?.firstName||''} ${profile?.lastName||''}`.trim();
+  await update(ref(db,'claims/'+key),{status:'rejected',history:[...(c.history||[]),{action:'Rejected: '+reason,by:name,at:new Date().toLocaleString()}]});
+  toast('Rejected','ok');
 };
 
-// ── Analytics ──
 function renderAnalytics(){
-  const list=currentProfile?.role==='employee'?allClaims.filter(c=>c.submittedEmail===currentUser?.email):allClaims;
+  const list=profile?.role==='employee'?claims.filter(c=>c.submittedEmail===me?.email):claims;
   const total=list.length,approved=list.filter(c=>c.status==='approved').length;
   const val=list.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
-  const avg=total?Math.round(val/total):0;
-  document.getElementById('analyticsStats').innerHTML=`
+  document.getElementById('anStats').innerHTML=`
     <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val">${total}</div></div>
     <div class="stat"><div class="stat-label">Total Value</div><div class="stat-val">₹${Math.round(val).toLocaleString('en-IN')}</div></div>
-    <div class="stat"><div class="stat-label">Avg Claim</div><div class="stat-val">₹${avg.toLocaleString('en-IN')}</div></div>
+    <div class="stat"><div class="stat-label">Avg Claim</div><div class="stat-val">₹${total?Math.round(val/total).toLocaleString('en-IN'):0}</div></div>
     <div class="stat"><div class="stat-label">Approval Rate</div><div class="stat-val">${total?Math.round(approved/total*100):0}%</div></div>`;
   const cats={};list.forEach(c=>{cats[c.type]=(cats[c.type]||0)+1;});
-  const maxC=Math.max(...Object.values(cats),1);
-  document.getElementById('anCats').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
-    <div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${t}</span><span>${n}</span></div>
-      <div style="background:var(--bdr);border-radius:4px;height:6px"><div style="background:var(--accent);height:100%;border-radius:4px;width:${Math.round(n/maxC*100)}%"></div></div>
-    </div>`).join('')||'<div class="empty">No data</div>';
+  const mc=Math.max(...Object.values(cats),1);
+  document.getElementById('anCat').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`
+    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:var(--muted)">${t}</span><span>${n}</span></div>
+    <div style="background:rgba(255,255,255,.06);border-radius:4px;height:5px"><div style="background:linear-gradient(90deg,var(--accent),var(--purple));height:100%;border-radius:4px;width:${Math.round(n/mc*100)}%"></div></div></div>`).join('')||'<div class="empty">No data</div>';
   const sc={};list.forEach(c=>{sc[c.status]=(sc[c.status]||0)+1;});
-  const maxS=Math.max(...Object.values(sc),1);
-  const sColor={pending:'var(--amber)',approved:'var(--green)',rejected:'var(--red)',draft:'var(--muted)',review:'var(--purple)'};
-  document.getElementById('anStatus').innerHTML=Object.entries(sc).map(([s,n])=>`
-    <div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:${sColor[s]||'var(--muted)'};">${s}</span><span>${n}</span></div>
-      <div style="background:var(--bdr);border-radius:4px;height:6px"><div style="background:${sColor[s]||'var(--muted)'};height:100%;border-radius:4px;width:${Math.round(n/maxS*100)}%"></div></div>
-    </div>`).join('')||'<div class="empty">No data</div>';
+  const ms=Math.max(...Object.values(sc),1);
+  const sC={pending:'var(--amber)',approved:'var(--green)',rejected:'var(--red)',draft:'var(--muted)',review:'var(--purple)'};
+  document.getElementById('anSt').innerHTML=Object.entries(sc).map(([s,n])=>`
+    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="color:${sC[s]||'var(--muted)'};">${s}</span><span>${n}</span></div>
+    <div style="background:rgba(255,255,255,.06);border-radius:4px;height:5px"><div style="background:${sC[s]||'var(--muted)'};height:100%;border-radius:4px;width:${Math.round(n/ms*100)}%"></div></div></div>`).join('')||'<div class="empty">No data</div>';
 }
 
-// ── ERP Export ──
 window.doExport=function(){
   const fmt=document.getElementById('erpFmt').value;
-  const from=document.getElementById('erpFrom').value;
-  const to=document.getElementById('erpTo').value;
-  const statuses=[];
-  if(document.getElementById('erpApproved').checked) statuses.push('approved');
-  if(document.getElementById('erpPending').checked) statuses.push('pending');
-  let list=allClaims.filter(c=>statuses.includes(c.status));
+  const from=document.getElementById('erpFrom').value,to=document.getElementById('erpTo').value;
+  const st=[];
+  if(document.getElementById('erpA').checked) st.push('approved');
+  if(document.getElementById('erpP').checked) st.push('pending');
+  let list=claims.filter(c=>st.includes(c.status));
   if(from) list=list.filter(c=>c.date>=from);
   if(to) list=list.filter(c=>c.date<=to);
-  if(!list.length){toast('No records match filters','err');return;}
-  let content='',filename='',mime='';
-  if(fmt==='csv'){
-    content='ID,Employee,Email,Type,Amount,Date,Status,Vendor,Description\n'+list.map(c=>[c.id,c.submittedBy,c.submittedEmail,c.type,c.amount,c.date,c.status,c.vendor||'',`"${(c.desc||'').replace(/"/g,'""')}"`].join(',')).join('\n');
-    filename=`claimsiq_${new Date().toISOString().slice(0,10)}.csv`;mime='text/csv';
-  }else if(fmt==='json'){
-    content=JSON.stringify(list,null,2);filename=`claimsiq_${new Date().toISOString().slice(0,10)}.json`;mime='application/json';
-  }else{
-    content=`<?xml version="1.0"?>\n<claims>\n${list.map(c=>`  <claim><id>${c.id}</id><employee>${c.submittedBy||''}</employee><type>${c.type}</type><amount>${c.amount}</amount><date>${c.date||''}</date><status>${c.status}</status></claim>`).join('\n')}\n</claims>`;
-    filename=`claimsiq_${new Date().toISOString().slice(0,10)}.xml`;mime='application/xml';
-  }
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=filename;a.click();
-  toast(`Exported ${list.length} records as ${fmt.toUpperCase()}`,'ok');
+  if(!list.length){toast('No records match','err');return;}
+  let content='',fn='',mime='';
+  const dt=new Date().toISOString().slice(0,10);
+  if(fmt==='csv'){content='ID,Employee,Email,Type,Amount,Date,Status\n'+list.map(c=>[c.id,c.submittedBy,c.submittedEmail,c.type,c.amount,c.date,c.status].join(',')).join('\n');fn=`claimsiq_${dt}.csv`;mime='text/csv';}
+  else if(fmt==='json'){content=JSON.stringify(list,null,2);fn=`claimsiq_${dt}.json`;mime='application/json';}
+  else{content=`<?xml version="1.0"?><claims>${list.map(c=>`<claim><id>${c.id}</id><employee>${c.submittedBy||''}</employee><amount>${c.amount}</amount><status>${c.status}</status></claim>`).join('')}</claims>`;fn=`claimsiq_${dt}.xml`;mime='application/xml';}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=fn;a.click();
+  toast(`Exported ${list.length} records`,'ok');
 };
 
-// ── Admin: Enterprise ──
-function renderEnterprise(){
-  document.getElementById('entName').textContent=enterprise.name||'—';
-  document.getElementById('entDomain').textContent=enterprise.domain||'—';
-  document.getElementById('entIndustry').textContent=enterprise.industry||'—';
-  document.getElementById('entCurrency').textContent=enterprise.currency||'INR';
-  document.getElementById('entCountry').textContent=enterprise.country||'—';
-  document.getElementById('entCode').textContent=enterprise.inviteCode||'—';
+// ═══════════════════════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════════════════════
+function renderEnt(){
+  document.getElementById('eN').textContent=ent.name||'—';
+  document.getElementById('eD').textContent=ent.domain||'—';
+  document.getElementById('eI').textContent=ent.industry||'—';
+  document.getElementById('eC').textContent=ent.currency||'INR';
+  document.getElementById('eCode').textContent=ent.inviteCode||'—';
 }
 window.openEditEnt=function(){
-  document.getElementById('en-name').value=enterprise.name||'';
-  document.getElementById('en-domain').value=enterprise.domain||'';
-  document.getElementById('en-industry').value=enterprise.industry||'';
-  document.getElementById('en-currency').value=enterprise.currency||'INR';
-  document.getElementById('en-country').value=enterprise.country||'';
-  document.getElementById('entModal').classList.add('open');
+  document.getElementById('en-n').value=ent.name||'';
+  document.getElementById('en-d').value=ent.domain||'';
+  document.getElementById('en-i').value=ent.industry||'';
+  document.getElementById('en-c').value=ent.currency||'INR';
+  document.getElementById('en-co').value=ent.country||'';
+  document.getElementById('mEnt').classList.add('open');
 };
-window.saveEnterprise=async function(){
-  const d={...enterprise,name:document.getElementById('en-name').value.trim(),domain:document.getElementById('en-domain').value.trim(),industry:document.getElementById('en-industry').value.trim(),currency:document.getElementById('en-currency').value,country:document.getElementById('en-country').value.trim()};
-  await set(ref(db,'enterprise'),d);
-  window.closeModal('entModal');toast('Enterprise updated','ok');
+window.saveEnt=async function(){
+  await set(ref(db,'enterprise'),{...ent,name:document.getElementById('en-n').value.trim(),domain:document.getElementById('en-d').value.trim(),industry:document.getElementById('en-i').value.trim(),currency:document.getElementById('en-c').value,country:document.getElementById('en-co').value.trim()});
+  window.closeMod('mEnt');toast('Enterprise updated','ok');
 };
 
-// ── Admin: Employees ──
-function renderEmployees(){
-  document.getElementById('empCount').textContent=allEmployees.length+' employees';
-  const tbody=document.getElementById('empTbody');
-  if(!allEmployees.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No employees yet</div></td></tr>';return;}
-  tbody.innerHTML=allEmployees.map(e=>`<tr>
+function renderEmps(){
+  document.getElementById('empCnt').textContent=employees.length+' employees';
+  const tbody=document.getElementById('empRows');
+  if(!employees.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No employees</div></td></tr>';return;}
+  tbody.innerHTML=employees.map(e=>`<tr>
     <td><strong>${e.firstName||''} ${e.lastName||''}</strong><div style="font-size:10px;color:var(--muted)">${e.empId||''}</div></td>
     <td style="font-size:12px;color:var(--muted)">${e.email||'—'}</td>
     <td><span class="chip">${e.grade||'—'}</span></td>
-    <td style="font-size:12px">${e.department||'—'}</td>
+    <td style="font-size:12px;color:var(--muted)">${e.department||'—'}</td>
     <td><span class="badge b-${e.role==='admin'?'review':e.role==='manager'?'pending':'draft'}">${e.role||'emp'}</span></td>
-    <td><div style="display:flex;gap:4px">
+    <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
       <button class="btn btn-ghost btn-sm" onclick="window.editEmp('${e.key}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="window.delEmp('${e.key}')">Del</button>
-    </div></td>
-  </tr>`).join('');
+    </div></td></tr>`).join('');
 }
-window.openAddEmp=function(){editingEmpKey=null;document.getElementById('empModalTitle').textContent='Add Employee';['em-fname','em-lname','em-email','em-empid','em-dept','em-mgr','em-loc'].forEach(id=>document.getElementById(id).value='');document.getElementById('em-grade').value='L3';document.getElementById('em-role').value='employee';document.getElementById('empModal').classList.add('open');};
-window.editEmp=function(key){
-  const e=allEmployees.find(x=>x.key===key);if(!e)return;
-  editingEmpKey=key;document.getElementById('empModalTitle').textContent='Edit Employee';
-  document.getElementById('em-fname').value=e.firstName||'';document.getElementById('em-lname').value=e.lastName||'';document.getElementById('em-email').value=e.email||'';document.getElementById('em-empid').value=e.empId||'';document.getElementById('em-grade').value=e.grade||'L3';document.getElementById('em-dept').value=e.department||'';document.getElementById('em-mgr').value=e.managerEmail||'';document.getElementById('em-role').value=e.role||'employee';document.getElementById('em-loc').value=e.location||'';
-  document.getElementById('empModal').classList.add('open');
-};
-window.saveEmployee=async function(){
-  const d={firstName:document.getElementById('em-fname').value.trim(),lastName:document.getElementById('em-lname').value.trim(),email:document.getElementById('em-email').value.trim(),empId:document.getElementById('em-empid').value.trim()||'EMP'+Date.now().toString().slice(-4),grade:document.getElementById('em-grade').value,department:document.getElementById('em-dept').value.trim(),managerEmail:document.getElementById('em-mgr').value.trim(),role:document.getElementById('em-role').value,location:document.getElementById('em-loc').value.trim(),updatedAt:new Date().toISOString()};
+window.openAddEmp=function(){editEmpKey=null;document.getElementById('empMTitle').textContent='Add Employee';['em-fn','em-ln','em-email','em-id','em-dept','em-mgr','em-loc'].forEach(id=>document.getElementById(id).value='');document.getElementById('em-grade').value='L3';document.getElementById('em-role').value='employee';document.getElementById('mEmp').classList.add('open');};
+window.editEmp=function(key){const e=employees.find(x=>x.key===key);if(!e)return;editEmpKey=key;document.getElementById('empMTitle').textContent='Edit Employee';document.getElementById('em-fn').value=e.firstName||'';document.getElementById('em-ln').value=e.lastName||'';document.getElementById('em-email').value=e.email||'';document.getElementById('em-id').value=e.empId||'';document.getElementById('em-grade').value=e.grade||'L3';document.getElementById('em-dept').value=e.department||'';document.getElementById('em-mgr').value=e.managerEmail||'';document.getElementById('em-role').value=e.role||'employee';document.getElementById('em-loc').value=e.location||'';document.getElementById('mEmp').classList.add('open');};
+window.saveEmp=async function(){
+  const d={firstName:document.getElementById('em-fn').value.trim(),lastName:document.getElementById('em-ln').value.trim(),email:document.getElementById('em-email').value.trim(),empId:document.getElementById('em-id').value.trim()||'EMP'+Date.now().toString().slice(-4),grade:document.getElementById('em-grade').value,department:document.getElementById('em-dept').value.trim(),managerEmail:document.getElementById('em-mgr').value.trim(),role:document.getElementById('em-role').value,location:document.getElementById('em-loc').value.trim(),updatedAt:new Date().toISOString()};
   if(!d.firstName||!d.email){toast('Name and email required','err');return;}
-  if(editingEmpKey) await update(ref(db,'employees/'+editingEmpKey),d);
+  if(editEmpKey) await update(ref(db,'employees/'+editEmpKey),d);
   else{d.createdAt=new Date().toISOString();await push(ref(db,'employees'),d);}
-  window.closeModal('empModal');toast(editingEmpKey?'Employee updated':'Employee added','ok');
+  window.closeMod('mEmp');toast(editEmpKey?'Updated':'Added','ok');
 };
-window.delEmp=async function(key){
-  const e=allEmployees.find(x=>x.key===key);
-  if(confirm(`Delete ${e?.firstName} ${e?.lastName}?`)) await remove(ref(db,'employees/'+key));
-};
+window.delEmp=async function(key){const e=employees.find(x=>x.key===key);if(confirm(`Delete ${e?.firstName} ${e?.lastName}?`))await remove(ref(db,'employees/'+key));};
 
-// ── Import Employees with Gemini ──
-window.openImport=function(){
-  pendingImportEmps=[];
-  document.getElementById('empPaste').value='';
-  document.getElementById('importStatus').className='ai-status';
-  document.getElementById('importPreview').textContent='';
-  document.getElementById('importBtn').disabled=true;
-  document.getElementById('importModal').classList.add('open');
-};
-window.empFileSelected=async function(input){
-  const file=input.files[0];if(!file)return;
-  const st=document.getElementById('importStatus');
-  st.className='ai-status parsing';st.textContent='Reading file...';
-  const r=new FileReader();
-  r.onload=e=>{document.getElementById('empPaste').value=e.target.result.slice(0,3000);st.className='ai-status';st.textContent='';};
-  r.readAsText(file);
-  input.value='';
-};
-window.parseEmpWithAI=async function(){
+window.openImport=function(){pendingImport=[];document.getElementById('empPaste').value='';document.getElementById('impStatus').className='ai-status';document.getElementById('impPreview').textContent='';document.getElementById('impBtn').disabled=true;document.getElementById('mImport').classList.add('open');};
+window.empFileSet=function(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{document.getElementById('empPaste').value=e.target.result.slice(0,3000);};r.readAsText(file);input.value='';};
+window.parseImport=async function(){
   const text=document.getElementById('empPaste').value.trim();
-  if(!text){toast('Paste some employee data first','err');return;}
-  const st=document.getElementById('importStatus');
-  st.className='ai-status parsing';st.textContent='🤖 Gemini is extracting employee records...';
+  if(!text){toast('Paste some data first','err');return;}
+  const st=document.getElementById('impStatus');
+  st.className='ai-status parsing';st.innerHTML='<div class="ai-spin"></div> Gemini parsing...';
   try{
-    const prompt=`Extract employee records from this data. Return ONLY a JSON array:
-[{"firstName":"...","lastName":"...","email":"...","empId":"EMP001","grade":"L3","department":"...","managerEmail":"","role":"employee","location":""}]
-Rules: grade must be L1-L6, role must be employee|manager|finance|admin, generate empId if missing.
+    const PROMPT=`Extract employee records and return ONLY a JSON array:
+[{"firstName":"","lastName":"","email":"","empId":"","grade":"L3","department":"","managerEmail":"","role":"employee","location":""}]
+Generate empId if missing. Grade must be L1-L6. Role: employee|manager|finance|admin.
 Data:\n${text}\nReturn ONLY the JSON array.`;
-    const result=await callGemini([{text:prompt}]);
+    const result=await callGemini([{text:PROMPT}]);
     const clean=result.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     const m=clean.match(/\[[\s\S]*\]/);
     if(!m) throw new Error('No array found');
-    pendingImportEmps=JSON.parse(m[0]).filter(e=>e.email);
-    st.className='ai-status done';st.textContent=`✅ Found ${pendingImportEmps.length} employees`;
-    document.getElementById('importPreview').textContent=pendingImportEmps.slice(0,3).map(e=>e.firstName+' '+e.lastName+' ('+e.email+')').join(', ')+(pendingImportEmps.length>3?'...':'');
-    document.getElementById('importBtn').disabled=false;
+    pendingImport=JSON.parse(m[0]).filter(e=>e.email);
+    st.className='ai-status done';st.textContent=`✅ ${pendingImport.length} employees found`;
+    document.getElementById('impPreview').textContent=pendingImport.slice(0,3).map(e=>e.firstName+' '+e.lastName).join(', ')+(pendingImport.length>3?'...':'');
+    document.getElementById('impBtn').disabled=false;
   }catch(e){st.className='ai-status fail';st.textContent='❌ '+e.message;}
 };
-window.importEmployees=async function(){
-  for(const e of pendingImportEmps){e.createdAt=new Date().toISOString();await push(ref(db,'employees'),e);}
-  window.closeModal('importModal');toast(pendingImportEmps.length+' employees imported','ok');
-};
+window.doImport=async function(){for(const e of pendingImport){e.createdAt=new Date().toISOString();await push(ref(db,'employees'),e);}window.closeMod('mImport');toast(pendingImport.length+' imported','ok');};
 
-// ── Admin: Matrix ──
 function renderMatrix(){
-  const tbody=document.getElementById('matrixTbody');
-  if(!matrixRules.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No rules configured</div></td></tr>';return;}
-  tbody.innerHTML=matrixRules.map(r=>`<tr>
-    <td><strong style="color:var(--accent)">${r.grade}</strong></td>
-    <td style="text-transform:capitalize">${r.type||'all'}</td>
+  const tbody=document.getElementById('matrixRows');
+  if(!matrix.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty">No rules</div></td></tr>';return;}
+  tbody.innerHTML=matrix.map(r=>`<tr>
+    <td><strong style="color:var(--accent2)">${r.grade}</strong></td>
+    <td style="color:var(--muted);text-transform:capitalize">${r.type||'all'}</td>
     <td>₹${(r.selfLimit||0).toLocaleString('en-IN')}</td>
     <td>₹${(r.mgrLimit||0).toLocaleString('en-IN')}</td>
     <td style="color:var(--green)">₹${(r.financeAbove||0).toLocaleString('en-IN')}</td>
-    <td><button class="btn btn-danger btn-sm" onclick="window.delMatrix('${r.key}')">Del</button></td>
-  </tr>`).join('');
+    <td><button class="btn btn-danger btn-sm" onclick="window.delMatrix('${r.key}')">Del</button></td></tr>`).join('');
 }
-window.openAddMatrix=function(){document.getElementById('matrixModal').classList.add('open');};
-window.saveMatrix=async function(){
-  const r={grade:document.getElementById('mx-grade').value,type:document.getElementById('mx-type').value,selfLimit:parseFloat(document.getElementById('mx-self').value)||0,mgrLimit:parseFloat(document.getElementById('mx-mgr').value)||0,financeAbove:parseFloat(document.getElementById('mx-fin').value)||0,createdAt:new Date().toISOString()};
-  await push(ref(db,'approvalMatrix'),r);window.closeModal('matrixModal');toast('Rule added','ok');
-};
-window.delMatrix=async function(key){if(confirm('Delete this rule?'))await remove(ref(db,'approvalMatrix/'+key));};
+window.openAddMatrix=function(){document.getElementById('mMatrix').classList.add('open');};
+window.saveMatrix=async function(){await push(ref(db,'approvalMatrix'),{grade:document.getElementById('mx-g').value,type:document.getElementById('mx-t').value,selfLimit:parseFloat(document.getElementById('mx-s').value)||0,mgrLimit:parseFloat(document.getElementById('mx-m').value)||0,financeAbove:parseFloat(document.getElementById('mx-f').value)||0,createdAt:new Date().toISOString()});window.closeMod('mMatrix');toast('Rule added','ok');};
+window.delMatrix=async function(key){if(confirm('Delete?'))await remove(ref(db,'approvalMatrix/'+key));};
 
-// ── Admin: Policies ──
 function renderPolicies(){
-  const tbody=document.getElementById('policyTbody');
-  if(!policies.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">No policies set</div></td></tr>';return;}
+  const tbody=document.getElementById('policyRows');
+  if(!policies.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">No policies</div></td></tr>';return;}
   tbody.innerHTML=policies.map(p=>`<tr>
     <td style="text-transform:capitalize">${p.type}</td>
     <td>${p.max>0?'₹'+parseFloat(p.max).toLocaleString('en-IN'):'—'}</td>
     <td>${p.perClaim>0?'₹'+parseFloat(p.perClaim).toLocaleString('en-IN'):'—'}</td>
     <td><span class="badge ${(p.receipt==='true'||p.receipt===true)?'b-approved':'b-draft'}">${(p.receipt==='true'||p.receipt===true)?'Yes':'No'}</span></td>
-    <td><button class="btn btn-danger btn-sm" onclick="window.delPolicy('${p.key}')">Del</button></td>
-  </tr>`).join('');
+    <td><button class="btn btn-danger btn-sm" onclick="window.delPolicy('${p.key}')">Del</button></td></tr>`).join('');
 }
-window.openAddPolicy=function(){document.getElementById('policyModal').classList.add('open');};
-window.savePolicy=async function(){
-  const p={type:document.getElementById('po-type').value,max:parseFloat(document.getElementById('po-max').value)||0,perClaim:parseFloat(document.getElementById('po-per').value)||0,receipt:document.getElementById('po-receipt').value,createdAt:new Date().toISOString()};
-  await push(ref(db,'policies'),p);window.closeModal('policyModal');toast('Policy added','ok');
-};
+window.openAddPolicy=function(){document.getElementById('mPolicy').classList.add('open');};
+window.savePolicy=async function(){await push(ref(db,'policies'),{type:document.getElementById('po-t').value,max:parseFloat(document.getElementById('po-m').value)||0,perClaim:parseFloat(document.getElementById('po-p').value)||0,receipt:document.getElementById('po-r').value,createdAt:new Date().toISOString()});window.closeMod('mPolicy');toast('Policy added','ok');};
 window.delPolicy=async function(key){if(confirm('Delete?'))await remove(ref(db,'policies/'+key));};
 
-// ── Admin: Policy Engine (Gemini) ──
-window.policyDrop=function(e){
-  e.preventDefault();
-  const file=e.dataTransfer.files[0];if(!file)return;
-  policyFileObj=file;
-  document.getElementById('policyFileLabel').textContent='Selected: '+file.name;
+window.swTab=function(name,el){
+  ['enterprise','employees','matrix','policies','engine'].forEach(t=>{const x=document.getElementById('tab-'+t);if(x)x.style.display=t===name?'block':'none';});
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
 };
-window.policyFileSelected=function(input){
-  policyFileObj=input.files[0];
-  if(policyFileObj) document.getElementById('policyFileLabel').textContent='Selected: '+policyFileObj.name;
-};
-window.runPolicyEngine=async function(){
-  const text=document.getElementById('policyText').value.trim();
-  if(!text&&!policyFileObj){toast('Upload a file or paste policy text','err');return;}
-  const st=document.getElementById('policyStatus');
-  const btn=document.getElementById('policyBtn');
-  st.className='ai-status parsing';st.textContent='🤖 Gemini is analyzing your policy...';
+
+// ═══════════════════════════════════════════════════════════
+//  POLICY ENGINE
+// ═══════════════════════════════════════════════════════════
+window.polDrop=function(e){e.preventDefault();const file=e.dataTransfer.files[0];if(!file)return;polFile=file;document.getElementById('polLabel').textContent='Selected: '+file.name;};
+window.polFileSet=function(input){polFile=input.files[0];if(polFile)document.getElementById('polLabel').textContent='Selected: '+polFile.name;};
+window.runEngine=async function(){
+  const text=document.getElementById('polText').value.trim();
+  if(!text&&!polFile){toast('Upload a file or paste text','err');return;}
+  const st=document.getElementById('polStatus');
+  const btn=document.getElementById('polBtn');
+  st.className='ai-status parsing';st.innerHTML='<div class="ai-spin"></div> Gemini analyzing policy...';
   btn.disabled=true;
   try{
-    const PROMPT=`Analyze this HR/expense policy document and return ONLY valid JSON:
-{
-  "summary": "<2 sentence overview>",
-  "matrixRules": [{"grade":"L1|L2|L3|L4|L5|L6|ALL","type":"all|travel|fuel|food|mobile|accommodation","selfLimit":<number>,"mgrLimit":<number>,"financeAbove":<number>,"notes":"<desc>"}],
-  "policyRules": [{"type":"travel|fuel|food|mobile|accommodation|other","max":<monthly max>,"perClaim":<per claim max>,"receipt":true|false,"notes":"<desc>"}],
-  "recommendations": ["<rec 1>","<rec 2>"]
-}
+    const PROMPT=`Analyze this policy document and return ONLY valid JSON:
+{"summary":"<2 sentence overview>","matrixRules":[{"grade":"L1|L2|L3|L4|L5|L6|ALL","type":"all|travel|fuel|food|mobile|accommodation","selfLimit":<num>,"mgrLimit":<num>,"financeAbove":<num>,"notes":""}],"policyRules":[{"type":"travel|fuel|food|mobile|accommodation|other","max":<monthly max>,"perClaim":<per claim>,"receipt":true|false}],"recommendations":["<rec>"]}
 Extract ALL numeric limits. Return ONLY JSON.`;
     let parts=[{text:PROMPT+'\n\nPolicy:\n'+text}];
-    if(policyFileObj&&(policyFileObj.type.startsWith('image/')||policyFileObj.type==='application/pdf')){
-      const b64=await fileToB64(policyFileObj);
-      parts=[{inlineData:{data:b64,mimeType:policyFileObj.type}},{text:PROMPT}];
+    if(polFile&&(polFile.type.startsWith('image/')||polFile.type==='application/pdf')){
+      parts=[{inlineData:{data:await toB64(polFile),mimeType:polFile.type}},{text:PROMPT}];
     }
-    const result=await callGemini(parts,true);
-    const parsed=extractJSON(result);
-    // Auto-apply
-    let mCount=0,pCount=0;
-    if(parsed.matrixRules?.length){for(const r of parsed.matrixRules){await push(ref(db,'approvalMatrix'),{...r,createdAt:new Date().toISOString(),source:'Policy Engine'});mCount++;}}
-    if(parsed.policyRules?.length){for(const p of parsed.policyRules){await push(ref(db,'policies'),{...p,createdAt:new Date().toISOString(),source:'Policy Engine'});pCount++;}}
-    st.className='ai-status done';
-    st.textContent=`✅ Applied ${mCount} matrix rules + ${pCount} expense policies`;
-    document.getElementById('policyResult').innerHTML=`
-      <div style="background:var(--green-dim);border:1px solid rgba(5,150,105,.2);border-radius:var(--r);padding:12px 14px;margin-top:8px">
-        <div style="font-weight:600;color:var(--green);margin-bottom:6px">Policy applied to your system</div>
-        <div style="font-size:13px;color:var(--muted)">${parsed.summary||''}</div>
-        ${parsed.recommendations?.length?`<div style="margin-top:8px;font-size:12px;color:var(--muted)">${parsed.recommendations.map(r=>'→ '+r).join('<br>')}</div>`:''}
-      </div>`;
-    toast(`Policy applied: ${mCount} rules + ${pCount} limits`,'ok');
-  }catch(e){
-    st.className='ai-status fail';
-    st.textContent='❌ '+e.message;
-  }
+    const result=await callGemini(parts);
+    const parsed=cleanJSON(result);
+    let mc=0,pc=0;
+    if(parsed.matrixRules?.length){for(const r of parsed.matrixRules){await push(ref(db,'approvalMatrix'),{...r,createdAt:new Date().toISOString(),source:'Policy Engine'});mc++;}}
+    if(parsed.policyRules?.length){for(const p of parsed.policyRules){await push(ref(db,'policies'),{...p,createdAt:new Date().toISOString(),source:'Policy Engine'});pc++;}}
+    st.className='ai-status done';st.textContent=`✅ Applied ${mc} matrix rules + ${pc} expense limits`;
+    document.getElementById('polResult').innerHTML=`<div style="background:var(--green-dim);border:1px solid rgba(16,185,129,.2);border-radius:var(--r);padding:14px;margin-top:8px">
+      <div style="font-weight:600;color:var(--green);margin-bottom:6px">Policy applied</div>
+      <div style="font-size:13px;color:var(--muted)">${parsed.summary||''}</div>
+      ${parsed.recommendations?.length?`<div style="margin-top:8px;font-size:12px;color:var(--muted)">${parsed.recommendations.map(r=>'→ '+r).join('<br>')}</div>`:''}
+    </div>`;
+    toast(`Policy applied: ${mc} rules + ${pc} limits`,'ok');
+  }catch(e){st.className='ai-status fail';st.textContent='❌ '+e.message;}
   btn.disabled=false;
 };
 
-// ── Admin tabs ──
-window.switchTab=function(name,el){
-  ['enterprise','employees','matrix','policies','aiengine'].forEach(t=>{
-    const tab=document.getElementById('tab-'+t);
-    if(tab) tab.style.display=t===name?'block':'none';
-  });
-  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
-};
+// ═══════════════════════════════════════════════════════════
+//  MODALS + AI KEY
+// ═══════════════════════════════════════════════════════════
+window.closeMod=function(id){document.getElementById(id).classList.remove('open');};
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 
-// ── Modals ──
-window.closeModal=function(id){document.getElementById(id).classList.remove('open');};
-document.querySelectorAll('.modal-bg').forEach(bg=>{
-  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');});
-});
-
-// ── AI Key ──
 window.openAIKey=function(){
-  const current=localStorage.getItem('claimsiq_key')||'';
-  document.getElementById('aiKeyInput').value=current;
-  document.getElementById('aiKeyStatus').textContent=current?'Key set: '+current.slice(0,8)+'...':'Using default key';
-  document.getElementById('aiKeyModal').classList.add('open');
+  const k=localStorage.getItem('claimsiq_key')||'';
+  document.getElementById('aiKeyIn').value=k;
+  document.getElementById('aiKeySt').textContent=k?'Key set: '+k.slice(0,8)+'...':'Using Firebase AI Logic (no key needed)';
+  document.getElementById('mAIKey').classList.add('open');
 };
 window.saveAIKey=function(){
-  const k=document.getElementById('aiKeyInput').value.trim();
-  if(k&&k.startsWith('AIza')){localStorage.setItem('claimsiq_key',k);toast('AI Key saved','ok');}
-  else if(!k){localStorage.removeItem('claimsiq_key');toast('Using default key','info');}
-  else{toast('Invalid key — must start with AIza','err');return;}
-  window.closeModal('aiKeyModal');
+  const k=document.getElementById('aiKeyIn').value.trim();
+  if(k&&k.startsWith('AIza')){localStorage.setItem('claimsiq_key',k);toast('Key saved','ok');}
+  else if(!k){localStorage.removeItem('claimsiq_key');toast('Key cleared','info');}
+  else{toast('Invalid key','err');return;}
+  window.closeMod('mAIKey');
 };
 
-// ── Demo data ──
-async function loadDemo(){
+// ═══════════════════════════════════════════════════════════
+//  DEMO DATA
+// ═══════════════════════════════════════════════════════════
+async function seedDemo(){
   const emps=[
     {firstName:'Ananya',lastName:'Singh',email:'ananya@acmetech.in',empId:'EMP001',grade:'L2',department:'Marketing',managerEmail:'demo@claimsiq.ai',role:'employee',location:'Mumbai',createdAt:new Date().toISOString()},
     {firstName:'Vikram',lastName:'Patel',email:'vikram@acmetech.in',empId:'EMP002',grade:'L5',department:'Engineering',managerEmail:'demo@claimsiq.ai',role:'manager',location:'Bangalore',createdAt:new Date().toISOString()},
-    {firstName:'Priya',lastName:'Sharma',email:'priya@acmetech.in',empId:'EMP003',grade:'L2',department:'Sales',managerEmail:'demo@claimsiq.ai',role:'employee',location:'Delhi',createdAt:new Date().toISOString()},
+    {firstName:'Priya',lastName:'Sharma',email:'priya@acmetech.in',empId:'EMP003',grade:'L3',department:'Finance',managerEmail:'demo@claimsiq.ai',role:'finance',location:'Delhi',createdAt:new Date().toISOString()},
   ];
   for(const e of emps) await push(ref(db,'employees'),e);
-  const claims=[
+  const claimData=[
     {id:'CLM-A1B2C3D4',type:'travel',amount:7200,date:'2025-02-01',desc:'Flight to Delhi for strategy meeting',submittedBy:'Vikram Patel',submittedEmail:'vikram@acmetech.in',grade:'L5',status:'approved',origin:'Mumbai',dest:'Delhi',mode:'Flight',tref:'PNR-XK782',createdAt:'2025-02-01T08:00:00Z',history:[{action:'Submitted',by:'Vikram Patel',at:'1 Feb 2025'},{action:'Approved',by:'Demo Admin',at:'3 Feb 2025'}]},
-    {id:'CLM-E5F6G7H8',type:'accommodation',amount:9500,date:'2025-02-05',desc:'Hotel stay during Bangalore client visit',submittedBy:'Priya Sharma',submittedEmail:'priya@acmetech.in',grade:'L2',status:'pending',vendor:'Marriott Bangalore',createdAt:'2025-02-05T09:00:00Z',history:[{action:'Submitted',by:'Priya Sharma',at:'5 Feb 2025'}]},
+    {id:'CLM-E5F6G7H8',type:'accommodation',amount:9500,date:'2025-02-05',desc:'Hotel stay during client visit',submittedBy:'Priya Sharma',submittedEmail:'priya@acmetech.in',grade:'L3',status:'pending',vendor:'Marriott Bangalore',createdAt:'2025-02-05T09:00:00Z',history:[{action:'Submitted',by:'Priya Sharma',at:'5 Feb 2025'}]},
     {id:'CLM-I9J0K1L2',type:'food',amount:450,date:'2025-02-08',desc:'Team lunch during client pitch',submittedBy:'Ananya Singh',submittedEmail:'ananya@acmetech.in',grade:'L2',status:'approved',vendor:'Mainland China',createdAt:'2025-02-08T10:00:00Z',history:[{action:'Submitted',by:'Ananya Singh',at:'8 Feb 2025'},{action:'Approved',by:'Demo Admin',at:'9 Feb 2025'}]},
-    {id:'CLM-M3N4O5P6',type:'fuel',amount:2200,date:'2025-01-28',desc:'Fuel for client site visits',submittedBy:'Ananya Singh',submittedEmail:'ananya@acmetech.in',grade:'L2',status:'rejected',createdAt:'2025-01-28T11:00:00Z',history:[{action:'Submitted',by:'Ananya Singh',at:'28 Jan 2025'},{action:'Rejected: Exceeds L2 limit',by:'Demo Admin',at:'29 Jan 2025'}]},
-    {id:'CLM-Q7R8S9T0',type:'travel',amount:28500,date:'2025-01-25',desc:'Mumbai to Hyderabad for operations review',submittedBy:'Vikram Patel',submittedEmail:'vikram@acmetech.in',grade:'L5',status:'pending',origin:'Mumbai',dest:'Hyderabad',mode:'Flight',createdAt:'2025-01-25T07:00:00Z',history:[{action:'Submitted',by:'Vikram Patel',at:'25 Jan 2025'}]},
+    {id:'CLM-M3N4O5P6',type:'fuel',amount:2200,date:'2025-01-28',desc:'Fuel for client site visits',submittedBy:'Ananya Singh',submittedEmail:'ananya@acmetech.in',grade:'L2',status:'rejected',createdAt:'2025-01-28T11:00:00Z',history:[{action:'Submitted',by:'Ananya Singh',at:'28 Jan'},{action:'Rejected: Exceeds limit',by:'Demo Admin',at:'29 Jan'}]},
+    {id:'CLM-Q7R8S9T0',type:'travel',amount:28500,date:'2025-01-25',desc:'Mumbai to Hyderabad — operations review',submittedBy:'Vikram Patel',submittedEmail:'vikram@acmetech.in',grade:'L5',status:'pending',origin:'Mumbai',dest:'Hyderabad',mode:'Flight',createdAt:'2025-01-25T07:00:00Z',history:[{action:'Submitted',by:'Vikram Patel',at:'25 Jan'}]},
   ];
-  for(const c of claims) await push(ref(db,'claims'),c);
-  const mx=[
-    {grade:'L1',type:'all',selfLimit:0,mgrLimit:3000,financeAbove:15000,createdAt:new Date().toISOString()},
-    {grade:'L2',type:'all',selfLimit:0,mgrLimit:8000,financeAbove:30000,createdAt:new Date().toISOString()},
-    {grade:'L3',type:'all',selfLimit:2000,mgrLimit:15000,financeAbove:60000,createdAt:new Date().toISOString()},
-    {grade:'L4',type:'all',selfLimit:5000,mgrLimit:30000,financeAbove:150000,createdAt:new Date().toISOString()},
-    {grade:'L5',type:'all',selfLimit:10000,mgrLimit:75000,financeAbove:300000,createdAt:new Date().toISOString()},
-    {grade:'L6',type:'all',selfLimit:25000,mgrLimit:200000,financeAbove:1000000,createdAt:new Date().toISOString()},
-  ];
-  for(const m of mx) await push(ref(db,'approvalMatrix'),m);
+  for(const c of claimData) await push(ref(db,'claims'),c);
+  const mx=[{g:'L1',s:0,m:3000,f:15000},{g:'L2',s:0,m:8000,f:30000},{g:'L3',s:2000,m:15000,f:60000},{g:'L4',s:5000,m:30000,f:150000},{g:'L5',s:10000,m:75000,f:300000},{g:'L6',s:25000,m:200000,f:1000000}];
+  for(const r of mx) await push(ref(db,'approvalMatrix'),{grade:r.g,type:'all',selfLimit:r.s,mgrLimit:r.m,financeAbove:r.f,createdAt:new Date().toISOString()});
 }
 
-console.log('ClaimsIQ v6 ready');
+console.log('ClaimsIQ v7 — Firebase AI SDK gemini-2.5-flash');
 </script>
 </body>
 </html>
