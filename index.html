@@ -785,69 +785,118 @@ select option{background:#0B0F1C;color:var(--txt);}select{color-scheme:dark;}
 </div>
 
 <!-- SUPERADMIN PANEL (hidden, accessed via namanmehra@gmail.com only) -->
-<div id="superadminPanel" style="display:none;position:fixed;inset:0;z-index:600;overflow-y:auto;padding:24px;background:linear-gradient(135deg,rgba(220,225,255,0.97),rgba(235,230,255,0.97));backdrop-filter:blur(20px)">
-  <div style="max-width:960px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div style="width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 20px rgba(108,120,212,0.35)">⚡</div>
-        <div>
-          <div style="font-size:20px;font-weight:800;color:var(--txt);letter-spacing:-.4px">Super Admin Console</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px">ClaimsIQ Platform · namanmehra@gmail.com</div>
-        </div>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="window.closeSuperAdmin()" style="gap:5px">✕ Sign Out</button>
+<div id="superadminPanel" style="display:none;position:fixed;inset:0;z-index:600;overflow-y:auto;background:var(--bg);background-image:radial-gradient(ellipse 100% 60% at 20% -10%,rgba(79,110,247,0.20) 0%,transparent 60%),radial-gradient(ellipse 80% 50% at 85% 15%,rgba(167,139,250,0.12) 0%,transparent 55%)">
+<style>
+  /* SA panel scoped resets — no pastel leakage */
+  #superadminPanel input,#superadminPanel select,#superadminPanel textarea{
+    background:rgba(255,255,255,0.06);
+    border-color:var(--bdr);color:var(--txt);
+    color-scheme:dark;
+  }
+  #superadminPanel .card{
+    background:var(--glass2);border-color:var(--bdr);
+    box-shadow:0 2px 20px rgba(0,0,0,0.25);
+  }
+  #superadminPanel .card-hdr{border-color:var(--bdr);}
+  #superadminPanel th{color:var(--muted2);background:rgba(255,255,255,0.02);}
+  #superadminPanel td{border-color:var(--bdr);color:var(--txt);}
+  #superadminPanel tr:hover td{background:rgba(255,255,255,0.03);}
+  #superadminPanel .stat{background:var(--glass2);border-color:var(--bdr);}
+  #superadminPanel .btn-ghost{background:var(--glass);color:var(--muted);border-color:var(--bdr);}
+  #superadminPanel .btn-ghost:hover{background:var(--glass2);color:var(--txt);}
+</style>
+
+<!-- SA topbar -->
+<div style="position:sticky;top:0;z-index:10;background:rgba(6,9,18,0.92);backdrop-filter:blur(30px);border-bottom:1px solid var(--bdr);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 16px rgba(79,110,247,0.4)">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l1.5 4.5H14l-3.7 2.7 1.4 4.3L8 9.8l-3.7 2.7 1.4-4.3L2 5.5h4.5L8 1z"/></svg>
     </div>
-    <!-- Stats -->
-    <div class="stats" style="margin-bottom:20px">
-      <div class="stat"><div class="stat-label">Total Enterprises</div><div class="stat-val" id="sa-entCount">—</div></div>
-      <div class="stat"><div class="stat-label">Total Users</div><div class="stat-val" id="sa-userCount">—</div></div>
-      <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="sa-claimCount">—</div></div>
-      <div class="stat"><div class="stat-label">Demo Enterprise</div><div class="stat-val" id="sa-demoStatus" style="font-size:16px">—</div></div>
-    </div>
-    <!-- Enterprise list -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-hdr">
-        <div class="card-title">All Enterprises</div>
-        <button class="btn btn-primary btn-sm" onclick="window.saRefresh()">Refresh</button>
-      </div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Company</th><th>ID</th><th>Industry</th><th>Created</th><th>Employees</th><th>Claims</th><th>Actions</th></tr></thead>
-        <tbody id="sa-entTable"></tbody>
-      </table></div>
-    </div>
-    <!-- Create Enterprise -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-hdr"><div class="card-title">Create New Enterprise</div></div>
-      <div class="card-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div class="fld"><label>Company Name *</label><input type="text" id="sa-co" placeholder="Acme Corp"></div>
-          <div class="fld"><label>Industry</label><select id="sa-ind"><option>Technology</option><option>Financial Services</option><option>Manufacturing</option><option>Healthcare</option><option>Consulting</option><option>Other</option></select></div>
-          <div class="fld"><label>Admin First Name *</label><input type="text" id="sa-fn" placeholder="Rahul"></div>
-          <div class="fld"><label>Admin Last Name *</label><input type="text" id="sa-ln" placeholder="Sharma"></div>
-          <div class="fld"><label>Admin Email *</label><input type="email" id="sa-email" placeholder="admin@company.com"></div>
-          <div class="fld"><label>Admin Password *</label><input type="password" id="sa-pass" placeholder="Min 8 chars"></div>
-          <div class="fld"><label>Currency</label><select id="sa-cur"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option></select></div>
-        </div>
-        <button class="btn btn-primary btn-sm" id="saCreateBtn" onclick="window.saCreateEnterprise()" style="min-width:160px">Create Enterprise</button>
-        <div id="saCreateStatus" style="font-size:12px;margin-top:8px;color:var(--muted)"></div>
-      </div>
-    </div>
-    <!-- Demo controls -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-hdr"><div class="card-title">Demo Enterprise</div></div>
-      <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm" onclick="window.saReseedDemo()">Re-seed Demo</button>
-        <button class="btn btn-danger btn-sm" onclick="window.saWipeDemoData()">Wipe Demo Data</button>
-      </div>
-    </div>
-    <!-- Danger zone -->
-    <div class="card" style="border-color:rgba(248,113,113,.3)">
-      <div class="card-hdr" style="border-color:rgba(248,113,113,.2)"><div class="card-title" style="color:var(--red)">Danger Zone</div></div>
-      <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-danger btn-sm" onclick="window.saWipeAll()">Wipe Entire Database</button>
-      </div>
+    <div>
+      <div style="font-size:15px;font-weight:650;color:var(--txt);letter-spacing:-.2px">Platform Console</div>
+      <div style="font-size:11px;color:var(--muted)">namanmehra@gmail.com</div>
     </div>
   </div>
+  <button class="btn btn-ghost btn-sm" onclick="window.closeSuperAdmin()" style="font-size:13px">Sign Out</button>
+</div>
+
+<!-- SA content -->
+<div style="max-width:960px;margin:0 auto;padding:28px 24px">
+
+  <!-- Stats row -->
+  <div class="stats" style="margin-bottom:24px">
+    <div class="stat"><div class="stat-label">Enterprises</div><div class="stat-val" id="sa-entCount">—</div></div>
+    <div class="stat"><div class="stat-label">Registered Users</div><div class="stat-val" id="sa-userCount">—</div></div>
+    <div class="stat"><div class="stat-label">Total Claims</div><div class="stat-val" id="sa-claimCount">—</div></div>
+    <div class="stat"><div class="stat-label">Demo Status</div><div class="stat-val" id="sa-demoStatus" style="font-size:16px">—</div></div>
+  </div>
+
+  <!-- Enterprise list -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-hdr">
+      <div class="card-title">All Enterprises</div>
+      <button class="btn btn-ghost btn-sm" onclick="window.saRefresh()">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 7a6 6 0 1 0 6-6 6 6 0 0 1-4.2 1.8"/><path d="M1 3v2.8h2.8"/></svg>
+        Refresh
+      </button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>Industry</th><th>Created</th><th style="text-align:center">Users</th><th style="text-align:center">Claims</th><th></th></tr></thead>
+        <tbody id="sa-entTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Two-col: create + demo/danger -->
+  <div class="g2" style="align-items:start">
+
+    <!-- Create Enterprise -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">New Enterprise</div></div>
+      <div class="card-body">
+        <div class="fld"><label>Company Name *</label><input type="text" id="sa-co" placeholder="Acme Corp"></div>
+        <div class="fld"><label>Industry</label>
+          <select id="sa-ind"><option>Technology</option><option>Financial Services</option><option>Manufacturing</option><option>Healthcare</option><option>Consulting</option><option>Other</option></select>
+        </div>
+        <div class="g2">
+          <div class="fld"><label>First Name *</label><input type="text" id="sa-fn" placeholder="Rahul"></div>
+          <div class="fld"><label>Last Name *</label><input type="text" id="sa-ln" placeholder="Sharma"></div>
+        </div>
+        <div class="fld"><label>Admin Email *</label><input type="email" id="sa-email" placeholder="admin@company.com"></div>
+        <div class="fld"><label>Password *</label><input type="password" id="sa-pass" placeholder="Min 8 characters"></div>
+        <div class="fld"><label>Currency</label>
+          <select id="sa-cur"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="GBP">GBP £</option></select>
+        </div>
+        <button class="btn btn-primary btn-full" id="saCreateBtn" onclick="window.saCreateEnterprise()">Create Enterprise</button>
+        <div id="saCreateStatus" style="font-size:12px;margin-top:10px;color:var(--muted);min-height:18px"></div>
+      </div>
+    </div>
+
+    <!-- Right col: demo + danger -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Demo -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">Demo Enterprise</div></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-ghost btn-full btn-sm" onclick="window.saReseedDemo()">Re-seed Demo Data</button>
+          <button class="btn btn-danger btn-full btn-sm" onclick="window.saWipeDemoData()">Wipe Demo Data</button>
+        </div>
+      </div>
+      <!-- Danger zone -->
+      <div class="card" style="border-color:rgba(248,113,113,0.20)">
+        <div class="card-hdr" style="border-color:rgba(248,113,113,0.15)">
+          <div class="card-title" style="color:var(--red);font-size:12px;letter-spacing:.5px;text-transform:uppercase">Danger Zone</div>
+        </div>
+        <div class="card-body">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Irreversible. Deletes all enterprises, claims, employees and audit data.</div>
+          <button class="btn btn-danger btn-full btn-sm" onclick="window.saWipeAll()">Wipe Entire Database</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 </div>
 
 <!-- APP SHELL -->
@@ -2755,13 +2804,17 @@ window.saRefresh=async function(){
       return {eid,entData,empCount,claimCount};
     }));
     tbody.innerHTML=rows.map(({eid,entData,empCount,claimCount})=>`<tr>
-      <td><strong>${entData.name||'—'}</strong></td>
-      <td><span style="font-family:monospace;font-size:11px;color:var(--accent2)">${eid.slice(0,14)}...</span></td>
-      <td style="color:var(--muted)">${entData.industry||'—'}</td>
-      <td style="color:var(--muted);font-size:11px">${(entData.createdAt||'').slice(0,10)}</td>
-      <td style="text-align:center">${empCount}</td>
-      <td style="text-align:center">${claimCount}</td>
-      <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="window.saDeleteEnt('${eid}','${(entData.name||'').replace(/'/g,'')}')" style="white-space:nowrap">Delete</button></td>
+      <td>
+        <div style="font-weight:600;font-size:13px;color:var(--txt)">${entData.name||'—'}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px">${eid.slice(0,16)}…</div>
+      </td>
+      <td style="color:var(--muted);font-size:12px">${entData.industry||'—'}</td>
+      <td style="color:var(--muted);font-size:12px">${(entData.createdAt||'').slice(0,10)}</td>
+      <td style="text-align:center;font-weight:600">${empCount}</td>
+      <td style="text-align:center;font-weight:600">${claimCount}</td>
+      <td onclick="event.stopPropagation()" style="text-align:right">
+        <button class="btn btn-danger btn-sm" onclick="window.saDeleteEnt('${eid}','${(entData.name||'').replace(/'/g,'')}')" style="font-size:11px;padding:5px 10px">Delete</button>
+      </td>
     </tr>`).join('');
   }catch(e){toast('Superadmin error: '+e.message,'err');}
 };
